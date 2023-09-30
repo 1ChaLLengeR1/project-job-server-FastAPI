@@ -13,11 +13,12 @@ from routers.outstanding_moeny.schemas import AddItemParams, EditItem, DeleteId
 from routers.patryk_routers.utilities import check_users_parameters
 
 # auth
+from auth.jwt_handler import check_access_token
 
 router = APIRouter()
 
 
-@router.post("/routers/outstanding_money/outstandingmoney/add_item")
+@router.post("/routers/outstanding_money/outstandingmoney/add_item", dependencies=[Depends(check_access_token)])
 async def add_item(payload: AddItemParams, db: Session = Depends(get_db)):
     try:
 
@@ -44,7 +45,7 @@ async def add_item(payload: AddItemParams, db: Session = Depends(get_db)):
                             detail="Błąd w sekcji dodawania do listy zaległych!")
 
 
-@router.put("/routers/outstanding_money/outstandingmoney/edit_item")
+@router.put("/routers/outstanding_money/outstandingmoney/edit_item", dependencies=[Depends(check_access_token)])
 async def edit_item(payload: EditItem, db: Session = Depends(get_db)):
     try:
         response = check_users_parameters({"id": payload.id_user, "username": payload.username, "type_user": True}, db)
@@ -70,7 +71,7 @@ async def edit_item(payload: EditItem, db: Session = Depends(get_db)):
                             detail="Błąd w sekcji edycji listy zaległych!")
 
 
-@router.delete("/routers/outstanding_money/outstandingmoney/delete_item")
+@router.delete("/routers/outstanding_money/outstandingmoney/delete_item", dependencies=[Depends(check_access_token)])
 async def delete_item(payload: DeleteId, db: Session = Depends(get_db)):
     try:
 

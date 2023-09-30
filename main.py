@@ -43,4 +43,4 @@ app.include_router(fuel.router)
 
 @app.get("/", dependencies=[Depends(check_access_token)])
 def get():
-    return "Przeszło!"
+    return "Przeszłos!"

@@ -1,5 +1,5 @@
 # fastapi
-from fastapi import Depends, HTTPException, status, APIRouter
+from fastapi import HTTPException, status, APIRouter
 
 #chemas
 from routers.fuel_calculator.schemas import FuelParams
