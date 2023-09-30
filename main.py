@@ -10,6 +10,7 @@ from routers.patryk_routers.calculator_work import calculator_earning
 from routers.log_routers import log
 from routers.list_products import list
 from routers.outstanding_moeny import namesoverdue, outstandingmoney
+from routers.fuel_calculator import fuel
 
 app = FastAPI()
 app.mount("/file", StaticFiles(directory="file"), name="file")
@@ -38,6 +39,7 @@ app.include_router(log.router)
 app.include_router(list.router)
 app.include_router(namesoverdue.router)
 app.include_router(outstandingmoney.router)
+app.include_router(fuel.router)
 
 @app.get("/", dependencies=[Depends(check_access_token)])
 def get():
