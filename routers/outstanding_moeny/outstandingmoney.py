@@ -93,4 +93,4 @@ async def delete_item(payload: DeleteId, db: Session = Depends(get_db)):
 
     except:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail="Błąd w sekcji usuwania pozycji w liście zaległych!")
+                            detail="Błąd w sekcji usuwania pozycji w liście zaległychs!")
