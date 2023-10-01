@@ -24,7 +24,11 @@ async def add_log(payload: Log, db: Session = Depends(get_db)):
 async def logs_values(number: int, db: Session = Depends(get_db)):
     try:
 
-        item = db.query(Logs).order_by(Logs.date.desc()).limit(number).all()
+        if number == 0:
+            item = db.query(Logs).order_by(Logs.date.desc()).all()
+        else:
+            item = db.query(Logs).order_by(Logs.date.desc()).limit(number).all()
+
         return item
     except:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Błąd w sekcji wyświetlania logów!")
