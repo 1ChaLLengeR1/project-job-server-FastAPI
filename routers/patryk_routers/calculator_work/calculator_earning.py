@@ -25,6 +25,10 @@ async def calculations(payload: CalculatorParams, db: Session = Depends(get_db))
         elif response["error"]:
             return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"detail": response['error']})
 
+        if payload.gross_sales == 0 or payload.gross_purchase == 0:
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"detail":"Zakup i sprzedaż nie mogą być puste oraz nie mogą być zerami!"})
+
+
         keys_id = db.query(KeysCalculatorPatryk).first()
 
         # values
