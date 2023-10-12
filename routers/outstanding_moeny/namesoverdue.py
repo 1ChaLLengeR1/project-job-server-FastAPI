@@ -50,7 +50,6 @@ async def get_list(db: Session = Depends(get_db)):
 
         return list_overdue
     except SQLAlchemyError as e:
-        print(e)
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Błąd w sekcji pobierania listy zaległych")
 
 
