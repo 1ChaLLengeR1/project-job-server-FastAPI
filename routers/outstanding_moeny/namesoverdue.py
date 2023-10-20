@@ -35,7 +35,7 @@ async def get_list(db: Session = Depends(get_db)):
                 "full_price": 0
             }
 
-            item_outstanding_money = db.query(OutStandingMoney).filter(OutStandingMoney.id_name == item.id).all()
+            item_outstanding_money = db.query(OutStandingMoney).filter(OutStandingMoney.id_name == item.id).order_by(OutStandingMoney.date).all()
             for items in item_outstanding_money:
                 object_items = {
                     "id": items.id,
