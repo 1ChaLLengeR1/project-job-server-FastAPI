@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-data_base_url = f"postgresql://postgres:zaq1%40WSX@146.59.93.12:5432/patrykaprogram"
+data_base_url = f""
 
 engine = create_engine(data_base_url)
 
