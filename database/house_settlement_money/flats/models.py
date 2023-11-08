@@ -2,7 +2,7 @@ from sqlalchemy import Column, String
 import uuid
 from database.db import Base
 
-class ListProducts(Base):
+class ListFlats(Base):
     __tablename__ = "flats"
 
     id = Column(String, primary_key=True, default=uuid.uuid4)
