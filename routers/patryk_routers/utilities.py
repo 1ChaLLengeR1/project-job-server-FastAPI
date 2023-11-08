@@ -50,18 +50,8 @@ def shop_cost(user_id: str or int, referrer: str, db):
 def calculations_calculator(package_price: float, vat: float, cena_netto_sprzedarz: float, cena_netto_zakup: float,
                  prowizja_wyroznienie_netto: float, dochodowka: float, roznica_vat_sprzedarz: float,
                  roznica_vat_zakupu: float, roznica_vat_prowizji_wyroznienie: float):
-    cena_paczki = package_price
-    prog_pierwszy_vat = cena_paczki * vat
-    prog_pierwszy_cena_netto = cena_paczki - prog_pierwszy_vat
-    przychod_netto = cena_netto_sprzedarz - cena_netto_zakup - prowizja_wyroznienie_netto - prog_pierwszy_cena_netto
-    dochodowka_do_zaplaty = przychod_netto * dochodowka
-    dochod = przychod_netto - dochodowka_do_zaplaty
-    roznica_vat = roznica_vat_sprzedarz - roznica_vat_zakupu - roznica_vat_prowizji_wyroznienie - prog_pierwszy_vat
-    zysk = dochod - roznica_vat
-
-    brutto = zysk * 1.23
-    na_czysto = zysk
-    zysk_procentowy = (zysk * 100) / cena_netto_zakup
+                     
+    #Kod jest nie dostępny z przyczyn prywatnych!
 
     return {
         "brutto": round(brutto, 2),
