@@ -6,7 +6,7 @@ from routers.house_settlement_moeny.flats.schemas import FlatsParams
 from routers.patryk_routers.utilities import check_users_parameters
 # database
 from sqlalchemy.orm import Session
-from database.house_settlement_money.flats.models import ListFlats
+from database.house_settlement_money.flats.models import Flats
 from database.db import get_db
 # jwt
 from auth.jwt_handler import check_access_token
@@ -17,7 +17,7 @@ router = APIRouter()
 @router.get("/routers/house_settlement_money/flats/flats/get_flats")
 async def get_flats(db: Session = Depends(get_db)):
     try:
-        return db.query(ListFlats).all()
+        return db.query(Flats).all()
     except:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Błąd w trkacie pobierania listy mieszkań!")
 
@@ -32,7 +32,7 @@ async def add_flats(payload: FlatsParams, db: Session = Depends(get_db)):
         elif response["error"]:
             return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"detail": response['error']})
 
-        new_flat = ListFlats(house_name=payload.house_name, professional_house_name=payload.professional_house_name,
+        new_flat = Flats(house_name=payload.house_name, professional_house_name=payload.professional_house_name,
                              price=payload.price)
         db.add(new_flat)
         db.commit()
@@ -52,7 +52,7 @@ async def edit_flats(payload: FlatsParams, db: Session = Depends(get_db)):
         elif response["error"]:
             return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"detail": response['error']})
 
-        item_id = db.query(ListFlats).filter(ListFlats.id == payload.id)
+        item_id = db.query(Flats).filter(Flats.id == payload.id)
         item = item_id.first()
         if not item:
             return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"detail": "Brak id pokoju!"})
@@ -80,7 +80,7 @@ async def delete_flat(payload: FlatsParams, db: Session = Depends(get_db)):
         elif response["error"]:
             return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"detail": response['error']})
 
-        item_id = db.query(ListFlats).filter(ListFlats.id == payload.id)
+        item_id = db.query(Flats).filter(Flats.id == payload.id)
         if not item_id:
             return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"detail": "Brak id pokoju!"})
 
