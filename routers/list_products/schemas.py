@@ -10,6 +10,9 @@ class ListProductsParams(BaseModel):
     model: str
     type: bool
 
+    class Config:
+        orm_mode: True
+
 
 class DeleteProduct(BaseModel):
     id: str | None = None

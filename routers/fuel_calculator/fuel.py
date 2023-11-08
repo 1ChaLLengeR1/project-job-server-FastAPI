@@ -3,7 +3,7 @@ from fastapi import HTTPException, status, APIRouter
 # fastapi response
 from fastapi.responses import JSONResponse
 
-# chemas
+# schemas
 from routers.fuel_calculator.schemas import FuelParams
 
 router = APIRouter()

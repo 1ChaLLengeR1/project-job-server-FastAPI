@@ -6,8 +6,8 @@ class CalculatorParams(BaseModel):
     username: str
     gross_sales: float
     gross_purchase: float
-    provision: float
-    distinction: float
+    provision: float | None = 0
+    distinction: float | None = 0
     referrer: str
 
     class Config:

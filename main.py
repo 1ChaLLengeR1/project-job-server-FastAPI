@@ -11,13 +11,14 @@ from routers.log_routers import log
 from routers.list_products import list
 from routers.outstanding_moeny import namesoverdue, outstandingmoney
 from routers.fuel_calculator import fuel
+from routers.house_settlement_moeny.flats import flats
 
 app = FastAPI()
 app.mount("/file", StaticFiles(directory="file"), name="file")
 
 origins = [
     "https://arturscibor.pl",
-    "https://arturscibor.pl/"
+    "https://praca.strona.arturscibor.pl"
     "http://localhost",
     "http://localhost:5173",
     "http://127.0.0.1",
@@ -40,6 +41,7 @@ app.include_router(list.router)
 app.include_router(namesoverdue.router)
 app.include_router(outstandingmoney.router)
 app.include_router(fuel.router)
+app.include_router(flats.router)
 
 @app.get("/", dependencies=[Depends(check_access_token)])
 def get():
