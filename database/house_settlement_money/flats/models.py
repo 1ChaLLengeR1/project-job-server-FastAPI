@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String
+from sqlalchemy import Column, String, Float
 import uuid
 from database.db import Base
 
@@ -8,6 +8,7 @@ class ListFlats(Base):
     id = Column(String, primary_key=True, default=uuid.uuid4)
     house_name = Column(String)
     professional_house_name = Column(String)
+    price = Column(Float, default=0)
 
     class Config:
         orm_mode: True

@@ -7,6 +7,7 @@ class FlatsParams(BaseModel):
     username: str | None = None
     house_name: str | None = None
     professional_house_name: str | None = None
+    price: float | None = None
 
     class Config:
         orm_mode: True

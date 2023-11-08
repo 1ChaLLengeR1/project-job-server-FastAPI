@@ -32,7 +32,8 @@ async def add_flats(payload: FlatsParams, db: Session = Depends(get_db)):
         elif response["error"]:
             return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"detail": response['error']})
 
-        new_flat = ListFlats(house_name=payload.house_name, professional_house_name=payload.professional_house_name)
+        new_flat = ListFlats(house_name=payload.house_name, professional_house_name=payload.professional_house_name,
+                             price=payload.price)
         db.add(new_flat)
         db.commit()
 
@@ -58,6 +59,7 @@ async def edit_flats(payload: FlatsParams, db: Session = Depends(get_db)):
 
         item.house_name = payload.house_name
         item.professional_house_name = payload.professional_house_name
+        item.price = payload.price
 
         db.commit()
 
