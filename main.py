@@ -14,6 +14,7 @@ from routers.fuel_calculator import fuel
 from routers.house_settlement_moeny.flats import flats
 from routers.house_settlement_moeny.renting_user import renting_user
 from routers.house_settlement_moeny.basic_rental_values import basic_values
+from routers.house_settlement_moeny.calculation_methods import add_method
 
 app = FastAPI()
 app.mount("/file", StaticFiles(directory="file"), name="file")
@@ -46,6 +47,7 @@ app.include_router(fuel.router)
 app.include_router(flats.router)
 app.include_router(renting_user.router)
 app.include_router(basic_values.router)
+app.include_router(add_method.router)
 
 @app.get("/", dependencies=[Depends(check_access_token)])
 def get():
