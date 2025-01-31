@@ -14,7 +14,7 @@ async def keys_calculator_values(db: Session = Depends(get_db)):
     try:
         return db.query(KeysCalculatorPatryk).first()
     except:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Błąd podczas pobierania kluczy kalkulatora!")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="BĹ‚Ä…d podczas pobierania kluczy kalkulatora!")
 
 @router.post("/routers/patryk_routers/calculator_work/calculator_earning/calculations")
 async def calculations(payload: CalculatorParams, db: Session = Depends(get_db)):
@@ -26,14 +26,93 @@ async def calculations(payload: CalculatorParams, db: Session = Depends(get_db))
             return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"detail": response['error']})
 
         if payload.gross_sales == 0 or payload.gross_purchase == 0:
-            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"detail":"Zakup i sprzedaż nie mogą być puste oraz nie mogą być zerami!"})
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"detail":"Zakup i sprzedaĹĽ nie mogÄ… byÄ‡ puste oraz nie mogÄ… byÄ‡ zerami!"})
 
 
-       #Kod jest nie dostępny z przyczyn prywatnych!
+        keys_id = db.query(KeysCalculatorPatryk).first()
 
-    
+        # values
+        dochodowka = keys_id.income_tax
+        vat = keys_id.vat
+        roznica_vat_zakupu = payload.gross_purchase * vat
+        cena_netto_zakup = payload.gross_purchase - roznica_vat_zakupu
+        roznica_vat_sprzedarz = payload.gross_sales * vat
+        cena_netto_sprzedarz = payload.gross_sales - roznica_vat_sprzedarz
+        prowizja_brutto = payload.gross_sales * (payload.provision / 100)
+        wyroznienie_brutto = payload.gross_sales * (payload.distinction / 100)
+        suma_prowizji_wyroznienie = prowizja_brutto + wyroznienie_brutto
+        roznica_vat_prowizji_wyroznienie = suma_prowizji_wyroznienie * vat
+        prowizja_wyroznienie_netto = suma_prowizji_wyroznienie - roznica_vat_prowizji_wyroznienie
+
+        if payload.gross_sales < 40:
+            koszt_wysylki = shop_cost(keys_id.id, payload.referrer, db)
+            cena_sprzedarzy_brutto_z_wysylka = payload.gross_sales + koszt_wysylki
+            cena_sprzedarzy_brutto_z_wysylka_prowizja = cena_sprzedarzy_brutto_z_wysylka * (payload.provision / 100)
+            roznica_vat_wysylki = cena_sprzedarzy_brutto_z_wysylka_prowizja * vat
+            netto_wysylka = cena_sprzedarzy_brutto_z_wysylka_prowizja - roznica_vat_wysylki
+            przychod_netto = cena_netto_sprzedarz - cena_netto_zakup - netto_wysylka
+            dochodowka_do_zaplacenia = przychod_netto * dochodowka
+            dochod = (przychod_netto - dochodowka_do_zaplacenia)
+            roznica_vat = roznica_vat_sprzedarz - roznica_vat_zakupu - roznica_vat_wysylki
+            zysk = dochod - roznica_vat
+
+            brutto = zysk * 1.23
+            na_czysto = zysk
+            zysk_procentowy = (zysk * 100) / cena_netto_zakup
+
+            return {
+                "brutto": round(brutto, 2),
+                "na_czysto": round(na_czysto, 2),
+                "zysk_procentowy": round(zysk_procentowy, 2)
+            }
+        elif payload.gross_sales >= 40 and payload.gross_sales <= 79.99:
+            cena_paczki = 0.99
+
+            values_calculations = calculations_calculator(cena_paczki, vat, cena_netto_sprzedarz, cena_netto_zakup,
+                                                          prowizja_wyroznienie_netto, dochodowka, roznica_vat_sprzedarz,
+                                                          roznica_vat_zakupu, roznica_vat_prowizji_wyroznienie)
+
+            return {
+                "brutto": values_calculations['brutto'],
+                "na_czysto": values_calculations['na_czysto'],
+                "zysk_procentowy": values_calculations['zysk_procentowy']
+            }
+
+        elif payload.gross_sales >= 80 and payload.gross_sales <= 199.99:
+            cena_paczki = 2.49
+            values_calculations = calculations_calculator(cena_paczki, vat, cena_netto_sprzedarz, cena_netto_zakup,
+                                                          prowizja_wyroznienie_netto, dochodowka, roznica_vat_sprzedarz,
+                                                          roznica_vat_zakupu, roznica_vat_prowizji_wyroznienie)
+
+            return {
+                "brutto": values_calculations['brutto'],
+                "na_czysto": values_calculations['na_czysto'],
+                "zysk_procentowy": values_calculations['zysk_procentowy']
+            }
+        elif payload.gross_sales >= 200 and payload.gross_sales <= 299.99:
+            cena_paczki = 3.99
+            values_calculations = calculations_calculator(cena_paczki, vat, cena_netto_sprzedarz, cena_netto_zakup,
+                                                          prowizja_wyroznienie_netto, dochodowka, roznica_vat_sprzedarz,
+                                                          roznica_vat_zakupu, roznica_vat_prowizji_wyroznienie)
+
+            return {
+                "brutto": values_calculations['brutto'],
+                "na_czysto": values_calculations['na_czysto'],
+                "zysk_procentowy": values_calculations['zysk_procentowy']
+            }
+        elif payload.gross_sales >= 300:
+            cena_paczki = 4.99
+            values_calculations = calculations_calculator(cena_paczki, vat, cena_netto_sprzedarz, cena_netto_zakup,
+                                                          prowizja_wyroznienie_netto, dochodowka, roznica_vat_sprzedarz,
+                                                          roznica_vat_zakupu, roznica_vat_prowizji_wyroznienie)
+
+            return {
+                "brutto": values_calculations['brutto'],
+                "na_czysto": values_calculations['na_czysto'],
+                "zysk_procentowy": values_calculations['zysk_procentowy']
+            }
     except HTTPException:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Błąd w sekcji kalkulator!")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="BĹ‚Ä…d w sekcji kalkulator!")
 
 
 @router.put("/routes/patryk_routers/calculator_work/calculator_earning/keys_calculator_edit")
@@ -66,4 +145,4 @@ async def keys_calculator_edit(payload: KeysCalculator, db: Session = Depends(ge
         return JSONResponse(status_code=status.HTTP_200_OK, content={"detail":"Poprawnie przeprowadzono edycje!"})
     except:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail="Błąd w sekcji edytowania zawartości kalkulatora!")
+                            detail="BĹ‚Ä…d w sekcji edytowania zawartoĹ›ci kalkulatora!")
