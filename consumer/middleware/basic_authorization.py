@@ -1,48 +1,39 @@
 import jwt
 import datetime
 from datetime import datetime, timedelta
-from consumer.data.response import ResponseData
-from fastapi.security.base import SecurityBase
+from fastapi import Request, HTTPException
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from consumer.helper.validators import get_env_variable
 from database.db import get_db
 from database.auth.models import Users
 from consumer.middleware.utils import verification_password
 
 
-class JWTBasicAuthenticationMiddleware(SecurityBase):
-    def authenticate(self, request) -> ResponseData:
+class JWTBasicAuthenticationMiddleware(HTTPBearer):
+    def __init__(self, auto_error: bool = True):
+        super(JWTBasicAuthenticationMiddleware, self).__init__(auto_error=auto_error)
+
+    async def __call__(self, request: Request):
         try:
-            auth_header = request.headers.get("Authorization")
-            if not auth_header:
-                return ResponseData(
-                    is_valid=False,
-                    status="ERROR",
-                    data=str("You did not provide authorization headers."),
-                    status_code=403
-                )
-            token = auth_header.split(" ")[1]
-            err, message = self.decode_jwt(token)
-            if err:
-                return ResponseData(
-                    is_valid=False,
-                    status="ERROR",
-                    data=str(message),
-                    status_code=403
-                )
-            return ResponseData(
-                is_valid=True,
-                status="SUCCESS",
-                data=None,
-                status_code=200
-            )
+            credentials: HTTPAuthorizationCredentials = await super(JWTBasicAuthenticationMiddleware, self).__call__(
+                request)
+            if credentials:
+                if not credentials.scheme == "Bearer":
+                    raise HTTPException(status_code=403, detail=str("Invalid authentication scheme."))
+                auth_header = request.headers.get("Authorization")
+                if not auth_header:
+                    raise HTTPException(status_code=403, detail=str("You did not provide authorization headers."))
+                token = auth_header.split(" ")[1]
+                is_valid, message = self.decode_jwt(token)
+                if not is_valid:
+                    raise HTTPException(status_code=403, detail=str(message))
+
+                return True
+            else:
+                raise HTTPException(status_code=403, detail=str("Invalid authorization code."))
 
         except IndexError:
-            return ResponseData(
-                is_valid=False,
-                status="ERROR",
-                data=str("Bearer token not provided."),
-                status_code=403
-            )
+            raise HTTPException(status_code=403, detail=str("Bearer token not provided."))
 
     def decode_jwt(self, token: str) -> tuple[bool, str]:
         try:

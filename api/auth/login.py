@@ -3,6 +3,7 @@ from api.routers import LOGIN, AUTOMATICALLY_LOGIN
 from consumer.data.response import ResponseApiData
 from .schemas import UserDataPayload
 from consumer.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
+from consumer.helper.headers import check_required_headers
 
 router = APIRouter()
 
@@ -18,26 +19,29 @@ async def login(request: Request, payload: UserDataPayload):
             data=mess,
             status_code=400,
             additional=None
-        )
+        ).to_response()
 
     return ResponseApiData(
         status="SUCCESS",
         data=data,
         status_code=200,
         additional=None,
-    )
+    ).to_response()
 
 
 @router.get(AUTOMATICALLY_LOGIN)
 async def automatically_login(request: Request, user_id: str):
-    refresh_token_header = request.headers.get("X-Refresh-Token")
-    if not refresh_token_header:
+    required_headers = ["X-Refresh-Token"]
+    data_header = check_required_headers(request, required_headers)
+    if not data_header['is_valid']:
         return ResponseApiData(
             status="ERROR",
-            data=str("You did not provide authorization headers."),
-            status_code=400,
+            data=data_header['data'],
+            status_code=data_header['status_code'],
             additional=None
-        )
+        ).to_response()
+
+    refresh_token_header = data_header['data'][0]['data']
 
     basic_auth = JWTBasicAuthenticationMiddleware()
     is_valid, mess, data_user = basic_auth.decode_refresh_jwt(refresh_token_header, user_id)
