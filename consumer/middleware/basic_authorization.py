@@ -65,7 +65,7 @@ class JWTBasicAuthenticationMiddleware(SecurityBase):
         except jwt.InvalidTokenError:
             return False, "Invalid token."
 
-    def encode_jwt(self, username: str, password: str) -> tuple[bool, str, dict | None]:
+    def encode_jwt(self, username: str, password: str, password_on: bool = True) -> tuple[bool, str, dict | None]:
         db_gen = get_db()
         db = next(db_gen)
 
@@ -76,8 +76,9 @@ class JWTBasicAuthenticationMiddleware(SecurityBase):
             if not user:
                 return False, f"user not exist with this name: {username}", None
 
-            if not verification_password(password, user.password):
-                return False, "Password or user name is not correct", None
+            if password_on:
+                if not verification_password(password, user.password):
+                    return False, "Password or user name is not correct", None
 
             expired = datetime.utcnow() + timedelta(
                 hours=int(get_env_variable("TOKEN_EXPIRES_HOURS"))
@@ -113,21 +114,24 @@ class JWTBasicAuthenticationMiddleware(SecurityBase):
         encode_jwt = jwt.encode(payload, get_env_variable("SECRET_KEY_REFRESH_TOKEN"), get_env_variable("ALGORITHM"))
         return encode_jwt
 
-    def decode_refresh_jwt(self, token: str, user_id: str) -> tuple[bool, str, dict | None]:
+    def decode_refresh_jwt(self, refresh_token: str, user_id: str) -> tuple[bool, str, dict | None]:
         db_gen = get_db()
         db = next(db_gen)
 
         try:
-            if not token:
+            if not refresh_token:
                 return False, str("token not provided"), None
-            jwt.decode(token, get_env_variable("SECRET_KEY_REFRESH_TOKEN"), get_env_variable("ALGORITHM"))
 
+            jwt.decode(refresh_token, get_env_variable("SECRET_KEY_REFRESH_TOKEN"), get_env_variable("ALGORITHM"))
             user = db.query(Users).filter(Users.id == user_id).first()
 
             if not user:
                 return False, f"user not exist with this user_id: {user_id}", None
 
-            is_valid, mess, data_user = self.encode_jwt(user.username, user.password)
+            is_valid, mess, data_user = self.encode_jwt(user.username, user.password, False)
+            if not is_valid:
+                return False, str(mess), None
+
             return True, "", data_user
         except Exception as e:
             return False, str(e), None

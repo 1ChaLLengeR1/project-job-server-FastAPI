@@ -48,11 +48,11 @@ async def automatically_login(request: Request, user_id: str):
             data=mess,
             status_code=400,
             additional=None
-        )
+        ).to_response()
 
     return ResponseApiData(
-        status="ERROR",
+        status="SUCCESS",
         data=data_user,
-        status_code=400,
+        status_code=200,
         additional=None
-    )
+    ).to_response()
