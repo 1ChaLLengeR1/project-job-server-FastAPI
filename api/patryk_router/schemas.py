@@ -11,3 +11,11 @@ class KeysCalculatorData(BaseModel):
     dpd: float
     allegro_matt: float
     without_smart: float
+
+
+class CalculatorParams(BaseModel):
+    gross_sales: float
+    gross_purchase: float
+    provision: float
+    distinction: float
+    referrer: str

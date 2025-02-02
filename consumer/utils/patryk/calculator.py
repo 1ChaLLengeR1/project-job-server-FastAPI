@@ -1,25 +1,4 @@
-from database.auth.models import Users
 from database.database_patryk.models import KeysCalculatorPatryk
-from pydantic import BaseModel
-
-
-class User(BaseModel):
-    id: str
-    username: str
-    type_user: bool
-
-
-def check_users_parameters(user: User, db):
-    user_id = db.query(Users).filter(Users.id == user["id"]).first()
-    if not user_id:
-        return {"error": "Brak takiego id uĹĽytkownika!!"}
-    if user_id.username != user["username"]:
-        return {"error": "Brak takiego uĹĽytkownika!"}
-    if user["type_user"]:
-        if user_id.type != 'superadmin':
-            return {"error": "Brak uprawnieni do wykoanania tej metody!"}
-
-    return True
 
 
 def shop_cost(user_id: str or int, referrer: str, db):
@@ -48,8 +27,8 @@ def shop_cost(user_id: str or int, referrer: str, db):
 
 
 def calculations_calculator(package_price: float, vat: float, cena_netto_sprzedarz: float, cena_netto_zakup: float,
-                 prowizja_wyroznienie_netto: float, dochodowka: float, roznica_vat_sprzedarz: float,
-                 roznica_vat_zakupu: float, roznica_vat_prowizji_wyroznienie: float):
+                            prowizja_wyroznienie_netto: float, dochodowka: float, roznica_vat_sprzedarz: float,
+                            roznica_vat_zakupu: float, roznica_vat_prowizji_wyroznienie: float):
     cena_paczki = package_price
     prog_pierwszy_vat = cena_paczki * vat
     prog_pierwszy_cena_netto = cena_paczki - prog_pierwszy_vat

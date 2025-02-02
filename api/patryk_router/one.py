@@ -10,7 +10,6 @@ router = APIRouter()
 @router.get(CALCULATOR_KEYS, dependencies=[Depends(JWTBasicAuthenticationMiddleware())])
 def calculator_keys(request: Request):
     response = handler_one_calculator_keys()
-    print(response)
     if not response['is_valid']:
         return ResponseApiData(
             status=response['status'],
