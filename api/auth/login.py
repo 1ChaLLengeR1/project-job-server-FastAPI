@@ -9,7 +9,7 @@ router = APIRouter()
 
 
 @router.post(LOGIN)
-async def login(request: Request, payload: UserDataPayload):
+def login(request: Request, payload: UserDataPayload):
     basic_auth = JWTBasicAuthenticationMiddleware()
     is_valid, mess, data = basic_auth.encode_jwt(payload.username, payload.password)
 
@@ -30,7 +30,7 @@ async def login(request: Request, payload: UserDataPayload):
 
 
 @router.get(AUTOMATICALLY_LOGIN)
-async def automatically_login(request: Request, user_id: str):
+def automatically_login(request: Request, user_id: str):
     required_headers = ["X-Refresh-Token"]
     data_header = check_required_headers(request, required_headers)
     if not data_header['is_valid']:
