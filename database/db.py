@@ -16,7 +16,9 @@ data_base_url = f"postgresql://{user}:{password}@{host}:{port}/{dbName}"
 engine = create_engine(data_base_url)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+session = SessionLocal()
 Base = declarative_base()
+
 
 def get_db():
     db = SessionLocal()

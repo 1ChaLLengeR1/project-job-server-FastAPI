@@ -63,7 +63,6 @@ class JWTBasicAuthenticationMiddleware(HTTPBearer):
         try:
 
             user = db.query(Users).filter(Users.username == username).first()
-
             if not user:
                 return False, f"user not exist with this name: {username}", None
 
@@ -76,7 +75,7 @@ class JWTBasicAuthenticationMiddleware(HTTPBearer):
             )
 
             payload = {
-                "id": user.id,
+                "id": str(user.id),
                 "exp": expired,
                 "iat": datetime.utcnow()
             }
@@ -84,10 +83,10 @@ class JWTBasicAuthenticationMiddleware(HTTPBearer):
             token = jwt.encode(payload, get_env_variable("SECRET_KEY_TOKEN"), algorithm=get_env_variable("ALGORITHM"))
 
             data = {
-                "id": user.id,
+                "id": str(user.id),
                 "username": user.username,
                 "access_token": token,
-                "refresh_token": self.encode_refresh_jwt(user.id)
+                "refresh_token": self.encode_refresh_jwt(str(user.id))
             }
 
             return True, "", data

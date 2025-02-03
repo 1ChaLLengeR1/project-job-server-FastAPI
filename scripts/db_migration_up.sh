@@ -17,6 +17,7 @@ fi
 
 export PGPASSWORD="$DB_PASSWORD"
 psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_DBNAME" -p "$DB_PORT" -f "../database/sql/database_up.sql"
+psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_DBNAME" -p "$DB_PORT" -f "../database/sql/users.sql"
 
 
 if [ $? -eq 0 ]; then
