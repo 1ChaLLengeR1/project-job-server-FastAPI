@@ -7,8 +7,6 @@ class KeysCalculatorData(BaseModel):
 
 
 class AddItemParams(BaseModel):
-    id_user: str
-    username: str
     id_name: str
     amount: float
     name: str

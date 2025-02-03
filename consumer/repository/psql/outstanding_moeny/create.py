@@ -1,6 +1,7 @@
 from consumer.data.response import ResponseData
 from database.db import get_db
 import uuid
+from uuid import UUID
 from datetime import datetime
 from database.outstanding_money.models import NamesOverdue, OutStandingMoney
 from consumer.repository.psql.user.check import check_user_role_psql
@@ -83,6 +84,7 @@ def add_item_psql(user_data: UserData, payload: AddItemParams) -> ResponseData:
                 additional=check_role['additional']
             )
 
+        id_name_uuid = UUID(payload['id_name'])
         row_item = db.query(NamesOverdue).filter(NamesOverdue.id == payload['id_name']).first()
         if not row_item:
             return ResponseData(
@@ -93,8 +95,10 @@ def add_item_psql(user_data: UserData, payload: AddItemParams) -> ResponseData:
                 additional=None,
             )
 
+        print(payload['id_name'])
+
         new_item = OutStandingMoney(amount=payload['amount'], name=payload['name'], date=datetime.now(),
-                                    id_name=payload['id_name'])
+                                    id_name=id_name_uuid)
         db.add(new_item)
         db.commit()
 
@@ -103,8 +107,10 @@ def add_item_psql(user_data: UserData, payload: AddItemParams) -> ResponseData:
             'amount': new_item.amount,
             'name': new_item.name,
             'date': new_item.date.isoformat(),
-            'id_name': new_item.id_name
+            'id_name': str(new_item.id_name)
         }
+
+        print('koniec')
 
         return ResponseData(
             is_valid=True,
