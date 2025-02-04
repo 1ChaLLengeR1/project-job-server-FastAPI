@@ -47,16 +47,16 @@ def delete_list_psql(user_data: UserData, id: str) -> ResponseData:
 
         data = {
             'name_overdue': {
-                'id': item_names_overdue.id,
+                'id': str(item_names_overdue.id),
                 'name': item_names_overdue.name
             },
             'outstanding_money': [
                 {
-                    'id': item.id,
+                    'id': str(item.id),
                     'amount': item.amount,
                     'name': item.name,
-                    'date': item.date,
-                    'id_name': item.id_name
+                    'date': item.date.isoformat(),
+                    'id_name': str(item.id_name)
                 }
                 for item in item_outstanding_money
             ]
@@ -107,7 +107,7 @@ def delete_item_psql(user_data: UserData, id: str) -> ResponseData:
             )
 
         deleted_item_data = {
-            "id": row_out_standing_money.id,
+            "id": str(row_out_standing_money.id),
             "amount": row_out_standing_money.amount,
             "name": row_out_standing_money.name,
             "date": row_out_standing_money.date.isoformat(),

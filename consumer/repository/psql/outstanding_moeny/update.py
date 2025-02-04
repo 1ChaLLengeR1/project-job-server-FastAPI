@@ -34,7 +34,7 @@ def edit_name_list_psql(user_data: UserData, payload: EditListParams) -> Respons
         db.commit()
 
         data = {
-            "id": item_row.id,
+            "id": str(item_row.id),
             "name": item_row.name
         }
 
@@ -88,11 +88,11 @@ def edit_item_psql(user_data: UserData, payload: EditItem) -> ResponseData:
         db.commit()
 
         data = {
-            'id': edit_item.id,
+            'id': str(edit_item.id),
             'amount': edit_item.amount,
             'name': edit_item.name,
-            'date': edit_item.date,
-            'id_name': edit_item.id_name
+            'date': edit_item.date.isoformat(),
+            'id_name': str(edit_item.id_name)
         }
 
         return ResponseData(

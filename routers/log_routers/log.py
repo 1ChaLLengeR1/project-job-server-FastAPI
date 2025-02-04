@@ -2,7 +2,7 @@ from fastapi import Depends, status, HTTPException, APIRouter
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from routers.log_routers.schemas import Log
-from database.Logs.models import Logs
+from database.logs.models import Logs
 from database.db import get_db
 import datetime
 

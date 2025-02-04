@@ -10,7 +10,7 @@ def one_calculator_keys_psql() -> ResponseData:
         row_key = db.query(KeysCalculatorPatryk).first()
 
         data = {
-            "id": row_key.id,
+            "id": str(row_key.id),
             "income_tax": row_key.income_tax,
             "vat": row_key.vat,
             "inpost_parcel_locker": row_key.inpost_parcel_locker,

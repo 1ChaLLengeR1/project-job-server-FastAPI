@@ -10,3 +10,14 @@ class AddItemParams(BaseModel):
     id_name: str
     amount: float
     name: str
+
+
+class EditListParams(BaseModel):
+    id: str
+    name: str
+
+
+class EditItem(BaseModel):
+    id: str
+    amount: float
+    name: str

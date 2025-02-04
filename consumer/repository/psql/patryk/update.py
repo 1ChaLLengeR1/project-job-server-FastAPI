@@ -42,7 +42,7 @@ def update_calculator_keys_psql(user_data: UserData, payload: KeysCalculatorData
         db.commit()
 
         updated_data = {
-            "id": row_key.id,
+            "id": str(row_key.id),
             "income_tax": row_key.income_tax,
             "vat": row_key.vat,
             "inpost_parcel_locker": row_key.inpost_parcel_locker,

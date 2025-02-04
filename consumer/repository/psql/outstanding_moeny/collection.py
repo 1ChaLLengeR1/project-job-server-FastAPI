@@ -13,17 +13,17 @@ def collection_list_psql() -> ResponseData:
 
         for item in item_names_overdue:
             object_item = {
-                "id_name": item.id,
+                "id_name": str(item.id),
                 "name_overdue": item.name,
                 "array_items": [],
                 "full_price": 0
             }
 
-            item_outstanding_money = db.query(OutStandingMoney).filter(OutStandingMoney.id_name == item.id).order_by(
+            item_outstanding_money = db.query(OutStandingMoney).filter(OutStandingMoney.id_name == str(item.id)).order_by(
                 desc(OutStandingMoney.date)).all()
             for items in item_outstanding_money:
                 object_items = {
-                    "id": items.id,
+                    "id": str(items.id),
                     "amount": items.amount,
                     "name": items.name,
                     "date": items.date.isoformat(),
@@ -40,7 +40,6 @@ def collection_list_psql() -> ResponseData:
             status_code=200,
             additional=None
         )
-
 
     except Exception as e:
         return ResponseData(

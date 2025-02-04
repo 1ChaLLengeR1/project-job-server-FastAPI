@@ -15,9 +15,10 @@ if [ ! -f ../database/sql/database_up.sql ]; then
 fi
 
 
-export PGPASSWORD="$DB_PASSWORD"
+export PGPASSWORD="$DB_PASSWORD_SCRIPT"
 psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_DBNAME" -p "$DB_PORT" -f "../database/sql/database_up.sql"
 psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_DBNAME" -p "$DB_PORT" -f "../database/sql/users.sql"
+psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_DBNAME" -p "$DB_PORT" -f "../database/sql/key_calculator.sql"
 
 
 if [ $? -eq 0 ]; then

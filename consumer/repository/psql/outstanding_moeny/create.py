@@ -95,22 +95,18 @@ def add_item_psql(user_data: UserData, payload: AddItemParams) -> ResponseData:
                 additional=None,
             )
 
-        print(payload['id_name'])
-
         new_item = OutStandingMoney(amount=payload['amount'], name=payload['name'], date=datetime.now(),
                                     id_name=id_name_uuid)
         db.add(new_item)
         db.commit()
 
         data = {
-            'id': new_item.id,
+            'id': str(new_item.id),
             'amount': new_item.amount,
             'name': new_item.name,
             'date': new_item.date.isoformat(),
             'id_name': str(new_item.id_name)
         }
-
-        print('koniec')
 
         return ResponseData(
             is_valid=True,
