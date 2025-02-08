@@ -23,3 +23,12 @@ def get_env_variable(name_env: str) -> str:
     if not value:
         raise Exception(f"Missing required environment variable: {name_env}")
     return value
+
+
+def validate_required_fields(data: Dict, required_fields: List[str]) -> tuple[bool, str]:
+    missing_fields = [field for field in required_fields if field not in data]
+
+    if missing_fields:
+        return False, f"Missing field(s): {', '.join(missing_fields)}"
+
+    return True, f""
