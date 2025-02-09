@@ -26,7 +26,7 @@ def collection_list_psql() -> ResponseData:
                     "id": str(items.id),
                     "amount": items.amount,
                     "name": items.name,
-                    "date": items.date.isoformat(),
+                    "date": str(items.date),
                 }
                 object_item['array_items'].append(object_items)
                 object_item['full_price'] += items.amount

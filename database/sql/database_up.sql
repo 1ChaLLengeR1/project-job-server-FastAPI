@@ -29,7 +29,7 @@ CREATE TABLE outstandingmoney (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     amount FLOAT,
     name VARCHAR(255),
-    date DATE,
+    date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     id_name VARCHAR(255)
 );
 
@@ -37,8 +37,5 @@ CREATE TABLE logs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     username VARCHAR(255),
     description TEXT,
-    date DATE
+    date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
-
-
-
