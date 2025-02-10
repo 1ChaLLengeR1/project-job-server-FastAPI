@@ -30,7 +30,7 @@ CREATE TABLE outstandingmoney (
     amount FLOAT,
     name VARCHAR(255),
     date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    id_name VARCHAR(255)
+    id_name UUID
 );
 
 CREATE TABLE logs (

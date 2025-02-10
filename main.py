@@ -1,19 +1,18 @@
-import uvicorn
 from fastapi import FastAPI
 from api.api import api_router
 
-# from fastapi.staticfiles import StaticFiles
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="project_job",
               description="The project I use every day for my everyday work")
 
 app.include_router(api_router)
-# app.mount("/file", StaticFiles(directory="file"), name="file")
+app.mount("/file", StaticFiles(directory="file"), name="file")
 
 origins = [
     "https://arturscibor.pl",
-    "https://praca.strona.arturscibor.pl"
+    "https://praca.strona.arturscibor.pl",
     "http://localhost",
     "http://localhost:5173",
     "http://127.0.0.1",

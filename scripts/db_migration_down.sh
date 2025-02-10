@@ -1,6 +1,7 @@
 #!/bin/bash
 
 source ../env/local.env
+#source ../env/prod.env
 
 if [ -z "$DB_HOST" ] || [ -z "$DB_PORT" ] || [ -z "$DB_USER" ] || [ -z "$DB_PASSWORD" ] || [ -z "$DB_DBNAME" ]; then
     echo "Wszystkie zmienne środowiskowe muszą być ustawione w pliku local.env"
