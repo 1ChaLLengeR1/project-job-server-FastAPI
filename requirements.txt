@@ -8,3 +8,8 @@ psycopg2
 python-decouple
 PyJWT
 jose
+xlrd
+openpyxl
+pillow
+fpdf
+pywin32
