@@ -12,4 +12,3 @@ xlrd
 openpyxl
 pillow
 fpdf
-pywin32

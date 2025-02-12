@@ -54,7 +54,7 @@ def create_pdf_filter(request: Request, background_tasks: BackgroundTasks, file:
         if file_path and os.path.exists(file_path):
             background_tasks.add_task(clear_catalog, DOWNLOAD)
             return FileResponse(path=file_path, media_type=str("application/pdf"),
-                                filename=str("products.pdf"))
+                                headers={"Content-Disposition": f'attachment; filename="products.pdf"'})
 
     if not response['is_valid']:
         return ResponseApiData(

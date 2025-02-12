@@ -25,4 +25,5 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["POST", "GET", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type", "Accept", "x-refresh-token", "UserData"],
+    expose_headers=["Content-Disposition"],
 )
