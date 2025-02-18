@@ -1,4 +1,5 @@
 from consumer.data.response import ResponseData
+from consumer.data.user import UserData
 from consumer.services.patryk.pdfFilter.file import open_file_xlsx, extract_images_from_xlsx, clear_tmp_files, \
     clear_catalog
 from config.app_config import AUTO_REMOVE_FILES
@@ -6,10 +7,12 @@ from consumer.services.patryk.pdfFilter.sum import sum_duplicat
 from consumer.services.patryk.pdfFilter.convert import convert_product_with_images
 from consumer.services.patryk.pdfFilter.pdf import generate_pdf
 from config.app_config import FILE
+from consumer.services.websocekt.patryk_router.pdfFilter.websocket import send_progress
 
 
-def handler_create_pdf_filter() -> ResponseData:
+def handler_create_pdf_filter(user: UserData) -> ResponseData:
     try:
+        send_progress(user['id'], 10, "Rozpoczęcie ściągania plików z pliku .xlsx...")
         images, err, is_valid = extract_images_from_xlsx()
         if not is_valid:
             return ResponseData(
@@ -23,6 +26,7 @@ def handler_create_pdf_filter() -> ResponseData:
                 additional=None
             )
 
+        send_progress(user['id'], 20, "Otwarcie pliku .xlsx...")
         data_open_file, err, is_valid = open_file_xlsx()
         if not is_valid:
             return ResponseData(
@@ -36,6 +40,7 @@ def handler_create_pdf_filter() -> ResponseData:
                 additional=None
             )
 
+        send_progress(user['id'], 30, "Sumowanie duplikatów...")
         sum_data, err, is_valid = sum_duplicat(data_open_file)
         if not is_valid:
             return ResponseData(
@@ -49,6 +54,7 @@ def handler_create_pdf_filter() -> ResponseData:
                 additional=None
             )
 
+        send_progress(user['id'], 40, "Przypiswanie zdjęć do poszególnych obiektów...")
         full_products, err, is_valid = convert_product_with_images(sum_data, images)
         if not is_valid:
             return ResponseData(
@@ -62,7 +68,9 @@ def handler_create_pdf_filter() -> ResponseData:
                 additional=None
             )
 
+        send_progress(user['id'], 50, "Generowanie pdfa...")
         err_or_path, is_valid = generate_pdf(full_products, "products.pdf")
+        send_progress(user['id'], 60, "Pdf został utworzony...")
         if not is_valid:
             return ResponseData(
                 is_valid=is_valid,
@@ -75,6 +83,7 @@ def handler_create_pdf_filter() -> ResponseData:
                 additional=None
             )
 
+        send_progress(user['id'], 70, "Rozpoczęcie czyszczenia plików...")
         if AUTO_REMOVE_FILES:
             path_files = []
             for path in images:
@@ -82,6 +91,7 @@ def handler_create_pdf_filter() -> ResponseData:
 
             clear_tmp_files(path_files)
             clear_catalog(FILE)
+        send_progress(user['id'], 80, "Zakończenie procesu z pdfem!")
 
         return ResponseData(
             is_valid=True,

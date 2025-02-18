@@ -1,5 +1,6 @@
 import os
-from fastapi import APIRouter, Request, Depends, UploadFile, File, BackgroundTasks
+import time
+from fastapi import APIRouter, Request, Depends, UploadFile, File, BackgroundTasks, WebSocket
 from fastapi.responses import FileResponse
 from api.routers import CREATE_PDF
 from consumer.data.response import ResponseApiData
@@ -9,10 +10,15 @@ from consumer.helper.files import save_files_tmp
 from consumer.helper.files import check_files_size
 from consumer.services.patryk.pdfFilter.file import clear_catalog
 from config.app_config import DOWNLOAD
-
+from consumer.services.websocekt.patryk_router.pdfFilter.websocket import websocket_endpoint, send_progress
 from consumer.helper.headers import check_required_headers
 
 router = APIRouter()
+
+
+@router.websocket("/ws/progress/{client_id}")
+async def websocket_proxy(websocket: WebSocket, client_id: str):
+    await websocket_endpoint(websocket, client_id)
 
 
 @router.post(CREATE_PDF, dependencies=[Depends(JWTBasicAuthenticationMiddleware())])
@@ -48,7 +54,7 @@ def create_pdf_filter(request: Request, background_tasks: BackgroundTasks, file:
             additional=None
         ).to_response()
 
-    response = handler_create_pdf_filter()
+    response = handler_create_pdf_filter(user_data)
     if response['is_valid'] and response['status'] == "SUCCESS":
         file_path = response['data']
         if file_path and os.path.exists(file_path):

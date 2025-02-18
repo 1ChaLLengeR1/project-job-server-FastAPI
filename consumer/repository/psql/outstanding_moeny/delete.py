@@ -111,7 +111,7 @@ def delete_item_psql(user_data: UserData, id: str) -> ResponseData:
             "amount": row_out_standing_money.amount,
             "name": row_out_standing_money.name,
             "date": row_out_standing_money.date.isoformat(),
-            "id_name": row_out_standing_money.id_name
+            "id_name": str(row_out_standing_money.id_name)
         }
 
         db.delete(row_out_standing_money)

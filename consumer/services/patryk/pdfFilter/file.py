@@ -5,9 +5,8 @@ from PIL import Image
 from io import BytesIO
 from openpyxl import load_workbook
 import re
-import win32com.client as win32
 import shutil
-from config.app_config import CONVERT_XLS_TO_XLSX, START_LITERAL_COLUMN_FILE_XLSX
+from config.app_config import START_LITERAL_COLUMN_FILE_XLSX
 
 
 def extract_images_from_xlsx() -> tuple[list[dict], str, bool]:
@@ -52,7 +51,7 @@ def extract_images_from_xlsx() -> tuple[list[dict], str, bool]:
                     }
                     data.append(new_image_obj)
                 except Exception as e:
-                    print(f"Błąd przetwarzania obrazu {file_name}: {e}")
+                    print(f"Image processing error {file_name}: {e}")
 
         return data, "", True
 
@@ -63,7 +62,7 @@ def extract_images_from_xlsx() -> tuple[list[dict], str, bool]:
 def file_name_find(file_type: str = 'xlsx') -> tuple[str, bool]:
     try:
         if not os.path.isdir(FILE):
-            return f"Ścieżka {FILE} nie jest folderem lub nie istnieje", False
+            return f"Path {FILE} is not a folder or does not exist", False
 
         if file_type == 'xlsx':
             for file in os.listdir(FILE):
@@ -74,7 +73,7 @@ def file_name_find(file_type: str = 'xlsx') -> tuple[str, bool]:
                 if file.endswith(".xls"):
                     return file, True
 
-        return "Brak plików .xlsx lub .xls w folderze", False
+        return "No .xlsx or .xls files in folder", False
     except Exception as e:
         return str(e), False
 
@@ -84,7 +83,7 @@ def open_file_xlsx() -> tuple[list[dict], str, bool]:
         name_file, success = file_name_find()
         path = os.path.join(FILE, name_file)
 
-        workbook = load_workbook(path)
+        workbook = load_workbook(path, data_only=True)
         sheet = workbook.active
 
         headers = [cell.value for cell in sheet[START_LITERAL_COLUMN_FILE_XLSX - 1]]
@@ -136,7 +135,7 @@ def clear_catalog(path_catalog) -> tuple[str, bool]:
     try:
         path_file_catalog = path_catalog
         if not path_file_catalog.exists():
-            return "Katalog nie istnieje.", False
+            return "The directory does not exist.", False
 
         for item in path_file_catalog.iterdir():
             if item.is_file() and not item.suffix == ".py":
@@ -145,36 +144,7 @@ def clear_catalog(path_catalog) -> tuple[str, bool]:
             elif item.is_dir():
                 shutil.rmtree(item)
 
-        return "Katalog został wyczyszczony.", True
-
-    except Exception as e:
-        return str(e), False
-
-
-def convert_xls_to_xlsx() -> tuple[str | None, bool]:
-    try:
-        if CONVERT_XLS_TO_XLSX is False:
-            return None, True
-
-        file_path, is_valid = file_name_find('xls')
-        if not is_valid:
-            return file_path, False
-
-        file_path = FILE / file_path
-
-        file_path_str = str(file_path)
-
-        if not file_path_str.lower().endswith('.xls'):
-            return "Podany plik nie ma rozszerzenia .xls", False
-
-        excel = win32.gencache.EnsureDispatch('Excel.Application')
-        wb = excel.Workbooks.Open(file_path.absolute())
-
-        wb.SaveAs(str(file_path.absolute().with_suffix(".xlsx")), FileFormat=51)
-        wb.Close()
-        excel.Application.Quit()
-
-        return None, True
+        return "The directory has been cleared.", True
 
     except Exception as e:
         return str(e), False
