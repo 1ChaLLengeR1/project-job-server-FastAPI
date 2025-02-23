@@ -69,7 +69,7 @@ def handler_create_pdf_filter(user: UserData) -> ResponseData:
             )
 
         send_progress(user['id'], 50, "Generowanie pdfa...")
-        err_or_path, is_valid = generate_pdf(full_products, "products.pdf")
+        err_or_path, is_valid = generate_pdf(user['id'], full_products, "products.pdf")
         send_progress(user['id'], 60, "Pdf został utworzony...")
         if not is_valid:
             return ResponseData(

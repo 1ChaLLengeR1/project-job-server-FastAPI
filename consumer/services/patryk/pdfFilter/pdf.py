@@ -2,10 +2,24 @@ from fpdf import FPDF
 import os
 from config.app_config import DOWNLOAD, BASIC_FONT
 from PIL import Image
+from consumer.services.websocekt.patryk_router.pdfFilter.websocket import send_progress
 
 
 def px_to_mm(px: float) -> float:
     return px * 0.2646
+
+
+def truncate_text(text: str, max_width: int, pdf: FPDF, font_size: int = 8) -> str:
+    pdf.set_font("CustomFont", size=font_size)
+    text_width = pdf.get_string_width(text)
+
+    if text_width <= max_width:
+        return text
+    truncated_text = text
+    while pdf.get_string_width(truncated_text + "...") > max_width and len(truncated_text) > 1:
+        truncated_text = truncated_text[:-1]
+
+    return truncated_text + "..."
 
 
 class PDF(FPDF):
@@ -14,11 +28,12 @@ class PDF(FPDF):
         self.cell(0, 10, "Raport produktów", ln=True, align="C")
 
 
-def generate_pdf(data: list[dict], output_file: str) -> tuple[str, bool]:
+def generate_pdf(user_id: str, data: list[dict], output_file: str) -> tuple[str, bool]:
     try:
-
+        send_progress(user_id, 1, "Rozpoczęcie generowanie pdfa...")
         pdf = FPDF(orientation='L', unit='mm', format='A4')
 
+        send_progress(user_id, 1, "Ładowanie fontów...")
         pdf.add_font("CustomFont", "", str(BASIC_FONT), uni=True)
         pdf.add_font("CustomFont", "B", str(BASIC_FONT), uni=True)
         pdf.add_font("CustomFont", "I", str(BASIC_FONT), uni=True)
@@ -43,9 +58,14 @@ def generate_pdf(data: list[dict], output_file: str) -> tuple[str, bool]:
         pdf.ln()
 
         pdf.set_font("CustomFont", size=8)
-        for row in data:
+        for index, row in enumerate(data, start=0):
+            percent_complete = round((index + 1) / len(data) * 100, 2)
+            send_progress(user_id, percent_complete, f'Tworzenie produktu: {index}')
+            truncated_name = truncate_text(row.get("name", ""), max_width=125, pdf=pdf)
+
             pdf.cell(col_widths["lp"], 10, str(row.get("lp", "")), border=1, align="C")
-            pdf.cell(col_widths["name"], 10, row.get("name", ""), border=1)
+            pdf.cell(col_widths["name"], 10, truncated_name, border=1)
+
             pdf.cell(col_widths["quantity"], 10, str(row.get("quantity", "")), border=1, align="C")
             pdf.cell(col_widths["ean"], 10, row.get("ean", ""), border=1, align="C")
 
@@ -81,6 +101,7 @@ def generate_pdf(data: list[dict], output_file: str) -> tuple[str, bool]:
 
             pdf.cell(col_widths["location"], 10, row.get("location", "") or "", border=1, align="C")
             pdf.ln()
+        send_progress(user_id, 50, f"Zakończenie tworzenia produktów...")
 
         output_pdf = DOWNLOAD / output_file
         pdf.output(str(output_pdf))

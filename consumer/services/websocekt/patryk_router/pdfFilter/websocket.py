@@ -18,7 +18,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
         del active_connections[client_id]
 
 
-def send_progress(client_id: str, progress: int, message: str):
+def send_progress(client_id: str, progress: float, message: str):
     if client_id in active_connections:
         try:
             asyncio.run(active_connections[client_id].send_text(json.dumps({"progress": progress, "message": message})))
