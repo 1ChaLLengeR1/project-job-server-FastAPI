@@ -25,15 +25,15 @@ def truncate_text(text: str, max_width: int, pdf: FPDF, font_size: int = 8) -> s
 class PDF(FPDF):
     def header(self):
         self.set_font("CustomFont", size=12)
-        self.cell(0, 10, "Raport produktów", ln=True, align="C")
+        self.cell(0, 10, "Raport produktow", ln=True, align="C")
 
 
 def generate_pdf(user_id: str, data: list[dict], output_file: str) -> tuple[str, bool]:
     try:
-        send_progress(user_id, 1, "Rozpoczęcie generowanie pdfa...")
+        send_progress(user_id, 1, "Rozpoczecie generowanie pdfa...")
         pdf = FPDF(orientation='L', unit='mm', format='A4')
 
-        send_progress(user_id, 1, "Ładowanie fontów...")
+        send_progress(user_id, 1, "Ladowanie fontow...")
         pdf.add_font("CustomFont", "", str(BASIC_FONT), uni=True)
         pdf.add_font("CustomFont", "B", str(BASIC_FONT), uni=True)
         pdf.add_font("CustomFont", "I", str(BASIC_FONT), uni=True)
@@ -51,7 +51,7 @@ def generate_pdf(user_id: str, data: list[dict], output_file: str) -> tuple[str,
         pdf.set_font("CustomFont", style="B", size=8)
         pdf.cell(col_widths["lp"], 10, "Lp", border=1, align="C")
         pdf.cell(col_widths["name"], 10, "Nazwa produktu", border=1, align="C")
-        pdf.cell(col_widths["quantity"], 10, "Ilość", border=1, align="C")
+        pdf.cell(col_widths["quantity"], 10, "Ilosc", border=1, align="C")
         pdf.cell(col_widths["ean"], 10, "EAN", border=1, align="C")
         pdf.cell(col_widths["image"], 10, "Obraz", border=1, align="C")
         pdf.cell(col_widths["location"], 10, "Lokalizacja", border=1, align="C")
@@ -101,11 +101,11 @@ def generate_pdf(user_id: str, data: list[dict], output_file: str) -> tuple[str,
 
             pdf.cell(col_widths["location"], 10, row.get("location", "") or "", border=1, align="C")
             pdf.ln()
-        send_progress(user_id, 50, f"Zakończenie tworzenia produktów...")
+        send_progress(user_id, 50, f"Zakonczenie tworzenia produktow...")
 
         output_pdf = DOWNLOAD / output_file
         pdf.output(str(output_pdf))
-        print("Pdf został utworzony poprawnie!")
+        print("Pdf zostal utworzony poprawnie!")
         return str(output_pdf), True
 
     except Exception as e:
