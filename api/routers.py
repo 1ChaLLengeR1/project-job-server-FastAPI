@@ -26,4 +26,7 @@ CREATE_LOG = "/logs/create/{description}"
 # Fuel_calculator
 FUEL_CALCULATION = "/fuel/fuel_calculations"
 
+# Tasks
+CREATE_TASK = "/tasks/create"
+
 

@@ -1,4 +1,6 @@
 from fastapi import APIRouter, Request, Depends
+from typing import cast
+from consumer.data.user import UserData
 from api.routers import CREATE_LIST_OUTSTANDING_MONEY, ADD_ITEM_OUTSTANDING_MONEY
 from consumer.data.response import ResponseApiData
 from consumer.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
@@ -21,7 +23,7 @@ def create_list(request: Request, payload: KeysCalculatorData):
             additional=None
         ).to_response()
 
-    user_data = data_header['data'][0]['data']
+    user_data = cast(UserData, data_header['data'][0]['data'])
 
     data = {
         'name': payload.name,
