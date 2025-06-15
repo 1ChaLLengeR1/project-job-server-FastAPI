@@ -2,6 +2,14 @@ from fastapi.responses import JSONResponse
 from typing import TypedDict, Union, Dict, Any, List, Literal, Optional
 
 
+class Error(TypedDict, total=True):
+    message: str
+
+
+class ErrorResponse(TypedDict, total=False):
+    message: Optional[str]
+
+
 class ResponseData(TypedDict, total=False):
     is_valid: bool
     data: Union[str, Dict[str, Any], List[Any], None]
@@ -27,3 +35,27 @@ class ResponseApiData:
             },
             status_code=self.status_code
         )
+
+
+def create_success_response(id_valid: bool = True, status: Literal['ERROR', 'SUCCESS'] = "SUCCESS", data=None,
+                            additional=None,
+                            status_code: int = 200):
+    return ResponseData(
+        is_valid=id_valid,
+        status=status,
+        data=data,
+        additional=additional,
+        status_code=status_code
+    )
+
+
+def create_error_response(message: str, status_code: int, additional: Optional[dict] = None) -> ResponseData:
+    return ResponseData(
+        is_valid=False,
+        status="ERROR",
+        data=ErrorResponse(
+            message=message,
+        ),
+        additional=additional,
+        status_code=status_code
+    )

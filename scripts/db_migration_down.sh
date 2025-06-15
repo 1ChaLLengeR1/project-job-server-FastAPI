@@ -1,7 +1,21 @@
 #!/bin/bash
 
-source ../env/local.env
-#source ../env/prod.env
+
+if [ -z "$1" ]; then
+    echo "Użycie: $0 [local|prod]"
+    sleep 5
+    exit 1
+fi
+
+ENV_FILE="../env/$1.env"
+
+if [ ! -f "$ENV_FILE" ]; then
+    echo "Plik środowiskowy $ENV_FILE nie istnieje!"
+    sleep 5
+    exit 1
+fi
+
+source "$ENV_FILE"
 
 if [ -z "$DB_HOST" ] || [ -z "$DB_PORT" ] || [ -z "$DB_USER" ] || [ -z "$DB_PASSWORD" ] || [ -z "$DB_DBNAME" ]; then
     echo "Wszystkie zmienne środowiskowe muszą być ustawione w pliku local.env"
