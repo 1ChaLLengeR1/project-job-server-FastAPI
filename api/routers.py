@@ -28,5 +28,10 @@ FUEL_CALCULATION = "/fuel/fuel_calculations"
 
 # Tasks
 CREATE_TASK = "/tasks/create"
+COLLECTION_TASKS = "/tasks/collection"
+UPDATE_TASKS = "/tasks/update/{task_id}"
+UPDATE_ACTIVE_TASKS = "/tasks/update/active"
+DELETE_TASK = "/tasks/delete/{task_id}"
+STATISTICS_TASK = "/tasks/statistics"
 
 
