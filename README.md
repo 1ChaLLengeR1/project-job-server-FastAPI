@@ -4,4 +4,3 @@
 
 - Projekt jest nie dostepny, ponieważ służy do pracy komercyjnej na co dzień
 - Więcej informacji znajduję się: https://arturscibor.pl/projects/project/4d9d72f9-6e5f-4caa-b923-6598358014f1
- - test
