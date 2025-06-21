@@ -1,0 +1,22 @@
+name: Runner
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+jobs:
+  deploy:
+    uses: ./.github/workflows/deploy.yml
+    secrets:
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      SUDO_PASSWORD: ${{ secrets.SUDO_PASSWORD }}
+
+  report:
+    needs: deploy
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Output information
+        run: |
+          echo "Something went wrong..."
+          echo "${{toJSON(github)}}"
