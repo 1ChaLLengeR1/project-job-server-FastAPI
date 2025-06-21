@@ -31,7 +31,7 @@ jobs:
             chmod 755 /var/www/pracaArturScibor/praca.server.arturscibor.pl &&
             cd /var/www/pracaArturScibor/praca.server.arturscibor.pl &&
             git clone --branch main git@github.com:1ChaLLengeR1/project-job-server-FastAPI.git . &&
-            cp -r /var/www/envs/projectJob/backend /var/www/pracaArturScibor/praca.server.arturscibor.pl
+            cp -r /var/www/envs/projectJob/backend/env /var/www/pracaArturScibor/praca.server.arturscibor.pl
           '
 
       - name: convert envs to utf8
@@ -45,7 +45,7 @@ jobs:
       - name: Change env_mode to prod
         run: |
           ssh artur@arturscibor.pl '
-            cd /var/www/spineTime/backend &&
+            cd /var/www/pracaArturScibor/praca.server.arturscibor.pl &&
             chmod +x ./scripts/run_mode.sh &&
             ./scripts/run_mode.sh prod
           '
@@ -53,7 +53,7 @@ jobs:
       - name: Build container prod and Deploy
         run: |
           ssh artur@arturscibor.pl '
-            cd /var/www/spineTime/backend/scripts &&
+            cd /var/www/pracaArturScibor/praca.server.arturscibor.pl/scripts &&
             chmod +x ./deploy.sh &&
             ./deploy.sh $(date +%Y%m%d%H%M)
           '
