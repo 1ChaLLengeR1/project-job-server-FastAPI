@@ -30,7 +30,7 @@ FUEL_CALCULATION = "/fuel/fuel_calculations"
 CREATE_TASK = "/tasks/create"
 COLLECTION_TASKS = "/tasks/collection"
 UPDATE_TASKS = "/tasks/update/{task_id}"
-UPDATE_ACTIVE_TASKS = "/tasks/update/active"
+UPDATE_ACTIVE_TASKS = "/tasks/update/active/{task_id}"
 DELETE_TASK = "/tasks/delete/{task_id}"
 STATISTICS_TASK = "/tasks/statistics"
 

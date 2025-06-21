@@ -1,6 +1,7 @@
 from consumer.data.response import ResponseData, create_success_response, create_error_response
 from database.db import get_db
 from database.tasks.models import Tasks
+from api.tasks.schemas import ResponseSerializerTask
 
 
 def delete_task_psql(task_id: str) -> ResponseData:
@@ -14,7 +15,8 @@ def delete_task_psql(task_id: str) -> ResponseData:
         db.delete(task)
         db.commit()
 
-        return create_success_response(data=deleted_task, status_code=200)
+        task_data = ResponseSerializerTask.from_orm(deleted_task)
+        return create_success_response(data=task_data.model_dump(mode="json"), status_code=200)
     except Exception as e:
         db.rollback()
         return create_error_response(message=str(e), status_code=417)

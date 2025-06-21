@@ -43,7 +43,15 @@ def update_task(request: Request, payload: PayloadTaskUpdate, task_id: str):
             additional=None
         ).to_response()
 
-    response = handler_update_task(user_data, task_id, payload.description)
+    if payload.time is None or not isinstance(payload.time, int):
+        return ResponseApiData(
+            status="ERROR",
+            data={"message": "W body nie ma klucza 'time' lub jest on nullem bądź nie liczbą."},
+            status_code=400,
+            additional=None
+        ).to_response()
+
+    response = handler_update_task(user_data, task_id, payload.description, payload.time)
     if not response['is_valid']:
         return ResponseApiData(
             status=response['status'],
