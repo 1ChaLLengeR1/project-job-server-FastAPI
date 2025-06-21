@@ -18,7 +18,7 @@ jobs:
             ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Add SSH host to known_hosts...
-        run: ssh-keyscan -H 146.59.93.12 >> ~/.ssh/known_hosts
+        run: ssh-keyscan -H arturscibor.pl >> ~/.ssh/known_hosts
 
       - name: Debug SSH Connection
         run: ssh -T artur@arturscibor.pl || true
