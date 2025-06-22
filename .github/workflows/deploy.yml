@@ -57,5 +57,5 @@ jobs:
           ssh artur@arturscibor.pl '
             cd /var/www/pracaArturScibor/praca.server.arturscibor.pl/scripts &&
             chmod +x ./deploy.sh &&
-            ./deploy.sh $(date +%Y%m%d%H%M)
+            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S ./deploy.sh $(date +%Y%m%d%H%M)
           '
