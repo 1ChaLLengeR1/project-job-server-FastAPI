@@ -13,7 +13,6 @@ def collection_tasks_psql(active: bool = True) -> ResponseData:
             .order_by(Tasks.updated_at.desc())
             .all()
         )
-
         task_data = [ResponseSerializerTask.from_orm(task) for task in tasks]
         serialized = [task.model_dump(mode="json") for task in task_data]
         return create_success_response(data=serialized, status_code=200)

@@ -12,18 +12,18 @@ services:
     networks:
       - project_job
 
-  nginx_backend:
-    build:
-      context: .
-      dockerfile: dockerfiles/nginx.dockerfile
-    ports:
-      - "3000:80"
-    depends_on:
-      - fastapi_backend_project_job
-    volumes:
-      - ./dockerfiles/nginx.conf:/etc/nginx/conf.d/default.conf
-    networks:
-      - project_job
+#  nginx_backend:
+#    build:
+#      context: .
+#      dockerfile: dockerfiles/nginx.dockerfile
+#    ports:
+#      - "3000:80"
+#    depends_on:
+#      - fastapi_backend_project_job
+#    volumes:
+#      - ./dockerfiles/nginx.conf:/etc/nginx/conf.d/default.conf
+#    networks:
+#      - project_job
 
 networks:
   project_job:
