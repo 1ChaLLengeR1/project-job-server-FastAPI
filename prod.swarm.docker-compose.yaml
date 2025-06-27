@@ -1,8 +1,6 @@
 services:
   fastapi_backend_project_job:
-    build:
-      context: .
-      dockerfile: dockerfiles/prod.dockerfile
+    image: arturscibor/praca.server.arturscibor.pl:latest
     ports:
       - "3000:3000"
     env_file:
