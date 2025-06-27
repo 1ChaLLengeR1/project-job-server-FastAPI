@@ -13,9 +13,6 @@ services:
       replicas: 3
       restart_policy:
         condition: on-failure
-      placement:
-        constraints:
-          - node.role == worker
 
 networks:
   project_job:
