@@ -18,8 +18,10 @@ COPY ./../requirements.txt /app/requirements.txt
 # Instalacja zależności
 RUN pip install --no-cache-dir -r requirements.txt
 
+RUN pip install gunicorn
+
 # Kopiowanie aplikacji
 COPY . /app
 
 # Uruchamianie FastAPI
-CMD ["uvicorn", "main:app", "--reload", "--log-level", "debug", "--host", "0.0.0.0", "--port", "3000"]
+CMD ["gunicorn", "main:app", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:3000", "-w", "3"]
