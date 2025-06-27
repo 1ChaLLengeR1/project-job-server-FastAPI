@@ -21,7 +21,9 @@ echo ">>> Usuwanie nieużywanych obrazów..."
 sudo docker image prune -f
 
 DEPLOY_DATE=$(date '+%Y-%m-%d %H:%M:%S')
-DEPLOY_MESSAGE=\"Swarm deploy zakończony. Wersja: $APP_VERSION, Data: $DEPLOY_DATE\"
+DEPLOY_MESSAGE="Swarm deploy zakończony. Wersja: $APP_VERSION, Data: $DEPLOY_DATE"
 
 echo ">>> $DEPLOY_MESSAGE"
 echo "$DEPLOY_MESSAGE" >> "$LOG_FILE"
+
+
