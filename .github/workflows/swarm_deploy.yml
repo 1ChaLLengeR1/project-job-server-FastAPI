@@ -59,7 +59,7 @@ jobs:
           ssh artur@arturscibor.pl '
             cd /var/www/pracaArturScibor/praca.server.arturscibor.pl &&
             chmod +x ./scripts/upload_docker.sh &&
-            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -E DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD }} ./scripts/upload_docker.sh $(date +%Y%m%d%H%M)
+            DOCKER_PASSWORD="${{ secrets.DOCKER_PASSWORD }}" ./scripts/upload_docker.sh $(date +%Y%m%d%H%M)
           '
 
       - name: Build container prod and Deploy
