@@ -52,6 +52,14 @@ jobs:
             ./scripts/run_mode.sh prod
           '
 
+      - name: Upload image to dockerhub
+        run: |
+          ssh artur@arturscibor.pl '
+            cd /var/www/pracaArturScibor/praca.server.arturscibor.pl &&
+            chmod +x ./scripts/upload_docker.sh &&
+            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD }} ./upload_docker.sh $(date +%Y%m%d%H%M)
+          '
+
       - name: Build container prod and Deploy
         run: |
           ssh artur@arturscibor.pl '
