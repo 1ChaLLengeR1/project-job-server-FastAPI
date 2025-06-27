@@ -1,0 +1,61 @@
+name: Deploy
+on:
+  workflow_call:
+    secrets:
+      SSH_PRIVATE_KEY:
+        required: true
+      SUDO_PASSWORD:
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: |
+            ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add SSH host to known_hosts...
+        run: |
+          ssh-keyscan -H arturscibor.pl >> ~/.ssh/known_hosts
+          ssh-keyscan -H 146.59.93.12 >> ~/.ssh/known_hosts
+
+      - name: Debug SSH Connection
+        run: ssh -T artur@arturscibor.pl || true
+
+      - name: Remove, recreate backend directory, clone repository, and move .env directory
+        run: |
+          ssh artur@arturscibor.pl '
+            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S rm -rf /var/www/pracaArturScibor/praca.server.arturscibor.pl &&
+            mkdir -p /var/www/pracaArturScibor/praca.server.arturscibor.pl &&
+            chmod 755 /var/www/pracaArturScibor/praca.server.arturscibor.pl &&
+            cd /var/www/pracaArturScibor/praca.server.arturscibor.pl &&
+            git clone --branch main git@github.com:1ChaLLengeR1/project-job-server-FastAPI.git . &&
+            cp -r /var/www/envs/projectJob/backend/env /var/www/pracaArturScibor/praca.server.arturscibor.pl
+          '
+
+      - name: convert envs to utf8
+        run: |
+          ssh artur@arturscibor.pl '
+            cd /var/www/pracaArturScibor/praca.server.arturscibor.pl &&
+            chmod +x ./scripts/convert_utf8_env.sh &&
+            ./scripts/convert_utf8_env.sh
+          '
+
+      - name: Change env_mode to prod
+        run: |
+          ssh artur@arturscibor.pl '
+            cd /var/www/pracaArturScibor/praca.server.arturscibor.pl &&
+            chmod +x ./scripts/run_mode.sh &&
+            ./scripts/run_mode.sh prod
+          '
+
+      - name: Build container prod and Deploy
+        run: |
+          ssh artur@arturscibor.pl '
+            cd /var/www/pracaArturScibor/praca.server.arturscibor.pl/scripts &&
+            chmod +x ./swarm_deploy.sh &&
+            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S ./swarm_deploy.sh $(date +%Y%m%d%H%M)
+          '

@@ -6,7 +6,8 @@ on:
   workflow_dispatch:
 jobs:
   deploy:
-    uses: ./.github/workflows/deploy.yml
+#    uses: ./.github/workflows/deploy.yml
+    uses: ./.github/workflows/swarm_deploy.yml
     secrets:
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       SUDO_PASSWORD: ${{ secrets.SUDO_PASSWORD }}
