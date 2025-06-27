@@ -6,6 +6,8 @@ on:
         required: true
       SUDO_PASSWORD:
         required: true
+      DOCKER_PASSWORD:
+        required: true
 
 jobs:
   deploy:
@@ -57,7 +59,7 @@ jobs:
           ssh artur@arturscibor.pl '
             cd /var/www/pracaArturScibor/praca.server.arturscibor.pl &&
             chmod +x ./scripts/upload_docker.sh &&
-            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -S DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD }} ./upload_docker.sh $(date +%Y%m%d%H%M)
+            echo "${{ secrets.SUDO_PASSWORD }}" | sudo -E DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD }} ./scripts/upload_docker.sh $(date +%Y%m%d%H%M)
           '
 
       - name: Build container prod and Deploy

@@ -11,6 +11,7 @@ jobs:
     secrets:
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       SUDO_PASSWORD: ${{ secrets.SUDO_PASSWORD }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
   report:
     needs: deploy
