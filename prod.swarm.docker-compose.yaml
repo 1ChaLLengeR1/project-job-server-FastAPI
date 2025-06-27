@@ -1,0 +1,24 @@
+services:
+  fastapi_backend_project_job:
+    build:
+      context: .
+      dockerfile: dockerfiles/prod.dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - env/prod.env
+    volumes:
+      - .:/app
+    networks:
+      - project_job
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == worker
+
+networks:
+  project_job:
+    driver: overlay
