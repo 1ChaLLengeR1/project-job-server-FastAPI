@@ -3,11 +3,13 @@ from api.api import api_router
 
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_fastapi_instrumentator import Instrumentator
 
 app = FastAPI(title="project_job",
               description="The project I use every day for my everyday work")
 
 app.include_router(api_router)
+Instrumentator().instrument(app).expose(app)
 app.mount("/file", StaticFiles(directory="file"), name="file")
 
 origins = [
