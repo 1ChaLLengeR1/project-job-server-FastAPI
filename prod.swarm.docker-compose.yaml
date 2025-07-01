@@ -1,19 +1,23 @@
 services:
   fastapi_backend_project_job:
     image: arturscibor/praca.server.arturscibor.pl:latest
-    ports:
-      - "3000:3000"
     env_file:
       - env/prod.env
     volumes:
       - .:/app
     networks:
-      - project_job
+      - traefik-public
     deploy:
       replicas: 3
       restart_policy:
         condition: on-failure
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.praca.rule=Host(`praca.server.arturscibor.pl`)"
+        - "traefik.http.routers.praca.entrypoints=websecure"
+        - "traefik.http.routers.praca.tls.certresolver=myresolver"
+        - "traefik.http.services.praca.loadbalancer.server.port=3000"
 
 networks:
-  project_job:
-    driver: overlay
+  traefik-public:
+    external: true
