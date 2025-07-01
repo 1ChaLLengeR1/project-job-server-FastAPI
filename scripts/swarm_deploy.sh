@@ -14,6 +14,9 @@ LOG_FILE="../swarm_deploy.log"
 echo ">>> Budowanie obrazu z wersją: $APP_VERSION..."
 APP_VERSION=${APP_VERSION} sudo docker-compose --env-file ../env/prod.env -f ../prod.swarm.docker-compose.yaml build --build-arg APP_VERSION=${APP_VERSION}
 
+echo ">>> Aktualizacja stacka Traefik..."
+sudo docker stack deploy -c ../dockerfiles/terafik/traefik.yml traefik
+
 echo ">>> Aktualizacja stacka Swarm..."
 sudo docker stack deploy -c ../prod.swarm.docker-compose.yaml spinetime_stack
 

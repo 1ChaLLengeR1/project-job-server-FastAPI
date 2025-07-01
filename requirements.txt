@@ -12,3 +12,4 @@ xlrd
 openpyxl
 pillow
 fpdf
+prometheus-fastapi-instrumentator==7.10
