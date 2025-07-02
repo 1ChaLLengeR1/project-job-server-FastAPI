@@ -25,11 +25,13 @@ jobs:
       - name: Log in to DockerHub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      - name: Download prod.env from Doppler
-        run: |
-          rm -rf env
-          mkdir -p env
-          doppler secrets download --token ${{ secrets.DOPPLER_TOKEN }} --project server_job --config prd --no-file --format env > env/prod.env
+      - name: Export Doppler Secrets to ./env/prod.env
+        uses: dopplerhq/cli-action@v3
+        with:
+          args: secrets download --no-file --format env --project server_job --config prd > env/prod.env
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+
 
       - name: Build Docker image
         run: |
