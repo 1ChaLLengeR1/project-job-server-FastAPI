@@ -24,4 +24,4 @@ RUN pip install gunicorn
 COPY . /app
 
 # Uruchamianie FastAPI
-CMD ["gunicorn", "main:app", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:3000", "-w", "1"]
+CMD ["gunicorn", "main:app", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:3000", "-w", "3"]
