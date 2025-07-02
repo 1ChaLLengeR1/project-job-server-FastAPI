@@ -16,7 +16,20 @@ services:
         - "traefik.http.routers.praca.rule=Host(`praca.server.arturscibor.pl`)"
         - "traefik.http.routers.praca.entrypoints=websecure"
         - "traefik.http.routers.praca.tls.certresolver=myresolver"
+        # Middleware retry – najpierw definicja
+        - "traefik.http.middlewares.retryme.retry.attempts=3"
+        # Potem użycie
+        - "traefik.http.routers.praca.middlewares=retryme"
+        # Port aplikacji
         - "traefik.http.services.praca.loadbalancer.server.port=3000"
+        # Healthcheck
+        - "traefik.http.services.praca.loadbalancer.healthcheck.path=/health"
+        - "traefik.http.services.praca.loadbalancer.healthcheck.interval=10s"
+        - "traefik.http.services.praca.loadbalancer.healthcheck.timeout=5s"
+        # Timeouty
+        - "traefik.http.services.praca.loadbalancer.server.forwardingTimeouts.dialTimeout=10s"
+        - "traefik.http.services.praca.loadbalancer.server.forwardingTimeouts.responseTimeout=300s"  # <- nawet długie requesty
+        - "traefik.http.services.praca.loadbalancer.server.forwardingTimeouts.idleTimeout=180s"
 
 networks:
   traefik-public:

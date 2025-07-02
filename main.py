@@ -29,3 +29,7 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type", "Accept", "x-refresh-token", "UserData"],
     expose_headers=["Content-Disposition"],
 )
+
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
