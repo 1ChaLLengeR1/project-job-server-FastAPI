@@ -12,6 +12,7 @@ jobs:
     secrets:
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
 
 #  cd:
 #    needs: ci
