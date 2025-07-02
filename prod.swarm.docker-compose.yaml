@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   fastapi_backend_project_job:
     image: arturscibor/praca.server.arturscibor.pl:latest
@@ -8,23 +10,22 @@ services:
     networks:
       - traefik-public
     deploy:
-      replicas: 1  # <- 2 repliki
+      replicas: 2
       restart_policy:
         condition: on-failure
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.praca.rule=Host(`praca.server.arturscibor.pl`)"
-        - "traefik.http.routers.praca.entrypoints=websecure"
-        - "traefik.http.routers.praca.tls.certresolver=myresolver"
-        # Retry middleware
+        - "traefik.http.routers.backend.rule=Host(`praca.server.arturscibor.pl`)"
+        - "traefik.http.routers.backend.entrypoints=websecure"
+        - "traefik.http.routers.backend.tls.certresolver=myresolver"
+        - "traefik.http.services.backend.loadbalancer.server.port=3000"
+        # Retry middleware (opcjonalnie)
         - "traefik.http.middlewares.retryme.retry.attempts=3"
-        - "traefik.http.routers.praca.middlewares=retryme"
-        # Port aplikacji
-        - "traefik.http.services.praca.loadbalancer.server.port=3000"
+        - "traefik.http.routers.backend.middlewares=retryme"
         # Healthcheck
-        - "traefik.http.services.praca.loadbalancer.healthcheck.path=/health"
-        - "traefik.http.services.praca.loadbalancer.healthcheck.interval=10s"
-        - "traefik.http.services.praca.loadbalancer.healthcheck.timeout=5s"
+        - "traefik.http.services.backend.loadbalancer.healthcheck.path=/health"
+        - "traefik.http.services.backend.loadbalancer.healthcheck.interval=10s"
+        - "traefik.http.services.backend.loadbalancer.healthcheck.timeout=5s"
 
 networks:
   traefik-public:
