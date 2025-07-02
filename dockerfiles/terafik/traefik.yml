@@ -21,6 +21,7 @@ services:
     networks:
       - traefik-public
     deploy:
+      mode: global
       placement:
         constraints: [node.role == manager]
 

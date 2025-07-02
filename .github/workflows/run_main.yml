@@ -1,0 +1,31 @@
+name: Runner
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  ci:
+    uses: ./.github/workflows/run_ci.yaml
+    secrets:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+#  cd:
+#    needs: ci
+#    uses: ./.github/workflows/run_cd.yaml
+#    secrets:
+#      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+#      ANSIBLE_VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
+
+  report:
+    needs: [ci]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Output information
+        run: |
+          echo "Something went wrong..."
+          echo "${{ toJSON(github) }}"
