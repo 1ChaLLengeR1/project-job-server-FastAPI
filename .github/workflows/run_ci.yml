@@ -40,13 +40,14 @@ jobs:
         run: echo "${{ secrets.DOCKER_USERNAME }}/praca.server.arturscibor.pl:${{ env.APP_VERSION }}" > image_name.txt
 
       - name: Upload app version artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: app_version
           path: app_version.txt
 
       - name: Upload image name artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: image_name
           path: image_name.txt
+
