@@ -15,7 +15,7 @@ jobs:
 
   cd:
     needs: ci
-    uses: ./.github/workflows/run_cd.yaml
+    uses: ./.github/workflows/run_cd.yml
     secrets:
       DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
       HOST_NAME: ${{ secrets.HOST_NAME }}
