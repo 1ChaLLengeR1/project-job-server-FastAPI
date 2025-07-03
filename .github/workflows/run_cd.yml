@@ -45,7 +45,7 @@ jobs:
             cd /var/www/pracaArturScibor/praca.server.arturscibor.pl &&
             git clone --branch main git@github.com:1ChaLLengeR1/project-job-server-FastAPI.git . &&
             mkdir -p ./env &&
-            doppler secrets download --token ${{ secrets.DOPPLER_TOKEN }} --project server_job --config prd --no-file --format env > ./env/.prod.env
+            doppler secrets download --token ${{ secrets.DOPPLER_TOKEN }} --project server_job --config prd --no-file --format env > ./env/prod.env
           '
       - name: Deploy Docker Swarm stack
         run: |
