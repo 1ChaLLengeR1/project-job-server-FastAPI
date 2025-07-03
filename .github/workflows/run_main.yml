@@ -12,17 +12,19 @@ jobs:
     secrets:
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
 
-#  cd:
-#    needs: ci
-#    uses: ./.github/workflows/run_cd.yaml
-#    secrets:
-#      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-#      ANSIBLE_VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
+  cd:
+    needs: ci
+    uses: ./.github/workflows/run_cd.yaml
+    secrets:
+      DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+      HOST_NAME: ${{ secrets.HOST_NAME }}
+      HOST_IP: ${{ secrets.HOST_IP }}
+      HOST_NAME_SSH: ${{ secrets.HOST_NAME_SSH }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
   report:
-    needs: [ci]
+    needs: [ci, cd]
     if: failure()
     runs-on: ubuntu-latest
     steps:

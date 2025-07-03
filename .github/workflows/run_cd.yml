@@ -47,3 +47,23 @@ jobs:
             mkdir -p ./env &&
             doppler secrets download --token ${{ secrets.DOPPLER_TOKEN }} --project server_job --config prd --no-file --format env > ./env/.prod.env
           '
+      - name: Deploy Docker Swarm stack
+        run: |
+          ssh ${{ secrets.HOST_NAME_SSH }} '
+            cd /var/www/pracaArturScibor/praca.server.arturscibor.pl &&
+          
+            echo ">>> Aktualizacja stacka Traefik..."
+            docker stack deploy -c dockerfiles/terafik/traefik.yml traefik &&
+            
+            echo ">>> Aktualizacja stacka aplikacji..."
+            docker stack deploy -c prod.swarm.docker-compose.yaml project_job_service &&
+          
+            echo ">>> Usuwanie nieużywanych obrazów..."
+            docker image prune -f
+          '
+
+      - name: Remove all files from server
+        run: |
+          ssh ${{ secrets.HOST_NAME_SSH }} '
+            rm -rf /var/www/pracaArturScibor/praca.server.arturscibor.pl
+          '
