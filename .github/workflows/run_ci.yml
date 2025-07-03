@@ -22,8 +22,8 @@ jobs:
 
       - name: Change env_mode to prod
         run: |
-          cd ./scripts
-          ./run_mode.sh prod
+          chmod +x ./scripts/run_mode.sh
+          ./scripts/run_mode.sh prod
 
       - name: Log in to DockerHub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
