@@ -7,8 +7,6 @@ on:
         required: true
       DOCKER_PASSWORD:
         required: true
-      DOPPLER_TOKEN:
-        required: true
 
 jobs:
   build_and_push:
