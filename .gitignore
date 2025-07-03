@@ -1,5 +1,6 @@
 # Ignorowanie plików środowiskowych
 .env
+.env/
 
 # Ignorowanie wirtualnego środowiska
 .venv/
