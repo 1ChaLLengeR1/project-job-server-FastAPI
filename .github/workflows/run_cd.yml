@@ -62,8 +62,8 @@ jobs:
             docker image prune -f
           '
 
-      - name: Remove all files from server
-        run: |
-          ssh ${{ secrets.HOST_NAME_SSH }} '
-            rm -rf /var/www/pracaArturScibor/praca.server.arturscibor.pl
-          '
+#      - name: Remove all files from server
+#        run: |
+#          ssh ${{ secrets.HOST_NAME_SSH }} '
+#            rm -rf /var/www/pracaArturScibor/praca.server.arturscibor.pl
+#          '

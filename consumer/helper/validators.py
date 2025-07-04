@@ -22,7 +22,7 @@ def get_env_variable(name_env: str) -> str:
     value = os.getenv(name_env)
     if not value:
         raise Exception(f"Missing required environment variable: {name_env}")
-    return value
+    return value.strip('"').strip("'")
 
 
 def validate_required_fields(data: Dict, required_fields: List[str]) -> tuple[bool, str]:
