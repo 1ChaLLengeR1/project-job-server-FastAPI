@@ -1,7 +1,7 @@
 from pathlib import Path
 
 # local, dev, prod
-ENV_MODE = 'prod'
+ENV_MODE = 'local'
 AUTO_REMOVE_FILES = True
 
 # Paths

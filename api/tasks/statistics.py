@@ -16,19 +16,11 @@ def get_task_statistics_task(
         end_date: Optional[datetime] = Query(None, description="End date of the statistics (format: yyyy-mm-dd)")
 ):
     if not start_date:
-        start_date = timezone.now()
+        start_date = datetime.now(timezone.utc)
     if not end_date:
-        end_date = timezone.now()
+        end_date = datetime.now(timezone.utc)
 
     response = handler_get_task_statistics_task(start_date, end_date)
-    if not response['is_valid']:
-        return ResponseApiData(
-            status=response['status'],
-            data=response['data'],
-            status_code=response['status_code'],
-            additional=response['additional']
-        ).to_response()
-
     return ResponseApiData(
         status=response['status'],
         data=response['data'],
