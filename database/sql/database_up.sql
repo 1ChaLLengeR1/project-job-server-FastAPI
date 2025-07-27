@@ -49,3 +49,24 @@ CREATE TABLE tasks (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE work_days (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    date DATE UNIQUE NOT NULL,
+    hours_worked FLOAT,
+    is_holiday BOOLEAN NOT NULL DEFAULT FALSE,
+    norm_hours FLOAT NOT NULL,
+    hourly_rate FLOAT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE work_condition_changes (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    start_date DATE NOT NULL,
+    norm_hours FLOAT NOT NULL,
+    hourly_rate FLOAT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+
