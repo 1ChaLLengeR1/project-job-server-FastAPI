@@ -35,3 +35,6 @@ DELETE_TASK = "/tasks/delete/{task_id}"
 STATISTICS_TASK = "/tasks/statistics"
 
 
+# Calendar
+CREATE_CALENDAR = "/calendar/generate"
+

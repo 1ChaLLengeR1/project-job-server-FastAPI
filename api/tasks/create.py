@@ -28,14 +28,6 @@ def create_list(request: Request, payload: PayloadTaskCreate):
     data = cast(ApplicationGatewayTaskCreateResult, raw_data)
 
     response = handler_create_task(data['user_data'], data['description'], data['time'], data['active'])
-    if not response['is_valid']:
-        return ResponseApiData(
-            status=response['status'],
-            data=response['data'],
-            status_code=response['status_code'],
-            additional=response['additional']
-        ).to_response()
-
     return ResponseApiData(
         status=response['status'],
         data=response['data'],
