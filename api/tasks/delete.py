@@ -2,12 +2,12 @@ from typing import cast
 
 from fastapi import APIRouter, Request, Depends, Query
 from api.routers import DELETE_TASK
-from consumer.data.response import ResponseApiData, Error
-from consumer.helper.headers import check_required_headers
-from consumer.helper.validators import is_valid_uuid
-from consumer.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
-from consumer.handler.tasks.delete import handler_delete_task
-from consumer.data.user import UserData
+from core.data.response import ResponseApiData, Error
+from core.helper.headers import check_required_headers
+from core.helper.validators import is_valid_uuid
+from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
+from core.handler.tasks.delete import handler_delete_task
+from core.data.user import UserData
 
 router = APIRouter()
 

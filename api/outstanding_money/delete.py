@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Request, Depends
 from api.routers import DELETE_LIST_OUTSTANDING_MONEY, DELETE_ITEM_OUTSTANDING_MONEY
-from consumer.data.response import ResponseApiData
-from consumer.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
-from consumer.handler.outstanding_moeny.delete import handler_delete_list, handler_delete_item
-from consumer.helper.headers import check_required_headers
+from core.data.response import ResponseApiData
+from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
+from core.handler.outstanding_moeny.delete import handler_delete_list, handler_delete_item
+from core.helper.headers import check_required_headers
 
 router = APIRouter()
 

@@ -1,9 +1,9 @@
 from typing import Optional
 from fastapi import APIRouter, Request, Depends, Query
 from api.routers import STATISTICS_TASK
-from consumer.data.response import ResponseApiData, Error
-from consumer.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
-from consumer.handler.tasks.statistics import handler_get_task_statistics_task
+from core.data.response import ResponseApiData, Error
+from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
+from core.handler.tasks.statistics import handler_get_task_statistics_task
 from datetime import datetime, timezone
 
 router = APIRouter()

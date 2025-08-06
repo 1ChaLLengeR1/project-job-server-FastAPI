@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Request, Depends
 from api.routers import CALCULATOR_KEYS_UPDATE
-from consumer.data.response import ResponseApiData
-from consumer.handler.patryk.calculator_work.update import handler_update_calculator_keys
-from consumer.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
-from consumer.helper.headers import check_required_headers
+from core.data.response import ResponseApiData
+from core.handler.patryk.calculator_work.update import handler_update_calculator_keys
+from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
+from core.helper.headers import check_required_headers
 from .schemas import KeysCalculatorData
 
 router = APIRouter()

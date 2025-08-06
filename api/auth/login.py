@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Request
 from api.routers import LOGIN, AUTOMATICALLY_LOGIN
-from consumer.data.response import ResponseApiData
+from core.data.response import ResponseApiData
 from .schemas import UserDataPayload
-from consumer.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
-from consumer.helper.headers import check_required_headers
+from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
+from core.helper.headers import check_required_headers
 
 router = APIRouter()
 

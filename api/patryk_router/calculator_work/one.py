@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Request, Depends
 from api.routers import CALCULATOR_KEYS
-from consumer.data.response import ResponseApiData
-from consumer.handler.patryk.calculator_work.one import handler_one_calculator_keys
-from consumer.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
+from core.data.response import ResponseApiData
+from core.handler.patryk.calculator_work.one import handler_one_calculator_keys
+from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
 
 router = APIRouter()
 

@@ -49,24 +49,31 @@ CREATE TABLE tasks (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE work_days (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+-- Calendar Work Days table
+CREATE TABLE calendar_work_days (
+    id UUID PRIMARY KEY,
     date DATE UNIQUE NOT NULL,
-    hours_worked FLOAT,
+    hours_worked DOUBLE PRECISION,
     is_holiday BOOLEAN NOT NULL DEFAULT FALSE,
-    norm_hours FLOAT NOT NULL,
-    hourly_rate FLOAT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    norm_hours DOUBLE PRECISION NOT NULL,
+    hourly_rate DOUBLE PRECISION NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+-- Indexes
+CREATE INDEX idx_calendar_work_days_id ON calendar_work_days (id);
+
+-- Calendar Work Condition Changes table
+CREATE TABLE calendar_work_condition_changes (
+    id UUID PRIMARY KEY,
+    start_date DATE NOT NULL,
+    norm_hours DOUBLE PRECISION NOT NULL,
+    hourly_rate DOUBLE PRECISION NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE TABLE work_condition_changes (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    start_date DATE NOT NULL,
-    norm_hours FLOAT NOT NULL,
-    hourly_rate FLOAT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
+-- Indexes
+CREATE INDEX idx_calendar_work_condition_changes_id ON calendar_work_condition_changes (id);
 
 

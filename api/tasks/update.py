@@ -2,13 +2,13 @@ from typing import cast
 
 from fastapi import APIRouter, Request, Depends, Query
 from api.routers import UPDATE_TASKS, UPDATE_ACTIVE_TASKS
-from consumer.data.response import ResponseApiData, Error
-from consumer.helper.headers import check_required_headers
-from consumer.helper.validators import is_valid_uuid
-from consumer.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
-from consumer.handler.tasks.update import handler_update_task, handler_update_task_active
+from core.data.response import ResponseApiData, Error
+from core.helper.headers import check_required_headers
+from core.helper.validators import is_valid_uuid
+from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
+from core.handler.tasks.update import handler_update_task, handler_update_task_active
 from api.tasks.schemas import PayloadTaskUpdate, PayloadTaskUpdateActive
-from consumer.data.user import UserData
+from core.data.user import UserData
 
 router = APIRouter()
 

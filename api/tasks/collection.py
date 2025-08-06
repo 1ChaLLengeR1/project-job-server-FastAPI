@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Request, Depends, Query
 from api.routers import COLLECTION_TASKS
-from consumer.data.response import ResponseApiData, Error
-from consumer.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
-from consumer.handler.tasks.collection import handler_collection_task
+from core.data.response import ResponseApiData, Error
+from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
+from core.handler.tasks.collection import handler_collection_task
 
 router = APIRouter()
 

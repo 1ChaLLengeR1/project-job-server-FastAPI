@@ -2,10 +2,10 @@ from fastapi import Request
 from typing import Optional, cast
 from api.gateways.types.tasks.create import ApplicationGatewayTaskCreateResult
 from api.tasks.schemas import PayloadTaskCreate
-from consumer.data.response import Error
-from consumer.data.user import UserData
+from core.data.response import Error
+from core.data.user import UserData
 
-from consumer.helper.headers import check_required_headers
+from core.helper.headers import check_required_headers
 
 
 def application_gateway_task_create(request: Request, payload: PayloadTaskCreate) -> tuple[

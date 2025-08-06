@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Request, Depends
 from api.routers import CREATE_LOG
-from consumer.data.response import ResponseApiData
-from consumer.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
-from consumer.handler.logs.create import handler_create_logs
-from consumer.helper.headers import check_required_headers
+from core.data.response import ResponseApiData
+from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
+from core.handler.logs.create import handler_create_logs
+from core.helper.headers import check_required_headers
 
 router = APIRouter()
 
