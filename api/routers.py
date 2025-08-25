@@ -35,6 +35,9 @@ DELETE_TASK = "/tasks/delete/{task_id}"
 STATISTICS_TASK = "/tasks/statistics"
 
 
-# Calendar
+# Calendar Days
 CREATE_CALENDAR = "/calendar/generate"
+
+# Calendar Condition
+CREATE_CALENDAR_CONDITION = "/calendar/condition/collection"
 
