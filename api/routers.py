@@ -39,5 +39,8 @@ STATISTICS_TASK = "/tasks/statistics"
 CREATE_CALENDAR = "/calendar/generate"
 
 # Calendar Condition
-CREATE_CALENDAR_CONDITION = "/calendar/condition/collection"
+COLLECTION_CALENDAR_CONDITION = "/calendar/condition/collection"
+CREATE_CALENDAR_CONDITION = "/calendar/condition/create"
+UPDATE_CALENDAR_CONDITION = "/calendar/condition/update/{condition_id}"
+DELETE_CALENDAR_CONDITION = "/calendar/condition/delete/{condition_id}"
 

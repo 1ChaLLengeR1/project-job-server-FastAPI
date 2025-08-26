@@ -31,6 +31,9 @@ from api.tasks.statistics import router as statistics_router_task
 
 # Calendar
 from api.calendar.condition.collection import router as collection_router_calendar_condition
+from api.calendar.condition.create import router as create_router_condition
+from api.calendar.condition.update import router as update_router_condition
+from api.calendar.condition.delete import router as delete_router_condition
 
 api_router = APIRouter()
 
@@ -67,3 +70,6 @@ api_router.include_router(statistics_router_task)
 
 # Calendar Condition
 api_router.include_router(collection_router_calendar_condition)
+api_router.include_router(create_router_condition)
+api_router.include_router(update_router_condition)
+api_router.include_router(delete_router_condition)
