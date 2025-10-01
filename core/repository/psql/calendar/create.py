@@ -2,15 +2,14 @@ from core.api.date_neger_at.get import fetch_date_nager_at_pl
 from core.data.response import ResponseData, create_success_response, create_error_response
 from database.db import get_db
 from sqlalchemy.orm import Session
+from sqlalchemy import desc
 from datetime import date, datetime, timedelta
-from database.calendar.models import WorkDay
+from database.calendar.models import WorkDay, WorkConditionChange
 from sqlalchemy.exc import IntegrityError
 
 
 def create_generator_calendar_psql(
-        year: int,
-        norm_hours: float,
-        hourly_rate: float
+        year: int
 ) -> ResponseData:
     db_generator = get_db()
     db: Session = next(db_generator)
@@ -20,6 +19,19 @@ def create_generator_calendar_psql(
             WorkDay.date >= date(year, 1, 1),
             WorkDay.date <= date(year, 12, 31)
         ).count()
+
+        last_work_condition = db.query(WorkConditionChange).order_by(
+            desc(WorkConditionChange.created_at)
+        ).first()
+
+        if not last_work_condition:
+            return create_error_response(
+                message=f"Create first work condition, because database is empty.",
+                status_code=400
+            )
+
+        norm_hours = float(last_work_condition.norm_hours)
+        hourly_rate = float(last_work_condition.hourly_rate)
 
         if existing_count > 0:
             return create_error_response(
@@ -50,17 +62,27 @@ def create_generator_calendar_psql(
         while current_date <= end_date:
             is_holiday = current_date in holiday_days
 
-            if current_date < today:
-                hours_worked = None
+            is_weekend = current_date.weekday() in [5, 6]
+
+            if is_weekend:
+                day_norm_hours = 0
+                day_hourly_rate = 0
+                hours_worked = 0
             else:
-                hours_worked = norm_hours
+                day_norm_hours = norm_hours
+                day_hourly_rate = hourly_rate
+
+                if current_date < today:
+                    hours_worked = None
+                else:
+                    hours_worked = norm_hours
 
             work_day = WorkDay(
                 date=current_date,
                 hours_worked=hours_worked,
                 is_holiday=is_holiday,
-                norm_hours=norm_hours,
-                hourly_rate=hourly_rate
+                norm_hours=day_norm_hours,
+                hourly_rate=day_hourly_rate
             )
             work_day_objects.append(work_day)
 
@@ -68,8 +90,9 @@ def create_generator_calendar_psql(
                 "date": current_date.isoformat(),
                 "hours_worked": hours_worked,
                 "is_holiday": is_holiday,
-                "norm_hours": norm_hours,
-                "hourly_rate": hourly_rate,
+                "is_weekend": is_weekend,
+                "norm_hours": day_norm_hours,
+                "hourly_rate": day_hourly_rate,
                 "created_at": datetime.now().isoformat(),
                 "updated_at": datetime.now().isoformat()
             }
@@ -96,9 +119,10 @@ def create_generator_calendar_psql(
             "summary": {
                 "total_days": len(calendar_days),
                 "total_holidays": len(raw_data),
+                "total_weekends": len([d for d in calendar_days if d.get("is_weekend")]),
                 "year": year,
                 "days_before_today": len([d for d in calendar_days if d["date"] < today.isoformat()]),
-                "working_days": len([d for d in calendar_days if not d["is_holiday"]])
+                "working_days": len([d for d in calendar_days if not d["is_holiday"] and not d.get("is_weekend")])
             }
         }
 

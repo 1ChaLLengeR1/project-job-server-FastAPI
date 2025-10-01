@@ -1,21 +1,20 @@
 from typing import cast
 from fastapi import APIRouter, Request, Depends
-from api.calendar.schema import PayloadCalendarCreate
-from api.gateways.calendar.create import application_gateway_calendar_create
-from api.routers import CREATE_CALENDAR
+
+from api.gateways.calendar.collection import application_gateway_calendar_collection
+from api.routers import COLLECTION_CALENDAR
 from core.data.response import ResponseApiData, Error
 from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
-from core.handler.calendar.create import handler_create_generator_calendar
+from core.handler.calendar.collection import handler_collection_calendar
 
 router = APIRouter()
 
 
-@router.post(CREATE_CALENDAR, dependencies=[Depends(JWTBasicAuthenticationMiddleware())])
-def view_create_generator_calendar(request: Request, payload: PayloadCalendarCreate):
+@router.get(COLLECTION_CALENDAR, dependencies=[Depends(JWTBasicAuthenticationMiddleware())])
+def view_collection_calendar(request: Request):
     try:
-        raw_data, raw_error, is_valid, status_code = application_gateway_calendar_create(
+        raw_data, raw_error, is_valid, status_code = application_gateway_calendar_collection(
             request,
-            payload.year
         )
 
         if not is_valid:
@@ -29,10 +28,10 @@ def view_create_generator_calendar(request: Request, payload: PayloadCalendarCre
                 additional=None
             ).to_response()
 
-        user_data = raw_data.get("user_data")
         year = raw_data.get("year")
+        month = raw_data.get("month")
 
-        response = handler_create_generator_calendar(user_data, year)
+        response = handler_collection_calendar(year, month)
         return ResponseApiData(
             status=response['status'],
             data=response['data'],

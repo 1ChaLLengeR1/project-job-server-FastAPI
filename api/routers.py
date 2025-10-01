@@ -37,6 +37,7 @@ STATISTICS_TASK = "/tasks/statistics"
 
 # Calendar Days
 CREATE_CALENDAR = "/calendar/generate"
+COLLECTION_CALENDAR = "/calendar/collection"
 
 # Calendar Condition
 COLLECTION_CALENDAR_CONDITION = "/calendar/condition/collection"
