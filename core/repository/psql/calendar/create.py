@@ -73,9 +73,9 @@ def create_generator_calendar_psql(
                 day_hourly_rate = hourly_rate
 
                 if current_date < today:
-                    hours_worked = None
-                else:
                     hours_worked = norm_hours
+                else:
+                    hours_worked = None
 
             work_day = WorkDay(
                 date=current_date,
