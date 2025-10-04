@@ -73,18 +73,8 @@ def collection_calendar_psql(
             total_norm_hours_month += week_norm_hours
             total_salary_month += week_salary
 
-            week_details = []
-            for day in week_days:
-                week_details.append({
-                    'day_name': day['day_name'],
-                    'day_number': day['day_number'],
-                    'hours': day['hours_worked'],
-                    'is_holiday': day['is_holiday']
-                })
-
             weeks_statistics.append({
                 'week_number': week_num,
-                'days': week_details,
                 'total_hours': week_hours,
                 'total_norm_hours': week_norm_hours,
                 'hourly_rate': hourly_rate,

@@ -29,4 +29,4 @@ def application_gateway_calendar_condition_delete(
         }
         return result, None, True, 200
     except Exception as e:
-        return None, Error(message=str(e)), False, 417
+        return None, Error(message=str(e)), False, 400

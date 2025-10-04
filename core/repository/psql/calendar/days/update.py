@@ -105,3 +105,82 @@ def update_days_calendary_psql(
         )
     finally:
         db.close()
+
+
+def update_day_automatically_psql() -> ResponseData:
+    db_generator = get_db()
+    db: Session = next(db_generator)
+    try:
+        today = date.today()
+
+        latest_condition = db.query(WorkConditionChange).order_by(
+            desc(WorkConditionChange.start_date)
+        ).first()
+
+        if not latest_condition:
+            return create_error_response(
+                message="Brak rekordów w tabeli WorkConditionChange.",
+                status_code=404
+            )
+
+        work_days = db.query(WorkDay).filter(
+            WorkDay.date < today
+        ).all()
+
+        updated_count = 0
+        updated_days = []
+
+        for work_day in work_days:
+            if work_day.date.weekday() in [5, 6]:
+                continue
+
+            needs_update = (
+                    work_day.hours_worked is None or
+                    work_day.hours_worked == 0 or
+                    work_day.norm_hours == 0 or
+                    work_day.hourly_rate == 0
+            )
+
+            if needs_update:
+                if work_day.norm_hours == 0:
+                    work_day.norm_hours = latest_condition.norm_hours
+
+                if work_day.hourly_rate == 0:
+                    work_day.hourly_rate = latest_condition.hourly_rate
+
+                if work_day.hours_worked is None or work_day.hours_worked == 0:
+                    work_day.hours_worked = latest_condition.norm_hours
+
+                work_day.updated_at = datetime.now()
+                updated_count += 1
+                updated_days.append({
+                    "id": str(work_day.id),
+                    "date": work_day.date.isoformat(),
+                    "norm_hours": work_day.norm_hours,
+                    "hours_worked": work_day.hours_worked,
+                    "hourly_rate": work_day.hourly_rate
+                })
+
+        db.commit()
+
+        return create_success_response(
+            data={
+                "updated_count": updated_count,
+                "updated_days": updated_days,
+                "condition_used": {
+                    "norm_hours": latest_condition.norm_hours,
+                    "hourly_rate": latest_condition.hourly_rate,
+                    "start_date": latest_condition.start_date.isoformat()
+                }
+            },
+            status_code=200
+        )
+
+    except Exception as e:
+        db.rollback()
+        return create_error_response(
+            message=f"update_day_automatically_psql Exception: {str(e)}",
+            status_code=417
+        )
+    finally:
+        db.close()

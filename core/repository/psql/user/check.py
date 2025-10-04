@@ -1,12 +1,14 @@
 from core.data.response import ResponseData, create_error_response, create_success_response
 from database.db import get_db
+from sqlalchemy.orm import Session
 from core.data.user import UserData
 from database.auth.models import Users
 from typing import Literal
 
 
 def check_user_role_psql(user_data: UserData, type_role: Literal['superadmin', 'admin', 'guest']) -> ResponseData:
-    db = next(get_db())
+    db_generator = get_db()
+    db: Session = next(db_generator)
     try:
         role = ['superadmin', 'admin', 'guest']
 

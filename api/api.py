@@ -38,6 +38,10 @@ from api.calendar.condition.delete import router as delete_router_condition
 # Calendar
 from api.calendar.create import router as create_router_calendary
 from api.calendar.collection import router as collection_router_calendary
+from api.calendar.statistics import router as statistics_router_statistics
+
+# Calendar Day
+from api.calendar.days.update import router as update_router_days
 
 api_router = APIRouter()
 
@@ -81,3 +85,7 @@ api_router.include_router(delete_router_condition)
 # Calendar
 api_router.include_router(create_router_calendary)
 api_router.include_router(collection_router_calendary)
+api_router.include_router(statistics_router_statistics)
+
+# Calendar Day
+api_router.include_router(update_router_days)
