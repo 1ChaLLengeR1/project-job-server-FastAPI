@@ -184,3 +184,80 @@ def update_day_automatically_psql() -> ResponseData:
         )
     finally:
         db.close()
+
+
+def update_days_automatically_for_salary(year: int, month: int, salary: float) -> ResponseData:
+    db_generator = get_db()
+    db: Session = next(db_generator)
+    try:
+        start_date = date(year, month, 1)
+        if month == 12:
+            end_date = date(year + 1, 1, 1) - timedelta(days=1)
+        else:
+            end_date = date(year, month + 1, 1) - timedelta(days=1)
+
+        work_days = db.query(WorkDay).filter(
+            and_(
+                WorkDay.date >= start_date,
+                WorkDay.date <= end_date,
+                WorkDay.hours_worked > 0,
+                WorkDay.norm_hours > 0
+            )
+        ).all()
+
+        if not work_days:
+            return create_error_response(
+                message=f"Brak dni roboczych z godzinami w {year}-{month:02d}",
+                status_code=404
+            )
+
+        total_hours_worked = sum(day.hours_worked for day in work_days)
+
+        if total_hours_worked == 0:
+            return create_error_response(
+                message=f"Suma godzin przepracowanych wynosi 0 w {year}-{month:02d}",
+                status_code=400
+            )
+
+        calculated_hourly_rate = salary / total_hours_worked
+
+        updated_count = 0
+        updated_days = []
+
+        for work_day in work_days:
+            work_day.hourly_rate = calculated_hourly_rate
+            work_day.updated_at = datetime.now()
+            updated_count += 1
+            updated_days.append({
+                "id": str(work_day.id),
+                "date": work_day.date.isoformat(),
+                "hours_worked": work_day.hours_worked,
+                "hourly_rate": work_day.hourly_rate,
+                "daily_salary": round(work_day.hours_worked * work_day.hourly_rate, 2)
+            })
+
+        db.commit()
+
+        # Weryfikacja sumy
+        total_salary = sum(day.hours_worked * day.hourly_rate for day in work_days)
+
+        return create_success_response(
+            data={
+                "updated_count": updated_count,
+                "total_hours_worked": total_hours_worked,
+                "calculated_hourly_rate": round(calculated_hourly_rate, 2),
+                "expected_salary": salary,
+                "actual_total_salary": round(total_salary, 2),
+                "updated_days": updated_days
+            },
+            status_code=200
+        )
+
+    except Exception as e:
+        db.rollback()
+        return create_error_response(
+            message=f"update_days_automatically_for_salary Exception: {str(e)}",
+            status_code=417
+        )
+    finally:
+        db.close()

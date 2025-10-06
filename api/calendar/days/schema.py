@@ -18,3 +18,9 @@ class PayloadCalendarDayWorkUpdateById(BaseModel):
     norm_hours: float
     hours_worked: float
     hourly_rate: float
+
+
+class PayloadCalendarDaysWorkSalaryUpdate(BaseModel):
+    year: int
+    month: int
+    salary: float

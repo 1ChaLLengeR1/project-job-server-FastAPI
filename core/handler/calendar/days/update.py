@@ -1,5 +1,6 @@
 from core.data.user import UserData
-from core.repository.psql.calendar.days.update import update_days_calendary_psql, update_day_calendary_by_id_psql
+from core.repository.psql.calendar.days.update import update_days_calendary_psql, update_day_calendary_by_id_psql, \
+    update_days_automatically_for_salary
 from core.data.response import ResponseData, create_error_response
 from core.repository.psql.user.check import check_user_role_psql
 
@@ -44,6 +45,25 @@ def handler_update_days_calendary(
         response_update = update_days_calendary_psql(
             year, month, start_day, end_day, norm_hours, hours_worked, hourly_rate
         )
+        if not response_update['is_valid']:
+            return response_update
+        return response_update
+    except Exception as e:
+        return create_error_response(message=str(e), status_code=500)
+
+
+def handler_update_days_automatically_for_salary(
+        user_data: UserData,
+        year: int,
+        month: int,
+        salary: float,
+) -> ResponseData:
+    try:
+        check_role = check_user_role_psql(user_data, 'superadmin')
+        if not check_role['is_valid']:
+            return check_role
+
+        response_update = update_days_automatically_for_salary(year, month, salary)
         if not response_update['is_valid']:
             return response_update
         return response_update
