@@ -3,9 +3,9 @@ from typing import cast
 from api.gateways.tasks.create import application_gateway_task_create
 from api.gateways.types.tasks.create import ApplicationGatewayTaskCreateResult
 from api.routers import CREATE_TASK
-from consumer.data.response import ResponseApiData, Error
-from consumer.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
-from consumer.handler.tasks.create import handler_create_task
+from core.data.response import ResponseApiData, Error
+from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
+from core.handler.tasks.create import handler_create_task
 from api.tasks.schemas import PayloadTaskCreate
 
 router = APIRouter()
@@ -28,14 +28,6 @@ def create_list(request: Request, payload: PayloadTaskCreate):
     data = cast(ApplicationGatewayTaskCreateResult, raw_data)
 
     response = handler_create_task(data['user_data'], data['description'], data['time'], data['active'])
-    if not response['is_valid']:
-        return ResponseApiData(
-            status=response['status'],
-            data=response['data'],
-            status_code=response['status_code'],
-            additional=response['additional']
-        ).to_response()
-
     return ResponseApiData(
         status=response['status'],
         data=response['data'],

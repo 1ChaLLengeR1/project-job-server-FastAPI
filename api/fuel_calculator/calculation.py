@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Request, Depends
 from api.routers import FUEL_CALCULATION
-from consumer.data.response import ResponseApiData
-from consumer.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
-from consumer.handler.fuel_calculator.calculation import handler_fuel_calculation
+from core.data.response import ResponseApiData
+from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
+from core.handler.fuel_calculator.calculation import handler_fuel_calculation
 from .schemas import FuelData
 
 router = APIRouter()

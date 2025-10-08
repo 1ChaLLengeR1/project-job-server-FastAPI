@@ -34,4 +34,18 @@ UPDATE_ACTIVE_TASKS = "/tasks/update/active/{task_id}"
 DELETE_TASK = "/tasks/delete/{task_id}"
 STATISTICS_TASK = "/tasks/statistics"
 
+# Calendar Days
+CREATE_CALENDAR = "/calendar/generate"
+COLLECTION_CALENDAR = "/calendar/collection"
+STATISTICS_CALENDAR = "/calendar/statistics"
 
+# Calendar Condition
+COLLECTION_CALENDAR_CONDITION = "/calendar/condition/collection"
+CREATE_CALENDAR_CONDITION = "/calendar/condition/create"
+UPDATE_CALENDAR_CONDITION = "/calendar/condition/update/{condition_id}"
+DELETE_CALENDAR_CONDITION = "/calendar/condition/delete/{condition_id}"
+
+# Calendar Day Work
+UPDATE_CALENDAR_DAY_WORK_BY_ID = "/calendar/day/work/update/{day_id}"
+UPDATE_CALENDAR_DAYS = "/calendar/days/work/update"
+UPDATE_CALENDAR_DAYS_SALARY = "/calendar/days/work/update/salary"

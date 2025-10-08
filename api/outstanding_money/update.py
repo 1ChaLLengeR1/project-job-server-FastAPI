@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Request, Depends
 from api.routers import EDIT_NAME_LIST_OUTSTANDING_MONEY, EDIT_ITEM_OUTSTANDING_MONEY
-from consumer.data.response import ResponseApiData
-from consumer.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
-from consumer.handler.outstanding_moeny.update import handler_edit_name_list, handler_edit_item
-from consumer.helper.headers import check_required_headers
+from core.data.response import ResponseApiData
+from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
+from core.handler.outstanding_moeny.update import handler_edit_name_list, handler_edit_item
+from core.helper.headers import check_required_headers
 from .schemas import EditListParams, EditItem
 
 router = APIRouter()

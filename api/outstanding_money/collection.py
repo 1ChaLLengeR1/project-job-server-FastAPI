@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Request, Depends
 from api.routers import COLLECTION_OUTSTANDING_MONEY
-from consumer.data.response import ResponseApiData
-from consumer.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
-from consumer.handler.outstanding_moeny.collection import handler_collection_list
+from core.data.response import ResponseApiData
+from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
+from core.handler.outstanding_moeny.collection import handler_collection_list
 
 router = APIRouter()
 

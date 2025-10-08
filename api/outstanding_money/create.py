@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Request, Depends
 from typing import cast
-from consumer.data.user import UserData
+from core.data.user import UserData
 from api.routers import CREATE_LIST_OUTSTANDING_MONEY, ADD_ITEM_OUTSTANDING_MONEY
-from consumer.data.response import ResponseApiData
-from consumer.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
-from consumer.handler.outstanding_moeny.create import handler_create_list, handler_add_item
-from consumer.helper.headers import check_required_headers
+from core.data.response import ResponseApiData
+from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
+from core.handler.outstanding_moeny.create import handler_create_list, handler_add_item
+from core.helper.headers import check_required_headers
 from .schemas import KeysCalculatorData, AddItemParams
 
 router = APIRouter()

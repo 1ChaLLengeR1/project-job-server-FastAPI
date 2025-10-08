@@ -3,15 +3,15 @@ import time
 from fastapi import APIRouter, Request, Depends, UploadFile, File, BackgroundTasks, WebSocket
 from fastapi.responses import FileResponse
 from api.routers import CREATE_PDF
-from consumer.data.response import ResponseApiData
-from consumer.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
-from consumer.handler.patryk.pdfFilter.create import handler_create_pdf_filter
-from consumer.helper.files import save_files_tmp
-from consumer.helper.files import check_files_size
-from consumer.services.patryk.pdfFilter.file import clear_catalog
+from core.data.response import ResponseApiData
+from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
+from core.handler.patryk.pdfFilter.create import handler_create_pdf_filter
+from core.helper.files import save_files_tmp
+from core.helper.files import check_files_size
+from core.services.patryk.pdfFilter.file import clear_catalog
 from config.app_config import DOWNLOAD
-from consumer.services.websocekt.patryk_router.pdfFilter.websocket import websocket_endpoint, send_progress
-from consumer.helper.headers import check_required_headers
+from core.services.websocekt.patryk_router.pdfFilter.websocket import websocket_endpoint, send_progress
+from core.helper.headers import check_required_headers
 
 router = APIRouter()
 

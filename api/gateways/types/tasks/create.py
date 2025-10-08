@@ -1,5 +1,5 @@
 from typing import TypedDict, Union, Dict, Any, List, Literal, Optional
-from consumer.data.user import UserData
+from core.data.user import UserData
 
 
 class ApplicationGatewayTaskCreateResult(TypedDict, total=True):
