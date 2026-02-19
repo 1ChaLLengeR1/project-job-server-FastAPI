@@ -14,3 +14,4 @@ pillow==9.4.0
 fpdf==1.7.2
 prometheus-fastapi-instrumentator==7.1.0
 APScheduler==3.11.0
+requests==2.32.3
