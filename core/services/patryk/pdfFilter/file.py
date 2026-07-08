@@ -1,12 +1,13 @@
-from config.app_config import FILE, TMP
 import os
-import zipfile
-from PIL import Image
-from io import BytesIO
-from openpyxl import load_workbook
 import re
 import shutil
-from config.app_config import START_LITERAL_COLUMN_FILE_XLSX
+import zipfile
+from io import BytesIO
+
+from openpyxl import load_workbook
+from PIL import Image
+
+from config.app_config import FILE, START_LITERAL_COLUMN_FILE_XLSX, TMP
 
 
 def extract_images_from_xlsx() -> tuple[list[dict], str, bool]:
@@ -20,13 +21,11 @@ def extract_images_from_xlsx() -> tuple[list[dict], str, bool]:
 
         file_path = FILE / file_path
 
-        with zipfile.ZipFile(file_path, 'r') as xlsx_zip:
-            media_files = sorted(
-                [f for f in xlsx_zip.namelist() if f.startswith('xl/media/')]
-            )
+        with zipfile.ZipFile(file_path, "r") as xlsx_zip:
+            media_files = sorted([f for f in xlsx_zip.namelist() if f.startswith("xl/media/")])
 
             def extract_number_from_filename(filename):
-                match = re.search(r'(\d+)', filename)
+                match = re.search(r"(\d+)", filename)
                 return int(match.group(1)) if match else None
 
             for file_name in media_files:
@@ -42,7 +41,7 @@ def extract_images_from_xlsx() -> tuple[list[dict], str, bool]:
                     image_name = f"image{image_number}.png"
                     save_path = os.path.join(TMP, image_name)
 
-                    image.save(save_path, format='PNG')
+                    image.save(save_path, format="PNG")
 
                     new_image_obj = {
                         "index": image_number,
@@ -59,12 +58,12 @@ def extract_images_from_xlsx() -> tuple[list[dict], str, bool]:
         return [], str(e), False
 
 
-def file_name_find(file_type: str = 'xlsx') -> tuple[str, bool]:
+def file_name_find(file_type: str = "xlsx") -> tuple[str, bool]:
     try:
         if not os.path.isdir(FILE):
             return f"Path {FILE} is not a folder or does not exist", False
 
-        if file_type == 'xlsx':
+        if file_type == "xlsx":
             for file in os.listdir(FILE):
                 if file.endswith(".xlsx"):
                     return file, True
@@ -92,24 +91,25 @@ def open_file_xlsx() -> tuple[list[dict], str, bool]:
         data = []
         index = 1
 
-        for row_idx, row in enumerate(sheet.iter_rows(min_row=10, values_only=True),
-                                      start=START_LITERAL_COLUMN_FILE_XLSX):
+        for row_idx, row in enumerate(
+            sheet.iter_rows(min_row=10, values_only=True), start=START_LITERAL_COLUMN_FILE_XLSX
+        ):
             if not any(row):
                 continue
 
             row_data = {headers[i]: row[i] for i in range(len(headers)) if i < len(row) and headers[i]}
 
-            if row_data.get('Lp') == 'Lp':
+            if row_data.get("Lp") == "Lp":
                 continue
 
             new_object = {
-                'index': index,
-                'column_excel': row_idx,
-                'lp': row_data.get('Lp', ''),
-                'name': row_data.get('Nazwa towaru', ''),
-                'quantity': row_data.get('Ilość', ''),
-                'ean': row_data.get('EAN', ''),
-                'location': row_data.get('Lokalizacja', ''),
+                "index": index,
+                "column_excel": row_idx,
+                "lp": row_data.get("Lp", ""),
+                "name": row_data.get("Nazwa towaru", ""),
+                "quantity": row_data.get("Ilość", ""),
+                "ean": row_data.get("EAN", ""),
+                "location": row_data.get("Lokalizacja", ""),
             }
 
             data.append(new_object)

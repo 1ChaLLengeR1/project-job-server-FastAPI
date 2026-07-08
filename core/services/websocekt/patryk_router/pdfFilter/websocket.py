@@ -1,5 +1,6 @@
-import json
 import asyncio
+import json
+
 from fastapi import WebSocket
 
 active_connections = {}

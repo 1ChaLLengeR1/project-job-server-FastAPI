@@ -1,10 +1,12 @@
-from core.data.response import ResponseData, create_success_response, create_error_response
-from database.db import get_db
-from sqlalchemy.orm import Session
-from database.calendar.models import WorkConditionChange
-from sqlalchemy.exc import IntegrityError
-from datetime import datetime
 import uuid
+from datetime import datetime
+
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
+
+from core.data.response import ResponseData, create_error_response, create_success_response
+from database.calendar.models import WorkConditionChange
+from database.db import get_db
 
 
 def update_work_condition_change_psql(condition_id: str, norm_hours: float, hourly_rate: float) -> ResponseData:
@@ -13,14 +15,11 @@ def update_work_condition_change_psql(condition_id: str, norm_hours: float, hour
     try:
         condition_uuid = uuid.UUID(condition_id)
 
-        existing_condition = db.query(WorkConditionChange).filter(
-            WorkConditionChange.id == condition_uuid
-        ).first()
+        existing_condition = db.query(WorkConditionChange).filter(WorkConditionChange.id == condition_uuid).first()
 
         if not existing_condition:
             return create_error_response(
-                message=f"WorkConditionChange with id {condition_id} not found",
-                status_code=404
+                message=f"WorkConditionChange with id {condition_id} not found", status_code=404
             )
 
         existing_condition.norm_hours = norm_hours
@@ -36,30 +35,24 @@ def update_work_condition_change_psql(condition_id: str, norm_hours: float, hour
             "norm_hours": existing_condition.norm_hours,
             "hourly_rate": existing_condition.hourly_rate,
             "created_at": existing_condition.created_at.isoformat(),
-            "updated_at": existing_condition.updated_at.isoformat()
+            "updated_at": existing_condition.updated_at.isoformat(),
         }
 
-        return create_success_response(
-            data=response_data,
-            status_code=200
-        )
+        return create_success_response(data=response_data, status_code=200)
 
-    except ValueError as e:
+    except ValueError:
         return create_error_response(
-            message=f"update_work_condition_change_psql - Invalid UUID format: {condition_id}",
-            status_code=400
+            message=f"update_work_condition_change_psql - Invalid UUID format: {condition_id}", status_code=400
         )
     except IntegrityError as e:
         db.rollback()
         return create_error_response(
-            message=f"update_work_condition_change_psql -  IntegrityError: {e}",
-            status_code=409
+            message=f"update_work_condition_change_psql -  IntegrityError: {e}", status_code=409
         )
     except Exception as e:
         db.rollback()
         return create_error_response(
-            message=f"update_work_condition_change_psql -  Exception: {str(e)}",
-            status_code=417
+            message=f"update_work_condition_change_psql -  Exception: {str(e)}", status_code=417
         )
     finally:
         db.close()

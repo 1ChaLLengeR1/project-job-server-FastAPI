@@ -1,30 +1,33 @@
-from core.data.response import ResponseData, create_error_response, create_success_response
-from database.db import get_db
-from sqlalchemy.orm import Session
-from core.data.user import UserData
-from database.auth.models import Users
 from typing import Literal
 
+from sqlalchemy.orm import Session
 
-def check_user_role_psql(user_data: UserData, type_role: Literal['superadmin', 'admin', 'guest']) -> ResponseData:
+from core.data.response import ResponseData, create_error_response, create_success_response
+from core.data.user import UserData
+from database.auth.models import Users
+from database.db import get_db
+
+
+def check_user_role_psql(user_data: UserData, type_role: Literal["superadmin", "admin", "guest"]) -> ResponseData:
     db_generator = get_db()
     db: Session = next(db_generator)
     try:
-        role = ['superadmin', 'admin', 'guest']
+        role = ["superadmin", "admin", "guest"]
 
-        row_user = db.query(Users).filter(Users.id == user_data['id'], Users.username == user_data['username']).first()
+        row_user = db.query(Users).filter(Users.id == user_data["id"], Users.username == user_data["username"]).first()
         if not row_user:
             return create_error_response(
                 message=f"Not found user with this params: username{user_data['username']} and id: {user_data['id']}",
-                status_code=403)
+                status_code=403,
+            )
 
         if row_user.type == role[0]:
             return create_success_response(data=None, status_code=200)
 
         if row_user.type != type_role:
             return create_error_response(
-                message=f"This user: {row_user.username} have not permission!",
-                status_code=403)
+                message=f"This user: {row_user.username} have not permission!", status_code=403
+            )
 
         return create_success_response(data=None, status_code=200)
 

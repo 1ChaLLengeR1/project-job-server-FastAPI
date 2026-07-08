@@ -1,5 +1,4 @@
-from dataclasses import dataclass, asdict
-from typing import List, Optional
+from dataclasses import asdict, dataclass
 from datetime import date
 
 
@@ -11,15 +10,15 @@ class Holiday:
     country_code: str
     fixed: bool
     global_: bool
-    counties: Optional[List[str]]
-    launch_year: Optional[int]
-    types: List[str]
+    counties: list[str] | None
+    launch_year: int | None
+    types: list[str]
 
     def to_dict(self) -> dict:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: dict) -> 'Holiday':
+    def from_dict(cls, data: dict) -> "Holiday":
         return cls(
             date=data["date"],
             local_name=data["localName"],
@@ -29,10 +28,10 @@ class Holiday:
             global_=data["global"],
             counties=data["counties"],
             launch_year=data["launchYear"],
-            types=data["types"]
+            types=data["types"],
         )
 
     @property
     def data_object(self) -> date:
-        year, month, day = map(int, self.date.split('-'))
+        year, month, day = map(int, self.date.split("-"))
         return date(year, month, day)

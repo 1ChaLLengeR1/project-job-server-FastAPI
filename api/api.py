@@ -2,46 +2,46 @@ from fastapi import APIRouter
 
 # login
 from api.auth.login import router as login_router
-
-# Patryk_router
-from api.patryk_router.calculator_work.one import router as patryk_router
-from api.patryk_router.calculator_work.update import router as patryk_router_update
-from api.patryk_router.calculator_work.calculator import router as patryk_router_calculations
-from api.patryk_router.pdfFilter.create import router as create_router_pdf_filter
-
-# Outstanding_money
-from api.outstanding_money.collection import router as collection_router_outstanding_money
-from api.outstanding_money.create import router as create_router_outstanding_money
-from api.outstanding_money.update import router as update_router_outstanding_money
-from api.outstanding_money.delete import router as delete_router_outstanding_money
-
-# Logs
-from api.logs.create import router as create_router_logs
-from api.logs.collection import router as collection_router_logs
-
-# Calculator
-from api.fuel_calculator.calculation import router as calculation_router_fuel_calculation
-
-# Tasks
-from api.tasks.create import router as create_router_task
-from api.tasks.collection import router as collection_router_task
-from api.tasks.update import router as update_router_task
-from api.tasks.delete import router as delete_router_task
-from api.tasks.statistics import router as statistics_router_task
+from api.calendar.collection import router as collection_router_calendary
 
 # Calendar Condition
 from api.calendar.condition.collection import router as collection_router_calendar_condition
 from api.calendar.condition.create import router as create_router_condition
-from api.calendar.condition.update import router as update_router_condition
 from api.calendar.condition.delete import router as delete_router_condition
+from api.calendar.condition.update import router as update_router_condition
 
 # Calendar
 from api.calendar.create import router as create_router_calendary
-from api.calendar.collection import router as collection_router_calendary
-from api.calendar.statistics import router as statistics_router_statistics
 
 # Calendar Day
 from api.calendar.days.update import router as update_router_days
+from api.calendar.statistics import router as statistics_router_statistics
+
+# Calculator
+from api.fuel_calculator.calculation import router as calculation_router_fuel_calculation
+from api.logs.collection import router as collection_router_logs
+
+# Logs
+from api.logs.create import router as create_router_logs
+
+# Outstanding_money
+from api.outstanding_money.collection import router as collection_router_outstanding_money
+from api.outstanding_money.create import router as create_router_outstanding_money
+from api.outstanding_money.delete import router as delete_router_outstanding_money
+from api.outstanding_money.update import router as update_router_outstanding_money
+from api.patryk_router.calculator_work.calculator import router as patryk_router_calculations
+
+# Patryk_router
+from api.patryk_router.calculator_work.one import router as patryk_router
+from api.patryk_router.calculator_work.update import router as patryk_router_update
+from api.patryk_router.pdfFilter.create import router as create_router_pdf_filter
+from api.tasks.collection import router as collection_router_task
+
+# Tasks
+from api.tasks.create import router as create_router_task
+from api.tasks.delete import router as delete_router_task
+from api.tasks.statistics import router as statistics_router_task
+from api.tasks.update import router as update_router_task
 
 api_router = APIRouter()
 

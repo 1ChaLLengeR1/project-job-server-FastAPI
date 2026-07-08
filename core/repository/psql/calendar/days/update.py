@@ -1,28 +1,25 @@
-from core.api.date_neger_at.get import fetch_date_nager_at_pl
-from core.data.response import ResponseData, create_success_response, create_error_response
-from database.db import get_db
-from sqlalchemy.orm import Session
-from sqlalchemy import desc, and_
 from datetime import date, datetime, timedelta
-from database.calendar.models import WorkDay, WorkConditionChange
-from sqlalchemy.exc import IntegrityError
+
+from sqlalchemy import and_, desc
+from sqlalchemy.orm import Session
+
+from core.data.response import ResponseData, create_error_response, create_success_response
+from database.calendar.models import WorkConditionChange, WorkDay
+from database.db import get_db
 
 
 def update_day_calendary_by_id_psql(
-        day_id: str,
-        norm_hours: float,
-        hours_worked: float,
-        hourly_rate: float,
+    day_id: str,
+    norm_hours: float,
+    hours_worked: float,
+    hourly_rate: float,
 ) -> ResponseData:
     db_generator = get_db()
     db: Session = next(db_generator)
     try:
         work_day = db.query(WorkDay).filter(WorkDay.id == day_id).first()
         if not work_day:
-            return create_error_response(
-                message=f"Not found work day with this ID: {day_id}",
-                status_code=400
-            )
+            return create_error_response(message=f"Not found work day with this ID: {day_id}", status_code=400)
 
         work_day.norm_hours = norm_hours
         work_day.hours_worked = hours_worked
@@ -39,27 +36,24 @@ def update_day_calendary_by_id_psql(
                 "norm_hours": work_day.norm_hours,
                 "hours_worked": work_day.hours_worked,
                 "hourly_rate": work_day.hourly_rate,
-                "updated_at": work_day.updated_at.isoformat()
+                "updated_at": work_day.updated_at.isoformat(),
             }
         )
 
     except Exception as e:
-        return create_error_response(
-            message=f"update_day_calendary_by_id_psql Exception: {str(e)}",
-            status_code=417
-        )
+        return create_error_response(message=f"update_day_calendary_by_id_psql Exception: {str(e)}", status_code=417)
     finally:
         db.close()
 
 
 def update_days_calendary_psql(
-        year: int,
-        month: int,
-        start_day: int,
-        end_day: int,
-        norm_hours: float,
-        hours_worked: float,
-        hourly_rate: float,
+    year: int,
+    month: int,
+    start_day: int,
+    end_day: int,
+    norm_hours: float,
+    hours_worked: float,
+    hourly_rate: float,
 ) -> ResponseData:
     db_generator = get_db()
     db: Session = next(db_generator)
@@ -67,17 +61,11 @@ def update_days_calendary_psql(
         start_date = date(year, month, start_day)
         end_date = date(year, month, end_day)
 
-        work_days = db.query(WorkDay).filter(
-            and_(
-                WorkDay.date >= start_date,
-                WorkDay.date <= end_date
-            )
-        ).all()
+        work_days = db.query(WorkDay).filter(and_(WorkDay.date >= start_date, WorkDay.date <= end_date)).all()
 
         if not work_days:
             return create_error_response(
-                message=f"Not found days in this date: {start_date} - {end_date}.",
-                status_code=400
+                message=f"Not found days in this date: {start_date} - {end_date}.", status_code=400
             )
 
         updated_count = 0
@@ -94,15 +82,12 @@ def update_days_calendary_psql(
                 "updated_count": updated_count,
                 "start_date": start_date.isoformat(),
                 "end_date": end_date.isoformat(),
-                "days": [day.date.isoformat() for day in work_days]
+                "days": [day.date.isoformat() for day in work_days],
             }
         )
 
     except Exception as e:
-        return create_error_response(
-            message=f"update_days_calendary_psql Exception: {str(e)}",
-            status_code=417
-        )
+        return create_error_response(message=f"update_days_calendary_psql Exception: {str(e)}", status_code=417)
     finally:
         db.close()
 
@@ -113,19 +98,12 @@ def update_day_automatically_psql() -> ResponseData:
     try:
         today = date.today()
 
-        latest_condition = db.query(WorkConditionChange).order_by(
-            desc(WorkConditionChange.start_date)
-        ).first()
+        latest_condition = db.query(WorkConditionChange).order_by(desc(WorkConditionChange.start_date)).first()
 
         if not latest_condition:
-            return create_error_response(
-                message="Brak rekordów w tabeli WorkConditionChange.",
-                status_code=404
-            )
+            return create_error_response(message="Brak rekordów w tabeli WorkConditionChange.", status_code=404)
 
-        work_days = db.query(WorkDay).filter(
-            WorkDay.date < today
-        ).all()
+        work_days = db.query(WorkDay).filter(WorkDay.date < today).all()
 
         updated_count = 0
         updated_days = []
@@ -135,10 +113,10 @@ def update_day_automatically_psql() -> ResponseData:
                 continue
 
             needs_update = (
-                    work_day.hours_worked is None or
-                    work_day.hours_worked == 0 or
-                    work_day.norm_hours == 0 or
-                    work_day.hourly_rate == 0
+                work_day.hours_worked is None
+                or work_day.hours_worked == 0
+                or work_day.norm_hours == 0
+                or work_day.hourly_rate == 0
             )
 
             if needs_update:
@@ -153,13 +131,15 @@ def update_day_automatically_psql() -> ResponseData:
 
                 work_day.updated_at = datetime.now()
                 updated_count += 1
-                updated_days.append({
-                    "id": str(work_day.id),
-                    "date": work_day.date.isoformat(),
-                    "norm_hours": work_day.norm_hours,
-                    "hours_worked": work_day.hours_worked,
-                    "hourly_rate": work_day.hourly_rate
-                })
+                updated_days.append(
+                    {
+                        "id": str(work_day.id),
+                        "date": work_day.date.isoformat(),
+                        "norm_hours": work_day.norm_hours,
+                        "hours_worked": work_day.hours_worked,
+                        "hourly_rate": work_day.hourly_rate,
+                    }
+                )
 
         db.commit()
 
@@ -170,18 +150,15 @@ def update_day_automatically_psql() -> ResponseData:
                 "condition_used": {
                     "norm_hours": latest_condition.norm_hours,
                     "hourly_rate": latest_condition.hourly_rate,
-                    "start_date": latest_condition.start_date.isoformat()
-                }
+                    "start_date": latest_condition.start_date.isoformat(),
+                },
             },
-            status_code=200
+            status_code=200,
         )
 
     except Exception as e:
         db.rollback()
-        return create_error_response(
-            message=f"update_day_automatically_psql Exception: {str(e)}",
-            status_code=417
-        )
+        return create_error_response(message=f"update_day_automatically_psql Exception: {str(e)}", status_code=417)
     finally:
         db.close()
 
@@ -196,27 +173,29 @@ def update_days_automatically_for_salary(year: int, month: int, salary: float) -
         else:
             end_date = date(year, month + 1, 1) - timedelta(days=1)
 
-        work_days = db.query(WorkDay).filter(
-            and_(
-                WorkDay.date >= start_date,
-                WorkDay.date <= end_date,
-                WorkDay.hours_worked > 0,
-                WorkDay.norm_hours > 0
+        work_days = (
+            db.query(WorkDay)
+            .filter(
+                and_(
+                    WorkDay.date >= start_date,
+                    WorkDay.date <= end_date,
+                    WorkDay.hours_worked > 0,
+                    WorkDay.norm_hours > 0,
+                )
             )
-        ).all()
+            .all()
+        )
 
         if not work_days:
             return create_error_response(
-                message=f"Brak dni roboczych z godzinami w {year}-{month:02d}",
-                status_code=404
+                message=f"Brak dni roboczych z godzinami w {year}-{month:02d}", status_code=404
             )
 
         total_hours_worked = sum(day.hours_worked for day in work_days)
 
         if total_hours_worked == 0:
             return create_error_response(
-                message=f"Suma godzin przepracowanych wynosi 0 w {year}-{month:02d}",
-                status_code=400
+                message=f"Suma godzin przepracowanych wynosi 0 w {year}-{month:02d}", status_code=400
             )
 
         calculated_hourly_rate = salary / total_hours_worked
@@ -228,13 +207,15 @@ def update_days_automatically_for_salary(year: int, month: int, salary: float) -
             work_day.hourly_rate = calculated_hourly_rate
             work_day.updated_at = datetime.now()
             updated_count += 1
-            updated_days.append({
-                "id": str(work_day.id),
-                "date": work_day.date.isoformat(),
-                "hours_worked": work_day.hours_worked,
-                "hourly_rate": work_day.hourly_rate,
-                "daily_salary": round(work_day.hours_worked * work_day.hourly_rate, 2)
-            })
+            updated_days.append(
+                {
+                    "id": str(work_day.id),
+                    "date": work_day.date.isoformat(),
+                    "hours_worked": work_day.hours_worked,
+                    "hourly_rate": work_day.hourly_rate,
+                    "daily_salary": round(work_day.hours_worked * work_day.hourly_rate, 2),
+                }
+            )
 
         db.commit()
 
@@ -248,16 +229,15 @@ def update_days_automatically_for_salary(year: int, month: int, salary: float) -
                 "calculated_hourly_rate": round(calculated_hourly_rate, 2),
                 "expected_salary": salary,
                 "actual_total_salary": round(total_salary, 2),
-                "updated_days": updated_days
+                "updated_days": updated_days,
             },
-            status_code=200
+            status_code=200,
         )
 
     except Exception as e:
         db.rollback()
         return create_error_response(
-            message=f"update_days_automatically_for_salary Exception: {str(e)}",
-            status_code=417
+            message=f"update_days_automatically_for_salary Exception: {str(e)}", status_code=417
         )
     finally:
         db.close()

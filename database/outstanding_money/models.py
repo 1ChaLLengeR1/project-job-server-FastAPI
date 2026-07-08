@@ -1,11 +1,13 @@
-from sqlalchemy import Column, String, Float, Date
-from sqlalchemy.dialects.postgresql import UUID
 import uuid
+
+from sqlalchemy import Column, Date, Float, String
+from sqlalchemy.dialects.postgresql import UUID
+
 from database.db import Base
 
 
 class NamesOverdue(Base):
-    __tablename__ = 'namesoverdue'
+    __tablename__ = "namesoverdue"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String)
@@ -15,7 +17,7 @@ class NamesOverdue(Base):
 
 
 class OutStandingMoney(Base):
-    __tablename__ = 'outstandingmoney'
+    __tablename__ = "outstandingmoney"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     amount = Column(Float)

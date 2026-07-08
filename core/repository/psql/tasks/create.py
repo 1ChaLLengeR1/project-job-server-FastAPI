@@ -1,5 +1,5 @@
 from api.tasks.schemas import ResponseSerializerTask
-from core.data.response import ResponseData, create_success_response, create_error_response
+from core.data.response import ResponseData, create_error_response, create_success_response
 from database.db import get_db
 from database.tasks.models import Tasks
 
@@ -7,11 +7,7 @@ from database.tasks.models import Tasks
 def create_task_psql(description: str, time: int, active: bool = True) -> ResponseData:
     db = next(get_db())
     try:
-        new_task = Tasks(
-            description=description,
-            time=time,
-            active=active
-        )
+        new_task = Tasks(description=description, time=time, active=active)
         db.add(new_task)
         db.commit()
         db.refresh(new_task)

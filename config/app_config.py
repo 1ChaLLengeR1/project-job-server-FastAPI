@@ -1,18 +1,18 @@
 from pathlib import Path
 
 # local, dev, prod
-ENV_MODE = 'local'
+ENV_MODE = "local"
 AUTO_REMOVE_FILES = True
 
 # Paths
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-FILE = BASE_DIR / 'file'
-TMP = BASE_DIR / 'tmp'
-DOWNLOAD = BASE_DIR / 'download'
+FILE = BASE_DIR / "file"
+TMP = BASE_DIR / "tmp"
+DOWNLOAD = BASE_DIR / "download"
 
 # Fonts
-BASIC_FONT = BASE_DIR / 'fonts' / 'DejaVuSans.ttf'
+BASIC_FONT = BASE_DIR / "fonts" / "DejaVuSans.ttf"
 
 # App working
 CONVERT_XLS_TO_XLSX = False

@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Request, Depends
-from api.routers import EDIT_NAME_LIST_OUTSTANDING_MONEY, EDIT_ITEM_OUTSTANDING_MONEY
+from fastapi import APIRouter, Depends, Request
+
+from api.routers import EDIT_ITEM_OUTSTANDING_MONEY, EDIT_NAME_LIST_OUTSTANDING_MONEY
 from core.data.response import ResponseApiData
-from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
-from core.handler.outstanding_moeny.update import handler_edit_name_list, handler_edit_item
+from core.handler.outstanding_moeny.update import handler_edit_item, handler_edit_name_list
 from core.helper.headers import check_required_headers
-from .schemas import EditListParams, EditItem
+from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
+
+from .schemas import EditItem, EditListParams
 
 router = APIRouter()
 
@@ -13,35 +15,29 @@ router = APIRouter()
 def edit_name_list(request: Request, payload: EditListParams):
     required_headers = ["UserData"]
     data_header = check_required_headers(request, required_headers)
-    if not data_header['is_valid']:
+    if not data_header["is_valid"]:
         return ResponseApiData(
-            status="ERROR",
-            data=data_header['data'],
-            status_code=data_header['status_code'],
-            additional=None
+            status="ERROR", data=data_header["data"], status_code=data_header["status_code"], additional=None
         ).to_response()
 
-    user_data = data_header['data'][0]['data']
+    user_data = data_header["data"][0]["data"]
 
-    data = {
-        "id": payload.id,
-        "name": payload.name
-    }
+    data = {"id": payload.id, "name": payload.name}
 
     response = handler_edit_name_list(user_data, data)
-    if not response['is_valid']:
+    if not response["is_valid"]:
         return ResponseApiData(
-            status=response['status'],
-            data=response['data'],
-            status_code=response['status_code'],
-            additional=response['additional']
+            status=response["status"],
+            data=response["data"],
+            status_code=response["status_code"],
+            additional=response["additional"],
         ).to_response()
 
     return ResponseApiData(
-        status=response['status'],
-        data=response['data'],
-        status_code=response['status_code'],
-        additional=response['additional']
+        status=response["status"],
+        data=response["data"],
+        status_code=response["status_code"],
+        additional=response["additional"],
     ).to_response()
 
 
@@ -49,34 +45,27 @@ def edit_name_list(request: Request, payload: EditListParams):
 def edit_item(request: Request, payload: EditItem):
     required_headers = ["UserData"]
     data_header = check_required_headers(request, required_headers)
-    if not data_header['is_valid']:
+    if not data_header["is_valid"]:
         return ResponseApiData(
-            status="ERROR",
-            data=data_header['data'],
-            status_code=data_header['status_code'],
-            additional=None
+            status="ERROR", data=data_header["data"], status_code=data_header["status_code"], additional=None
         ).to_response()
 
-    user_data = data_header['data'][0]['data']
+    user_data = data_header["data"][0]["data"]
 
-    data = {
-        "id": payload.id,
-        "amount": payload.amount,
-        "name": payload.name
-    }
+    data = {"id": payload.id, "amount": payload.amount, "name": payload.name}
 
     response = handler_edit_item(user_data, data)
-    if not response['is_valid']:
+    if not response["is_valid"]:
         return ResponseApiData(
-            status=response['status'],
-            data=response['data'],
-            status_code=response['status_code'],
-            additional=response['additional']
+            status=response["status"],
+            data=response["data"],
+            status_code=response["status_code"],
+            additional=response["additional"],
         ).to_response()
 
     return ResponseApiData(
-        status=response['status'],
-        data=response['data'],
-        status_code=response['status_code'],
-        additional=response['additional']
+        status=response["status"],
+        data=response["data"],
+        status_code=response["status_code"],
+        additional=response["additional"],
     ).to_response()

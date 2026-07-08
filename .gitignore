@@ -9,3 +9,11 @@ env/
 
 __pycache__/
 *.pyc
+
+# Artefakty buildów i narzędzi
+*.egg-info/
+.ruff_cache/
+.pytest_cache/
+
+# Hasło vault (tylko lokalnie / na runnerze)
+.vault_pass

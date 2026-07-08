@@ -1,7 +1,9 @@
-from fpdf import FPDF
 import os
-from config.app_config import DOWNLOAD, BASIC_FONT
+
+from fpdf import FPDF
 from PIL import Image
+
+from config.app_config import BASIC_FONT, DOWNLOAD
 from core.services.websocekt.patryk_router.pdfFilter.websocket import send_progress
 
 
@@ -31,7 +33,7 @@ class PDF(FPDF):
 def generate_pdf(user_id: str, data: list[dict], output_file: str) -> tuple[str, bool]:
     try:
         send_progress(user_id, 1, "Rozpoczecie generowanie pdfa...")
-        pdf = FPDF(orientation='L', unit='mm', format='A4')
+        pdf = FPDF(orientation="L", unit="mm", format="A4")
 
         send_progress(user_id, 1, "Ladowanie fontow...")
         pdf.add_font("CustomFont", "", str(BASIC_FONT), uni=True)
@@ -39,14 +41,7 @@ def generate_pdf(user_id: str, data: list[dict], output_file: str) -> tuple[str,
         pdf.add_font("CustomFont", "I", str(BASIC_FONT), uni=True)
         pdf.add_font("CustomFont", "BI", str(BASIC_FONT), uni=True)
         pdf.add_page()
-        col_widths = {
-            "lp": 10,
-            "name": 130,
-            "quantity": 10,
-            "ean": 45,
-            "image": 20,
-            "location": 60
-        }
+        col_widths = {"lp": 10, "name": 130, "quantity": 10, "ean": 45, "image": 20, "location": 60}
 
         pdf.set_font("CustomFont", style="B", size=8)
         pdf.cell(col_widths["lp"], 10, "Lp", border=1, align="C")
@@ -60,7 +55,7 @@ def generate_pdf(user_id: str, data: list[dict], output_file: str) -> tuple[str,
         pdf.set_font("CustomFont", size=8)
         for index, row in enumerate(data, start=0):
             percent_complete = round((index + 1) / len(data) * 100, 2)
-            send_progress(user_id, percent_complete, f'Tworzenie produktu: {index}')
+            send_progress(user_id, percent_complete, f"Tworzenie produktu: {index}")
             truncated_name = truncate_text(row.get("name", ""), max_width=125, pdf=pdf)
 
             pdf.cell(col_widths["lp"], 10, str(row.get("lp", "")), border=1, align="C")
@@ -71,7 +66,6 @@ def generate_pdf(user_id: str, data: list[dict], output_file: str) -> tuple[str,
 
             url_image = row.get("url_image", "")
             if url_image and os.path.exists(url_image):
-
                 with Image.open(url_image) as img:
                     img_width, img_height = img.size
 
@@ -101,7 +95,7 @@ def generate_pdf(user_id: str, data: list[dict], output_file: str) -> tuple[str,
 
             pdf.cell(col_widths["location"], 10, row.get("location", "") or "", border=1, align="C")
             pdf.ln()
-        send_progress(user_id, 50, f"Zakonczenie tworzenia produktow...")
+        send_progress(user_id, 50, "Zakonczenie tworzenia produktow...")
 
         output_pdf = DOWNLOAD / output_file
         pdf.output(str(output_pdf))

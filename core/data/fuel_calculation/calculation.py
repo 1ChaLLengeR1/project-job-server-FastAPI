@@ -1,4 +1,4 @@
-from typing import TypedDict, Union, Dict, Any, List, Literal, Optional
+from typing import TypedDict
 
 
 class FuelData(TypedDict, total=False):

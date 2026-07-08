@@ -1,15 +1,16 @@
-from fastapi import FastAPI
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from contextlib import asynccontextmanager
-from api.api import api_router
 
-from fastapi.staticfiles import StaticFiles
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from prometheus_fastapi_instrumentator import Instrumentator
 
+from api.api import api_router
 from core.repository.psql.calendar.days.update import update_day_automatically_psql
 
 scheduler = AsyncIOScheduler()
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -18,10 +19,8 @@ async def lifespan(app: FastAPI):
     yield
     scheduler.shutdown()
 
-app = FastAPI(
-    title="project_job",
-    description="The project I use every day for my everyday work"
-)
+
+app = FastAPI(title="project_job", description="The project I use every day for my everyday work")
 
 app.include_router(api_router)
 Instrumentator().instrument(app).expose(app)
@@ -33,7 +32,7 @@ origins = [
     "http://localhost",
     "http://localhost:5173",
     "http://127.0.0.1",
-    "http://127.0.0.1:5173"
+    "http://127.0.0.1:5173",
 ]
 
 app.add_middleware(

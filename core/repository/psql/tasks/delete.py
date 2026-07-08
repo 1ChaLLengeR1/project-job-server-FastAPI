@@ -1,7 +1,7 @@
-from core.data.response import ResponseData, create_success_response, create_error_response
+from api.tasks.schemas import ResponseSerializerTask
+from core.data.response import ResponseData, create_error_response, create_success_response
 from database.db import get_db
 from database.tasks.models import Tasks
-from api.tasks.schemas import ResponseSerializerTask
 
 
 def delete_task_psql(task_id: str) -> ResponseData:

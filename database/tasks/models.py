@@ -1,12 +1,14 @@
-from sqlalchemy import Column, String, Boolean, Integer, DateTime
+import uuid
+
+from sqlalchemy import Boolean, Column, DateTime, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
-import uuid
+
 from database.db import Base
 
 
 class Tasks(Base):
-    __tablename__ = 'tasks'
+    __tablename__ = "tasks"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     description = Column(String(255), nullable=False)

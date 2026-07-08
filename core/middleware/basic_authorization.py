@@ -1,28 +1,30 @@
-import jwt
-import datetime
 from datetime import datetime, timedelta
-from fastapi import Request, HTTPException
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
+import jwt
+from fastapi import HTTPException, Request
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+
 from core.helper.validators import get_env_variable
-from database.db import get_db
-from database.auth.models import Users
 from core.middleware.utils import verification_password
+from database.auth.models import Users
+from database.db import get_db
 
 
 class JWTBasicAuthenticationMiddleware(HTTPBearer):
     def __init__(self, auto_error: bool = True):
-        super(JWTBasicAuthenticationMiddleware, self).__init__(auto_error=auto_error)
+        super().__init__(auto_error=auto_error)
 
     async def __call__(self, request: Request):
         try:
-            credentials: HTTPAuthorizationCredentials = await super(JWTBasicAuthenticationMiddleware, self).__call__(
-                request)
+            credentials: HTTPAuthorizationCredentials = await super().__call__(
+                request
+            )
             if credentials:
                 if not credentials.scheme == "Bearer":
-                    raise HTTPException(status_code=403, detail=str("Invalid authentication scheme."))
+                    raise HTTPException(status_code=403, detail="Invalid authentication scheme.")
                 auth_header = request.headers.get("Authorization")
                 if not auth_header:
-                    raise HTTPException(status_code=403, detail=str("You did not provide authorization headers."))
+                    raise HTTPException(status_code=403, detail="You did not provide authorization headers.")
                 token = auth_header.split(" ")[1]
                 is_valid, message = self.decode_jwt(token)
                 if not is_valid:
@@ -30,17 +32,15 @@ class JWTBasicAuthenticationMiddleware(HTTPBearer):
 
                 return True
             else:
-                raise HTTPException(status_code=403, detail=str("Invalid authorization code."))
+                raise HTTPException(status_code=403, detail="Invalid authorization code.")
 
-        except IndexError:
-            raise HTTPException(status_code=403, detail=str("Bearer token not provided."))
+        except IndexError as err:
+            raise HTTPException(status_code=403, detail="Bearer token not provided.") from err
 
     def decode_jwt(self, token: str) -> tuple[bool, str]:
         try:
             payload = jwt.decode(
-                token,
-                get_env_variable("SECRET_KEY_TOKEN"),
-                algorithms=[get_env_variable("ALGORITHM")]
+                token, get_env_variable("SECRET_KEY_TOKEN"), algorithms=[get_env_variable("ALGORITHM")]
             )
 
             user_id = payload.get("id")
@@ -61,24 +61,16 @@ class JWTBasicAuthenticationMiddleware(HTTPBearer):
         db = next(db_gen)
 
         try:
-
             user = db.query(Users).filter(Users.username == username).first()
             if not user:
                 return False, f"user not exist with this name: {username}", None
 
-            if password_on:
-                if not verification_password(password, user.password):
-                    return False, "Password or user name is not correct", None
+            if password_on and not verification_password(password, user.password):
+                return False, "Password or user name is not correct", None
 
-            expired = datetime.utcnow() + timedelta(
-                hours=int(get_env_variable("TOKEN_EXPIRES_HOURS"))
-            )
+            expired = datetime.utcnow() + timedelta(hours=int(get_env_variable("TOKEN_EXPIRES_HOURS")))
 
-            payload = {
-                "id": str(user.id),
-                "exp": expired,
-                "iat": datetime.utcnow()
-            }
+            payload = {"id": str(user.id), "exp": expired, "iat": datetime.utcnow()}
 
             token = jwt.encode(payload, get_env_variable("SECRET_KEY_TOKEN"), algorithm=get_env_variable("ALGORITHM"))
 
@@ -86,7 +78,7 @@ class JWTBasicAuthenticationMiddleware(HTTPBearer):
                 "id": str(user.id),
                 "username": user.username,
                 "access_token": token,
-                "refresh_token": self.encode_refresh_jwt(str(user.id))
+                "refresh_token": self.encode_refresh_jwt(str(user.id)),
             }
 
             return True, "", data
@@ -96,11 +88,7 @@ class JWTBasicAuthenticationMiddleware(HTTPBearer):
     def encode_refresh_jwt(self, user_id: str) -> str:
         token_expires = int(get_env_variable("REFRESH_TOKEN_EXPIRES_HOURS"))
         expires_delta = datetime.utcnow() + timedelta(days=token_expires)
-        payload = {
-            "id": user_id,
-            "exp": expires_delta,
-            "iat": datetime.utcnow()
-        }
+        payload = {"id": user_id, "exp": expires_delta, "iat": datetime.utcnow()}
         encode_jwt = jwt.encode(payload, get_env_variable("SECRET_KEY_REFRESH_TOKEN"), get_env_variable("ALGORITHM"))
         return encode_jwt
 
@@ -110,7 +98,7 @@ class JWTBasicAuthenticationMiddleware(HTTPBearer):
 
         try:
             if not refresh_token:
-                return False, str("token not provided"), None
+                return False, "token not provided", None
 
             jwt.decode(refresh_token, get_env_variable("SECRET_KEY_REFRESH_TOKEN"), get_env_variable("ALGORITHM"))
             user = db.query(Users).filter(Users.id == user_id).first()

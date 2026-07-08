@@ -1,19 +1,21 @@
 from datetime import datetime, timedelta
-from sqlalchemy import func, cast, Date
+
+from sqlalchemy import Date, cast, func
+
+from core.data.response import ResponseData, create_error_response, create_success_response
 from database.db import get_db
 from database.tasks.models import Tasks
-from core.data.response import ResponseData, create_success_response, create_error_response
 
 
 def get_task_statistics_psql(start_date: datetime, end_date: datetime) -> ResponseData:
     db = next(get_db())
     try:
         # Wszystkie wykonane taski w podanym okresie
-        tasks = db.query(Tasks).filter(
-            Tasks.active == False,
-            Tasks.created_at >= start_date,
-            Tasks.created_at <= end_date
-        ).all()
+        tasks = (
+            db.query(Tasks)
+            .filter(Tasks.active == False, Tasks.created_at >= start_date, Tasks.created_at <= end_date)
+            .all()
+        )
 
         total_tasks = len(tasks)
         total_time = sum(task.time for task in tasks)
@@ -28,11 +30,7 @@ def get_task_statistics_psql(start_date: datetime, end_date: datetime) -> Respon
         # Grupowanie po dniu
         tasks_per_day_raw = (
             db.query(cast(Tasks.created_at, Date), func.count(Tasks.id))
-            .filter(
-                Tasks.active == False,
-                Tasks.created_at >= start_date,
-                Tasks.created_at <= end_date
-            )
+            .filter(Tasks.active == False, Tasks.created_at >= start_date, Tasks.created_at <= end_date)
             .group_by(cast(Tasks.created_at, Date))
             .all()
         )
@@ -53,7 +51,7 @@ def get_task_statistics_psql(start_date: datetime, end_date: datetime) -> Respon
             "total_time": total_time,
             "average_per_week": round(average_per_week, 2),
             "average_time_per_week": round(average_time_per_week, 2),
-            "tasks_per_day": tasks_per_day
+            "tasks_per_day": tasks_per_day,
         }
 
         return create_success_response(data=stats, status_code=200)

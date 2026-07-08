@@ -1,4 +1,4 @@
-from typing import TypedDict, Union, Dict, Any, List
+from typing import TypedDict
 
 
 class UserData(TypedDict, total=False):

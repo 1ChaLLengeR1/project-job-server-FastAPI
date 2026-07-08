@@ -1,0 +1,10 @@
+---
+- name: Usuń nieużywane obrazy Docker
+  ansible.builtin.command:
+    cmd: docker image prune -f
+  changed_when: false
+
+- name: Usuń katalog deploy z serwera
+  ansible.builtin.file:
+    path: "{{ deploy_dir }}"
+    state: absent

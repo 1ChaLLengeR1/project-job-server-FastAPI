@@ -1,7 +1,8 @@
-from pydantic import BaseModel
-from uuid import UUID
 from datetime import datetime
-from typing import Optional, Any
+from typing import Any
+from uuid import UUID
+
+from pydantic import BaseModel
 
 
 class PayloadTaskCreate(BaseModel):
@@ -11,8 +12,8 @@ class PayloadTaskCreate(BaseModel):
 
 
 class PayloadTaskUpdate(BaseModel):
-    description: Optional[str] = None
-    time: Optional[Any] = None
+    description: str | None = None
+    time: Any | None = None
 
 
 class PayloadTaskUpdateActive(BaseModel):
@@ -29,7 +30,4 @@ class ResponseSerializerTask(BaseModel):
 
     class Config:
         from_attributes = True
-        json_encoders = {
-            UUID: lambda u: str(u),
-            datetime: lambda dt: dt.isoformat()
-        }
+        json_encoders = {UUID: lambda u: str(u), datetime: lambda dt: dt.isoformat()}

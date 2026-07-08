@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Request
-from api.routers import LOGIN, AUTOMATICALLY_LOGIN
+
+from api.routers import AUTOMATICALLY_LOGIN, LOGIN
 from core.data.response import ResponseApiData
-from .schemas import UserDataPayload
-from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
 from core.helper.headers import check_required_headers
+from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
+
+from .schemas import UserDataPayload
 
 router = APIRouter()
 
@@ -14,12 +16,7 @@ def login(request: Request, payload: UserDataPayload):
     is_valid, mess, data = basic_auth.encode_jwt(payload.username, payload.password)
 
     if not is_valid:
-        return ResponseApiData(
-            status="ERROR",
-            data=mess,
-            status_code=400,
-            additional=None
-        ).to_response()
+        return ResponseApiData(status="ERROR", data=mess, status_code=400, additional=None).to_response()
 
     return ResponseApiData(
         status="SUCCESS",
@@ -33,30 +30,17 @@ def login(request: Request, payload: UserDataPayload):
 def automatically_login(request: Request, user_id: str):
     required_headers = ["X-Refresh-Token"]
     data_header = check_required_headers(request, required_headers)
-    if not data_header['is_valid']:
+    if not data_header["is_valid"]:
         return ResponseApiData(
-            status="ERROR",
-            data=data_header['data'],
-            status_code=data_header['status_code'],
-            additional=None
+            status="ERROR", data=data_header["data"], status_code=data_header["status_code"], additional=None
         ).to_response()
 
-    refresh_token_header = data_header['data'][0]['data']
+    refresh_token_header = data_header["data"][0]["data"]
 
     basic_auth = JWTBasicAuthenticationMiddleware()
     is_valid, mess, data_user = basic_auth.decode_refresh_jwt(refresh_token_header, user_id)
 
     if not is_valid:
-        return ResponseApiData(
-            status="ERROR",
-            data=mess,
-            status_code=400,
-            additional=None
-        ).to_response()
+        return ResponseApiData(status="ERROR", data=mess, status_code=400, additional=None).to_response()
 
-    return ResponseApiData(
-        status="SUCCESS",
-        data=data_user,
-        status_code=200,
-        additional=None
-    ).to_response()
+    return ResponseApiData(status="SUCCESS", data=data_user, status_code=200, additional=None).to_response()

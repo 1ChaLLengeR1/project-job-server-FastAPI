@@ -1,6 +1,8 @@
+import uuid
+
 from sqlalchemy import Column, Float
 from sqlalchemy.dialects.postgresql import UUID
-import uuid
+
 from database.db import Base
 
 

@@ -1,6 +1,6 @@
 from core.data.response import ResponseData
-from database.db import get_db
 from database.database_patryk.models import KeysCalculatorPatryk
+from database.db import get_db
 
 
 def one_calculator_keys_psql() -> ResponseData:
@@ -19,23 +19,10 @@ def one_calculator_keys_psql() -> ResponseData:
             "dpd": row_key.dpd,
             "allegro_matt": row_key.allegro_matt,
             "without_smart": row_key.without_smart,
-
         }
 
-        return ResponseData(
-            is_valid=True,
-            status="SUCCESS",
-            data=data,
-            status_code=200,
-            additional=None
-        )
+        return ResponseData(is_valid=True, status="SUCCESS", data=data, status_code=200, additional=None)
     except Exception as e:
-        return ResponseData(
-            is_valid=False,
-            status="ERROR",
-            data=str(e),
-            status_code=417,
-            additional=None
-        )
+        return ResponseData(is_valid=False, status="ERROR", data=str(e), status_code=417, additional=None)
     finally:
         db.close()

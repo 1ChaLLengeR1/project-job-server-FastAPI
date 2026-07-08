@@ -1,7 +1,9 @@
 import uuid
-from sqlalchemy import Column, Integer, Float, Boolean, Date, DateTime
-from sqlalchemy.sql import func
+
+from sqlalchemy import Boolean, Column, Date, DateTime, Float
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.sql import func
+
 from database.db import Base
 
 

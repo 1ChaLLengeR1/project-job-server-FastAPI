@@ -1,12 +1,11 @@
 import os
 from uuid import UUID
-from typing import List, Dict
+
 from dotenv import load_dotenv
-from core.data.response import ResponseData
 
 from config.app_config import ENV_MODE
 
-env_file_path = os.path.join('env', f'{ENV_MODE}.env')
+env_file_path = os.path.join("env", f"{ENV_MODE}.env")
 load_dotenv(env_file_path)
 
 
@@ -25,10 +24,10 @@ def get_env_variable(name_env: str) -> str:
     return value.strip('"').strip("'")
 
 
-def validate_required_fields(data: Dict, required_fields: List[str]) -> tuple[bool, str]:
+def validate_required_fields(data: dict, required_fields: list[str]) -> tuple[bool, str]:
     missing_fields = [field for field in required_fields if field not in data]
 
     if missing_fields:
         return False, f"Missing field(s): {', '.join(missing_fields)}"
 
-    return True, f""
+    return True, ""

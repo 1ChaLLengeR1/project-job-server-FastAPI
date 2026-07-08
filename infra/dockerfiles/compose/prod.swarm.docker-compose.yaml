@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  fastapi_backend_project_job:
+    image: ${BACKEND_IMAGE:-arturscibor/praca.server.arturscibor.pl:latest}
+    # Bundle env z Dopplera montowany jako docker secret i źródłowany przy starcie
+    # - zero plików .env na dysku serwera.
+    entrypoint:
+      - /bin/sh
+      - -c
+      - set -a && . /run/secrets/project_job_env && set +a && exec gunicorn main:app -k uvicorn.workers.UvicornWorker -b 0.0.0.0:3000 -w 3
+    secrets:
+      - project_job_env
+    networks:
+      - traefik-public
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.backend.rule=Host(`praca.server.arturscibor.pl`)"
+        - "traefik.http.routers.backend.entrypoints=websecure"
+        - "traefik.http.routers.backend.tls.certresolver=myresolver"
+        - "traefik.http.services.backend.loadbalancer.server.port=3000"
+        # Retry middleware (opcjonalnie)
+        - "traefik.http.middlewares.retryme.retry.attempts=3"
+        - "traefik.http.routers.backend.middlewares=retryme"
+        # Healthcheck
+        - "traefik.http.services.backend.loadbalancer.healthcheck.path=/health"
+        - "traefik.http.services.backend.loadbalancer.healthcheck.interval=10s"
+        - "traefik.http.services.backend.loadbalancer.healthcheck.timeout=5s"
+
+secrets:
+  project_job_env:
+    external: true
+    name: project_job_env_prod_v${PROJECT_JOB_ENV_SECRET_VERSION}
+
+networks:
+  traefik-public:
+    external: true

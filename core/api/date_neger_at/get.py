@@ -1,11 +1,11 @@
-from typing import Optional
-from core.data.api.date_nager_at.get import Holiday
+
 import requests
 
+from core.data.api.date_nager_at.get import Holiday
 
-def fetch_date_nager_at_pl(year: int, country: str) -> tuple[Optional[list[Holiday]], Optional[str], bool]:
+
+def fetch_date_nager_at_pl(year: int, country: str) -> tuple[list[Holiday] | None, str | None, bool]:
     try:
-
         response = requests.get(f"https://date.nager.at/api/v3/PublicHolidays/{year}/{country.upper()}", timeout=10)
         response.raise_for_status()
 

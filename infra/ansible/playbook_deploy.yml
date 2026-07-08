@@ -1,0 +1,32 @@
+---
+- name: Deploy project_job backend (Docker Swarm)
+  hosts: production
+  become: true
+  vars_files:
+    - secrets.yml
+  vars:
+    deploy_dir: /var/www/pracaArturScibor/praca.server.arturscibor.pl
+    repo_https_url: "https://{{ git_pat }}@github.com/1ChaLLengeR1/project-job-server-FastAPI.git"
+    repo_public_url: "https://github.com/1ChaLLengeR1/project-job-server-FastAPI.git"
+    repo_branch: main
+    stack_name: project_job_service
+    backend_image: "{{ backend_image_override | default('arturscibor/praca.server.arturscibor.pl:latest') }}"
+    doppler_project: server_job
+    doppler_config: prd
+    env_secret_prefix: project_job_env_prod_v
+
+  tasks:
+    - name: Checkout repozytorium
+      import_tasks: tasks/checkout.yml
+
+    - name: Sieci overlay
+      import_tasks: tasks/networks.yml
+
+    - name: Sekrety aplikacji (Doppler -> docker secret)
+      import_tasks: tasks/secret_env.yml
+
+    - name: Deploy stacków
+      import_tasks: tasks/deploy.yml
+
+    - name: Sprzątanie
+      import_tasks: tasks/cleanup.yml
