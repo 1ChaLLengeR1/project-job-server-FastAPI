@@ -6,6 +6,7 @@ AUTO_REMOVE_FILES = True
 
 # Paths
 BASE_DIR = Path(__file__).resolve().parent.parent
+ENV_PATH = BASE_DIR / "env" / f"{ENV_MODE}.env"
 
 FILE = BASE_DIR / "file"
 TMP = BASE_DIR / "tmp"

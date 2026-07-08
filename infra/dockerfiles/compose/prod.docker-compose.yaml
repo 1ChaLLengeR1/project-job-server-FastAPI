@@ -11,6 +11,8 @@ services:
       - ../../../env/prod.env
     volumes:
       - ../../..:/app
+    # tryb dev (bind mount + reload + auto-migracje) - odkomentuj:
+    # entrypoint: ["bash", "infra/scripts/docker_entrypoint.sh"]
     networks:
       - project_job
 

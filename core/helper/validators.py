@@ -1,12 +1,4 @@
-import os
 from uuid import UUID
-
-from dotenv import load_dotenv
-
-from config.app_config import ENV_MODE
-
-env_file_path = os.path.join("env", f"{ENV_MODE}.env")
-load_dotenv(env_file_path)
 
 
 def is_valid_uuid(uuid: str, version: int = 4) -> bool:
@@ -15,13 +7,6 @@ def is_valid_uuid(uuid: str, version: int = 4) -> bool:
         return str(uuid_obj) == uuid
     except ValueError:
         return False
-
-
-def get_env_variable(name_env: str) -> str:
-    value = os.getenv(name_env)
-    if not value:
-        raise Exception(f"Missing required environment variable: {name_env}")
-    return value.strip('"').strip("'")
 
 
 def validate_required_fields(data: dict, required_fields: list[str]) -> tuple[bool, str]:

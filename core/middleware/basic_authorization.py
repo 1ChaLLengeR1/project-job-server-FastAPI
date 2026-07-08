@@ -4,7 +4,7 @@ import jwt
 from fastapi import HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from core.helper.validators import get_env_variable
+from config.settings import settings
 from core.middleware.utils import verification_password
 from database.psql.database import get_db
 from database.psql.models.auth import Users
@@ -37,9 +37,7 @@ class JWTBasicAuthenticationMiddleware(HTTPBearer):
 
     def decode_jwt(self, token: str) -> tuple[bool, str]:
         try:
-            payload = jwt.decode(
-                token, get_env_variable("SECRET_KEY_TOKEN"), algorithms=[get_env_variable("ALGORITHM")]
-            )
+            payload = jwt.decode(token, settings.secret_key_token, algorithms=[settings.algorithm])
 
             user_id = payload.get("id")
             if not user_id:
@@ -66,11 +64,11 @@ class JWTBasicAuthenticationMiddleware(HTTPBearer):
             if password_on and not verification_password(password, user.password):
                 return False, "Password or user name is not correct", None
 
-            expired = datetime.utcnow() + timedelta(hours=int(get_env_variable("TOKEN_EXPIRES_HOURS")))
+            expired = datetime.utcnow() + timedelta(hours=settings.token_expires_hours)
 
             payload = {"id": str(user.id), "exp": expired, "iat": datetime.utcnow()}
 
-            token = jwt.encode(payload, get_env_variable("SECRET_KEY_TOKEN"), algorithm=get_env_variable("ALGORITHM"))
+            token = jwt.encode(payload, settings.secret_key_token, algorithm=settings.algorithm)
 
             data = {
                 "id": str(user.id),
@@ -84,10 +82,10 @@ class JWTBasicAuthenticationMiddleware(HTTPBearer):
             return False, str(e), None
 
     def encode_refresh_jwt(self, user_id: str) -> str:
-        token_expires = int(get_env_variable("REFRESH_TOKEN_EXPIRES_HOURS"))
+        token_expires = settings.refresh_token_expires_hours
         expires_delta = datetime.utcnow() + timedelta(days=token_expires)
         payload = {"id": user_id, "exp": expires_delta, "iat": datetime.utcnow()}
-        encode_jwt = jwt.encode(payload, get_env_variable("SECRET_KEY_REFRESH_TOKEN"), get_env_variable("ALGORITHM"))
+        encode_jwt = jwt.encode(payload, settings.secret_key_refresh_token, settings.algorithm)
         return encode_jwt
 
     def decode_refresh_jwt(self, refresh_token: str, user_id: str) -> tuple[bool, str, dict | None]:
@@ -98,7 +96,7 @@ class JWTBasicAuthenticationMiddleware(HTTPBearer):
             if not refresh_token:
                 return False, "token not provided", None
 
-            jwt.decode(refresh_token, get_env_variable("SECRET_KEY_REFRESH_TOKEN"), get_env_variable("ALGORITHM"))
+            jwt.decode(refresh_token, settings.secret_key_refresh_token, settings.algorithm)
             user = db.query(Users).filter(Users.id == user_id).first()
 
             if not user:

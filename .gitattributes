@@ -1,0 +1,4 @@
+# Skrypty shell musza miec LF - z CRLF nie odpala ich zaden kontener/serwer
+*.sh text eol=lf
+Makefile text eol=lf
+*.dockerfile text eol=lf

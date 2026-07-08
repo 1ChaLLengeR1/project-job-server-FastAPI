@@ -7,9 +7,9 @@ from sqlalchemy.engine import URL
 import database.psql.models  # noqa: F401
 from alembic import context
 
-# get_env_variable ładuje env/{ENV_MODE}.env i czyta zmienne środowiskowe
-# (env procesu ma priorytet - CI działa bez plików env/)
-from core.helper.validators import get_env_variable
+# settings ładuje env/{ENV_MODE}.env, env procesu ma priorytet
+# (CI działa bez plików env/)
+from config.settings import settings
 from database.psql.base import Base
 
 config = context.config
@@ -21,11 +21,11 @@ target_metadata = Base.metadata
 
 database_url = URL.create(
     drivername="postgresql",
-    username=get_env_variable("DB_USER"),
-    password=get_env_variable("DB_PASSWORD"),
-    host=get_env_variable("DB_HOST"),
-    port=int(get_env_variable("DB_PORT")),
-    database=get_env_variable("DB_DBNAME"),
+    username=settings.db_user,
+    password=settings.db_password,
+    host=settings.db_host,
+    port=settings.db_port,
+    database=settings.db_name,
 )
 
 

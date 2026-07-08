@@ -9,9 +9,10 @@ ENV UV_PYTHON_DOWNLOADS=never
 # venv poza /app, żeby bind-mount kodu nie nadpisywał środowiska
 ENV UV_PROJECT_ENVIRONMENT=/opt/venv
 
-# Instalacja wymaganych pakietów systemowych dla psycopg2
+# Pakiety systemowe: libpq-dev+gcc dla psycopg2, postgresql-client dla
+# skryptów migracji (docker_entrypoint.sh) i debugowania
 RUN apt-get update && apt-get install -y \
-    libpq-dev gcc && \
+    libpq-dev gcc postgresql-client && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

@@ -27,7 +27,7 @@ if [ ! -f "$SQL_DIR/database_down.sql" ]; then
     exit 1
 fi
 
-export PGPASSWORD="$DB_PASSWORD_SCRIPT"
+export PGPASSWORD="$DB_PASSWORD"
 psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_DBNAME" -p "$DB_PORT" -f "$SQL_DIR/database_down.sql"
 
 if [ $? -eq 0 ]; then

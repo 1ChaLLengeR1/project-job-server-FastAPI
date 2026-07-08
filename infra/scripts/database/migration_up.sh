@@ -27,11 +27,12 @@ if [ ! -f "$SQL_DIR/database_up.sql" ]; then
     exit 1
 fi
 
-export PGPASSWORD="$DB_PASSWORD_SCRIPT"
+# 1) rozszerzenia, 2) schemat przez Alembic, 3) seedy (wymagają tabel z Alembica)
+export PGPASSWORD="$DB_PASSWORD"
 psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_DBNAME" -p "$DB_PORT" -f "$SQL_DIR/database_up.sql" && \
+(cd "$BASE_DIR" && uv run alembic upgrade head) && \
 psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_DBNAME" -p "$DB_PORT" -f "$SQL_DIR/users.sql" && \
-psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_DBNAME" -p "$DB_PORT" -f "$SQL_DIR/key_calculator.sql" && \
-(cd "$BASE_DIR" && uv run alembic upgrade head)
+psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_DBNAME" -p "$DB_PORT" -f "$SQL_DIR/key_calculator.sql"
 
 if [ $? -eq 0 ]; then
     echo "Migracja zakończona pomyślnie!"
