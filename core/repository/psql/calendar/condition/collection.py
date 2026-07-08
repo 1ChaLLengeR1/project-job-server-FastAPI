@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 
 from core.data.response import ResponseData, create_error_response, create_success_response
-from database.calendar.models import WorkConditionChange
-from database.db import get_db
+from database.psql.database import get_db
+from database.psql.models.calendar import WorkConditionChange
 
 
 def collection_work_condition_changes_psql() -> ResponseData:

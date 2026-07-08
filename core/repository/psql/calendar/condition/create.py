@@ -4,8 +4,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from core.data.response import ResponseData, create_error_response, create_success_response
-from database.calendar.models import WorkConditionChange
-from database.db import get_db
+from database.psql.database import get_db
+from database.psql.models.calendar import WorkConditionChange
 
 
 def create_work_condition_change_psql(norm_hours: float, hourly_rate: float) -> ResponseData:

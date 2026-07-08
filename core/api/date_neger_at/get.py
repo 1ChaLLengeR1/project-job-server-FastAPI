@@ -1,4 +1,3 @@
-
 import requests
 
 from core.data.api.date_nager_at.get import Holiday

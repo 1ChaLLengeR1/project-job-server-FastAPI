@@ -2,8 +2,8 @@ from core.data.patryk.calculator.update import KeysCalculatorData
 from core.data.response import ResponseData
 from core.data.user import UserData
 from core.repository.psql.user.check import check_user_role_psql
-from database.database_patryk.models import KeysCalculatorPatryk
-from database.db import get_db
+from database.psql.database import get_db
+from database.psql.models.patryk import KeysCalculatorPatryk
 
 
 def update_calculator_keys_psql(user_data: UserData, payload: KeysCalculatorData) -> ResponseData:

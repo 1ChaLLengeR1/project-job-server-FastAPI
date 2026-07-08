@@ -1,17 +1,18 @@
 import uuid
 
-from sqlalchemy import Column, Date, String
+from sqlalchemy import Column, String
 from sqlalchemy.dialects.postgresql import UUID
 
-from database.db import Base
+from database.psql.base import Base
 
 
-class Logs(Base):
-    __tablename__ = "logs"
+class Users(Base):
+    __tablename__ = "users"
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     username = Column(String)
-    description = Column(String)
-    date = Column(Date)
+    password = Column(String)
+    type = Column(String)
 
     class Config:
         orm_mode = True

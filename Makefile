@@ -12,6 +12,15 @@ clean:
 run_app:
 	uv run uvicorn main:app --reload --log-level debug --port 3000
 
+run_test:
+	uv run pytest -s -v
+
+run_test_integration:
+	uv run pytest -s -v -m "not slow and not full_integration and not api_integration"
+
+run_test_full:
+	uv run pytest -s -v -m ""
+
 lint:
 	uv run ruff check .
 

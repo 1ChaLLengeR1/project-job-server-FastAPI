@@ -1,4 +1,4 @@
-from database.database_patryk.models import KeysCalculatorPatryk
+from database.psql.models.patryk import KeysCalculatorPatryk
 
 
 def shop_cost(user_id: str or int, referrer: str, db):

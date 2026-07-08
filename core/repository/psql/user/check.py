@@ -4,8 +4,8 @@ from sqlalchemy.orm import Session
 
 from core.data.response import ResponseData, create_error_response, create_success_response
 from core.data.user import UserData
-from database.auth.models import Users
-from database.db import get_db
+from database.psql.database import get_db
+from database.psql.models.auth import Users
 
 
 def check_user_role_psql(user_data: UserData, type_role: Literal["superadmin", "admin", "guest"]) -> ResponseData:

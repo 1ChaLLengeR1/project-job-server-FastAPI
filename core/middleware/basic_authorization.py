@@ -6,8 +6,8 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from core.helper.validators import get_env_variable
 from core.middleware.utils import verification_password
-from database.auth.models import Users
-from database.db import get_db
+from database.psql.database import get_db
+from database.psql.models.auth import Users
 
 
 class JWTBasicAuthenticationMiddleware(HTTPBearer):
@@ -16,9 +16,7 @@ class JWTBasicAuthenticationMiddleware(HTTPBearer):
 
     async def __call__(self, request: Request):
         try:
-            credentials: HTTPAuthorizationCredentials = await super().__call__(
-                request
-            )
+            credentials: HTTPAuthorizationCredentials = await super().__call__(request)
             if credentials:
                 if not credentials.scheme == "Bearer":
                     raise HTTPException(status_code=403, detail="Invalid authentication scheme.")

@@ -3,8 +3,8 @@ from datetime import datetime, timedelta
 from sqlalchemy import Date, cast, func
 
 from core.data.response import ResponseData, create_error_response, create_success_response
-from database.db import get_db
-from database.tasks.models import Tasks
+from database.psql.database import get_db
+from database.psql.models.tasks import Tasks
 
 
 def get_task_statistics_psql(start_date: datetime, end_date: datetime) -> ResponseData:

@@ -1,7 +1,7 @@
 from api.tasks.schemas import ResponseSerializerTask
 from core.data.response import ResponseData, create_error_response, create_success_response
-from database.db import get_db
-from database.tasks.models import Tasks
+from database.psql.database import get_db
+from database.psql.models.tasks import Tasks
 
 
 def collection_tasks_psql(active: bool = True) -> ResponseData:

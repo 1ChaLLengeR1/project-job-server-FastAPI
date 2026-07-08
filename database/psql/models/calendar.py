@@ -4,7 +4,7 @@ from sqlalchemy import Boolean, Column, Date, DateTime, Float
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 
-from database.db import Base
+from database.psql.base import Base
 
 
 class WorkDay(Base):

@@ -27,4 +27,4 @@ RUN uv sync --frozen --no-dev --extra prod
 ENV PATH="/opt/venv/bin:$PATH"
 
 # Uruchamianie FastAPI
-CMD ["gunicorn", "main:app", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:3000", "-w", "3"]
+CMD ["gunicorn", "main:app", "-c", "config/gunicorn.py"]

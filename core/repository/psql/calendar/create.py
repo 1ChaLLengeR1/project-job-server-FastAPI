@@ -6,8 +6,8 @@ from sqlalchemy.orm import Session
 
 from core.api.date_neger_at.get import fetch_date_nager_at_pl
 from core.data.response import ResponseData, create_error_response, create_success_response
-from database.calendar.models import WorkConditionChange, WorkDay
-from database.db import get_db
+from database.psql.database import get_db
+from database.psql.models.calendar import WorkConditionChange, WorkDay
 
 
 def create_generator_calendar_psql(year: int) -> ResponseData:

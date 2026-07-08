@@ -3,7 +3,7 @@ import uuid
 from sqlalchemy import Column, Float
 from sqlalchemy.dialects.postgresql import UUID
 
-from database.db import Base
+from database.psql.base import Base
 
 
 class KeysCalculatorPatryk(Base):

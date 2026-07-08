@@ -11,6 +11,8 @@ dependencies = [
     "bcrypt==3.2.2",
     "sqlalchemy==1.4.39",
     "psycopg2==2.9.9",
+    "alembic==1.13.3",
+    "slowapi==0.1.9",
     "PyJWT==2.4.0",
     "python-dotenv==1.0.1",
     "openpyxl==3.0.10",
@@ -22,6 +24,13 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+    "pytest-mock",
+    "httpx",
+]
 dev = [
     "ruff",
     "pre-commit",
@@ -48,3 +57,4 @@ ignore = ["B008"]
 
 [tool.ruff.lint.per-file-ignores]
 "api/api.py" = ["E402"]
+"alembic/**" = ["E402"]

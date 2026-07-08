@@ -20,7 +20,7 @@ if [ -z "$DB_HOST" ] || [ -z "$DB_PORT" ] || [ -z "$DB_USER" ] || [ -z "$DB_PASS
     exit 1
 fi
 
-SQL_DIR="$BASE_DIR/database/sql"
+SQL_DIR="$BASE_DIR/database/psql/sql"
 
 if [ ! -f "$SQL_DIR/database_down.sql" ]; then
     echo "Plik $SQL_DIR/database_down.sql nie istnieje!"

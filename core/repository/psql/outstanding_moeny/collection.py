@@ -1,8 +1,8 @@
 from sqlalchemy import desc
 
 from core.data.response import ResponseData
-from database.db import get_db
-from database.outstanding_money.models import NamesOverdue, OutStandingMoney
+from database.psql.database import get_db
+from database.psql.models.outstanding_money import NamesOverdue, OutStandingMoney
 
 
 def collection_list_psql() -> ResponseData:

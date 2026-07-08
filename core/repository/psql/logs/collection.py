@@ -1,6 +1,6 @@
 from core.data.response import ResponseData
-from database.db import get_db
-from database.logs.models import Logs
+from database.psql.database import get_db
+from database.psql.models.logs import Logs
 
 
 def collection_logs_psql(number: int):

@@ -2,8 +2,8 @@ from core.data.outstanding_moeny.update import EditItem, EditListParams
 from core.data.response import ResponseData
 from core.data.user import UserData
 from core.repository.psql.user.check import check_user_role_psql
-from database.db import get_db
-from database.outstanding_money.models import NamesOverdue, OutStandingMoney
+from database.psql.database import get_db
+from database.psql.models.outstanding_money import NamesOverdue, OutStandingMoney
 
 
 def edit_name_list_psql(user_data: UserData, payload: EditListParams) -> ResponseData:

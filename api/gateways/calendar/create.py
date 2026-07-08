@@ -8,9 +8,7 @@ from core.data.user import UserData
 from core.helper.headers import check_required_headers
 
 
-def application_gateway_calendar_create(
-    request: Request, year: int
-) -> tuple[dict | None, Error | None, bool, int]:
+def application_gateway_calendar_create(request: Request, year: int) -> tuple[dict | None, Error | None, bool, int]:
     try:
         required_headers = ["UserData"]
         data_header = check_required_headers(request, required_headers)

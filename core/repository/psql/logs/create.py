@@ -2,8 +2,8 @@ import datetime
 
 from core.data.response import ResponseData
 from core.data.user import UserData
-from database.db import get_db
-from database.logs.models import Logs
+from database.psql.database import get_db
+from database.psql.models.logs import Logs
 
 
 def create_logs_psql(user_data: UserData, description: str):

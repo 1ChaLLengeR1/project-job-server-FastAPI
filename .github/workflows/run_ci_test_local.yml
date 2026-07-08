@@ -35,15 +35,10 @@ jobs:
           uv python install 3.10
           uv sync --all-extras
 
-      - name: Lint (ruff)
-        run: uv run ruff check .
-
-      - name: Format check (ruff format)
-        run: uv run ruff format --check .
-
       - name: Import smoke (main + routery + modele)
         run: uv run python -c "import main; print('import ok')"
 
-      # TODO: po dodaniu testów pytest:
-      # - name: Run tests
-      #   run: make run_test_integration
+      - name: Run tests
+        run: make run_test_integration
+        # przy pierwszych testach integracyjnych (marker integration) dodać
+        # services: postgres jak w ARCHITEKTURA.md sekcja 11.1

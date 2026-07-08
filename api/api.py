@@ -46,46 +46,46 @@ from api.tasks.update import router as update_router_task
 api_router = APIRouter()
 
 # Login
-api_router.include_router(login_router)
+api_router.include_router(login_router, tags=["Auth"])
 
 # Patryk
-api_router.include_router(patryk_router)
-api_router.include_router(patryk_router_update)
-api_router.include_router(patryk_router_calculations)
+api_router.include_router(patryk_router, tags=["Patryk/Calculator"])
+api_router.include_router(patryk_router_update, tags=["Patryk/Calculator"])
+api_router.include_router(patryk_router_calculations, tags=["Patryk/Calculator"])
 
 # Pdf_filter_patryk
-api_router.include_router(create_router_pdf_filter)
+api_router.include_router(create_router_pdf_filter, tags=["Patryk/PdfFilter"])
 
 # Outstanding_money
-api_router.include_router(collection_router_outstanding_money)
-api_router.include_router(create_router_outstanding_money)
-api_router.include_router(update_router_outstanding_money)
-api_router.include_router(delete_router_outstanding_money)
+api_router.include_router(collection_router_outstanding_money, tags=["OutstandingMoney"])
+api_router.include_router(create_router_outstanding_money, tags=["OutstandingMoney"])
+api_router.include_router(update_router_outstanding_money, tags=["OutstandingMoney"])
+api_router.include_router(delete_router_outstanding_money, tags=["OutstandingMoney"])
 
 # Logs
-api_router.include_router(collection_router_logs)
-api_router.include_router(create_router_logs)
+api_router.include_router(collection_router_logs, tags=["Logs"])
+api_router.include_router(create_router_logs, tags=["Logs"])
 
 # Fuel_calculator
-api_router.include_router(calculation_router_fuel_calculation)
+api_router.include_router(calculation_router_fuel_calculation, tags=["FuelCalculator"])
 
 # Tasks
-api_router.include_router(create_router_task)
-api_router.include_router(collection_router_task)
-api_router.include_router(update_router_task)
-api_router.include_router(delete_router_task)
-api_router.include_router(statistics_router_task)
+api_router.include_router(create_router_task, tags=["Tasks"])
+api_router.include_router(collection_router_task, tags=["Tasks"])
+api_router.include_router(update_router_task, tags=["Tasks"])
+api_router.include_router(delete_router_task, tags=["Tasks"])
+api_router.include_router(statistics_router_task, tags=["Tasks"])
 
 # Calendar Condition
-api_router.include_router(collection_router_calendar_condition)
-api_router.include_router(create_router_condition)
-api_router.include_router(update_router_condition)
-api_router.include_router(delete_router_condition)
+api_router.include_router(collection_router_calendar_condition, tags=["Calendar/Conditions"])
+api_router.include_router(create_router_condition, tags=["Calendar/Conditions"])
+api_router.include_router(update_router_condition, tags=["Calendar/Conditions"])
+api_router.include_router(delete_router_condition, tags=["Calendar/Conditions"])
 
 # Calendar
-api_router.include_router(create_router_calendary)
-api_router.include_router(collection_router_calendary)
-api_router.include_router(statistics_router_statistics)
+api_router.include_router(create_router_calendary, tags=["Calendar"])
+api_router.include_router(collection_router_calendary, tags=["Calendar"])
+api_router.include_router(statistics_router_statistics, tags=["Calendar"])
 
 # Calendar Day
-api_router.include_router(update_router_days)
+api_router.include_router(update_router_days, tags=["Calendar/Days"])

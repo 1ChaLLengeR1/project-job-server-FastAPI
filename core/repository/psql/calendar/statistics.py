@@ -3,8 +3,8 @@ from datetime import date
 from sqlalchemy.orm import Session
 
 from core.data.response import ResponseData, create_error_response, create_success_response
-from database.calendar.models import WorkDay
-from database.db import get_db
+from database.psql.database import get_db
+from database.psql.models.calendar import WorkDay
 
 
 def statistics_calendar_psql(year: int) -> ResponseData:

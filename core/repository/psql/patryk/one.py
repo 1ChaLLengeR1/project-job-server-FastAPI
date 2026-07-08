@@ -1,6 +1,6 @@
 from core.data.response import ResponseData
-from database.database_patryk.models import KeysCalculatorPatryk
-from database.db import get_db
+from database.psql.database import get_db
+from database.psql.models.patryk import KeysCalculatorPatryk
 
 
 def one_calculator_keys_psql() -> ResponseData:

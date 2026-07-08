@@ -5,8 +5,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from prometheus_fastapi_instrumentator import Instrumentator
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 from api.api import api_router
+from config.rate_limit import limiter, rate_limit_exceeded_handler
+from config.swagger_description.app import APP_DESCRIPTION
+from config.swagger_description.summary import build_endpoint_summary
+from config.swagger_description.tags import TAGS_METADATA
 from core.repository.psql.calendar.days.update import update_day_automatically_psql
 
 scheduler = AsyncIOScheduler()
@@ -20,12 +26,21 @@ async def lifespan(app: FastAPI):
     scheduler.shutdown()
 
 
-app = FastAPI(title="project_job", description="The project I use every day for my everyday work")
+app = FastAPI(
+    title="project_job",
+    description=build_endpoint_summary(api_router) + APP_DESCRIPTION,
+    openapi_tags=TAGS_METADATA,
+    docs_url="/docs",
+    redoc_url="/redoc",
+    lifespan=lifespan,
+)
 
-app.include_router(api_router)
-Instrumentator().instrument(app).expose(app)
-app.mount("/file", StaticFiles(directory="file"), name="file")
+# Rate limiting (slowapi)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
+# CORS
 origins = [
     "https://arturscibor.pl",
     "https://praca.strona.arturscibor.pl",
@@ -44,7 +59,16 @@ app.add_middleware(
     expose_headers=["Content-Disposition"],
 )
 
+# Routery
+app.include_router(api_router)
 
-@app.get("/health")
+# Metryki Prometheus (/metrics)
+Instrumentator().instrument(app).expose(app)
+
+# Pliki statyczne
+app.mount("/file", StaticFiles(directory="file"), name="file")
+
+
+@app.get("/health", tags=["Health"])
 async def health():
     return {"status": "ok"}

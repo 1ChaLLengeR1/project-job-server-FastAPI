@@ -3,8 +3,8 @@ from core.data.response import ResponseData
 from core.data.user import UserData
 from core.repository.psql.user.check import check_user_role_psql
 from core.utils.patryk.calculator import calculations_calculator, shop_cost
-from database.database_patryk.models import KeysCalculatorPatryk
-from database.db import get_db
+from database.psql.database import get_db
+from database.psql.models.patryk import KeysCalculatorPatryk
 
 
 def calculations_psql(user_data: UserData, payload: CalculatorData) -> ResponseData:

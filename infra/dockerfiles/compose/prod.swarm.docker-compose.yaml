@@ -8,7 +8,7 @@ services:
     entrypoint:
       - /bin/sh
       - -c
-      - set -a && . /run/secrets/project_job_env && set +a && exec gunicorn main:app -k uvicorn.workers.UvicornWorker -b 0.0.0.0:3000 -w 3
+      - set -a && . /run/secrets/project_job_env && set +a && exec gunicorn main:app -c config/gunicorn.py
     secrets:
       - project_job_env
     networks:

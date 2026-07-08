@@ -20,7 +20,7 @@ if [ -z "$DB_HOST" ] || [ -z "$DB_PORT" ] || [ -z "$DB_USER" ] || [ -z "$DB_PASS
     exit 1
 fi
 
-SQL_DIR="$BASE_DIR/database/sql"
+SQL_DIR="$BASE_DIR/database/psql/sql"
 
 if [ ! -f "$SQL_DIR/database_up.sql" ]; then
     echo "Plik $SQL_DIR/database_up.sql nie istnieje!"
@@ -30,7 +30,8 @@ fi
 export PGPASSWORD="$DB_PASSWORD_SCRIPT"
 psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_DBNAME" -p "$DB_PORT" -f "$SQL_DIR/database_up.sql" && \
 psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_DBNAME" -p "$DB_PORT" -f "$SQL_DIR/users.sql" && \
-psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_DBNAME" -p "$DB_PORT" -f "$SQL_DIR/key_calculator.sql"
+psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_DBNAME" -p "$DB_PORT" -f "$SQL_DIR/key_calculator.sql" && \
+(cd "$BASE_DIR" && uv run alembic upgrade head)
 
 if [ $? -eq 0 ]; then
     echo "Migracja zakończona pomyślnie!"
