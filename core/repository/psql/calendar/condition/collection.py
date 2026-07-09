@@ -1,33 +1,22 @@
 from sqlalchemy.orm import Session
 
-from core.data.response import ResponseData, create_error_response, create_success_response
-from database.psql.database import get_db
+from api.response import ApiErrorData
+from core.repository.psql.calendar.condition.response import WorkConditionResponse, _to_work_condition_response
+from database.psql.database import managed_session
 from database.psql.models.calendar import WorkConditionChange
 
 
-def collection_work_condition_changes_psql() -> ResponseData:
-    db_generator = get_db()
-    db: Session = next(db_generator)
+def collection_work_condition_changes_psql(
+    db_session: Session | None = None,
+) -> tuple[list[WorkConditionResponse] | None, ApiErrorData | None, bool]:
     try:
-        work_conditions = db.query(WorkConditionChange).order_by(WorkConditionChange.start_date.desc()).all()
-
-        response_data = []
-        for condition in work_conditions:
-            condition_data = {
-                "id": str(condition.id),
-                "start_date": condition.start_date.isoformat(),
-                "norm_hours": condition.norm_hours,
-                "hourly_rate": condition.hourly_rate,
-                "created_at": condition.created_at.isoformat(),
-                "updated_at": condition.updated_at.isoformat(),
-            }
-            response_data.append(condition_data)
-
-        return create_success_response(data=response_data, status_code=200)
-
+        with managed_session(db_session) as (db, _):
+            work_conditions = db.query(WorkConditionChange).order_by(WorkConditionChange.start_date.desc()).all()
+            return [_to_work_condition_response(condition) for condition in work_conditions], None, True
     except Exception as e:
-        return create_error_response(
-            message=f"get_all_work_condition_changes_psql Exception: {str(e)}", status_code=417
-        )
-    finally:
-        db.close()
+        return None, ApiErrorData(
+            message=str(e),
+            type_module="collection_work_condition_changes_psql",
+            type_error="exception",
+            key_type_error="Exception",
+        ), False

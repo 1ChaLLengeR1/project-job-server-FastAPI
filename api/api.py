@@ -1,27 +1,33 @@
 from fastapi import APIRouter
 
 # login
-from api.auth.login import router as login_router
-from api.calendar.collection import router as collection_router_calendary
-
-# Calendar Condition
-from api.calendar.condition.collection import router as collection_router_calendar_condition
-from api.calendar.condition.create import router as create_router_condition
-from api.calendar.condition.delete import router as delete_router_condition
-from api.calendar.condition.update import router as update_router_condition
+from api.endpoints.auth.login import router as login_router
 
 # Calendar
-from api.calendar.create import router as create_router_calendary
+from api.endpoints.calendar.collection import router as collection_router_calendary
+
+# Calendar Condition
+from api.endpoints.calendar.condition.collection import router as collection_router_calendar_condition
+from api.endpoints.calendar.condition.create import router as create_router_condition
+from api.endpoints.calendar.condition.delete import router as delete_router_condition
+from api.endpoints.calendar.condition.update import router as update_router_condition
+from api.endpoints.calendar.create import router as create_router_calendary
 
 # Calendar Day
-from api.calendar.days.update import router as update_router_days
-from api.calendar.statistics import router as statistics_router_statistics
+from api.endpoints.calendar.days.update import router as update_router_days
+from api.endpoints.calendar.statistics import router as statistics_router_statistics
 
 # Calculator
 from api.endpoints.fuel_calculator.calculation import router as calculation_router_fuel_calculation
 
 # Logs
 from api.endpoints.logs.collection import router as collection_router_logs
+
+# Outstanding_money
+from api.endpoints.outstanding_money.collection import router as collection_router_outstanding_money
+from api.endpoints.outstanding_money.create import router as create_router_outstanding_money
+from api.endpoints.outstanding_money.delete import router as delete_router_outstanding_money
+from api.endpoints.outstanding_money.update import router as update_router_outstanding_money
 
 # Patryk_router
 from api.endpoints.patryk_router.calculator_work.calculator import router as patryk_router_calculations
@@ -35,27 +41,21 @@ from api.endpoints.tasks.delete import router as delete_router_task
 from api.endpoints.tasks.statistics import router as statistics_router_task
 from api.endpoints.tasks.update import router as update_router_task
 
-# Outstanding_money
-from api.outstanding_money.collection import router as collection_router_outstanding_money
-from api.outstanding_money.create import router as create_router_outstanding_money
-from api.outstanding_money.delete import router as delete_router_outstanding_money
-from api.outstanding_money.update import router as update_router_outstanding_money
-
 api_router = APIRouter()
 
-# Login
-api_router.include_router(login_router, tags=["Auth"])
+# Login (tag deklaruje endpoint)
+api_router.include_router(login_router)
 
 # Patryk (tag deklaruje endpoint)
 api_router.include_router(patryk_router)
 api_router.include_router(patryk_router_update)
 api_router.include_router(patryk_router_calculations)
 
-# Outstanding_money
-api_router.include_router(collection_router_outstanding_money, tags=["OutstandingMoney"])
-api_router.include_router(create_router_outstanding_money, tags=["OutstandingMoney"])
-api_router.include_router(update_router_outstanding_money, tags=["OutstandingMoney"])
-api_router.include_router(delete_router_outstanding_money, tags=["OutstandingMoney"])
+# Outstanding_money (tagi deklarują endpointy)
+api_router.include_router(collection_router_outstanding_money)
+api_router.include_router(create_router_outstanding_money)
+api_router.include_router(update_router_outstanding_money)
+api_router.include_router(delete_router_outstanding_money)
 
 # Logs (tag deklaruje endpoint)
 api_router.include_router(collection_router_logs)
@@ -70,16 +70,16 @@ api_router.include_router(update_router_task)
 api_router.include_router(delete_router_task)
 api_router.include_router(statistics_router_task)
 
-# Calendar Condition
-api_router.include_router(collection_router_calendar_condition, tags=["Calendar/Conditions"])
-api_router.include_router(create_router_condition, tags=["Calendar/Conditions"])
-api_router.include_router(update_router_condition, tags=["Calendar/Conditions"])
-api_router.include_router(delete_router_condition, tags=["Calendar/Conditions"])
+# Calendar Condition (tagi deklarują endpointy)
+api_router.include_router(collection_router_calendar_condition)
+api_router.include_router(create_router_condition)
+api_router.include_router(update_router_condition)
+api_router.include_router(delete_router_condition)
 
-# Calendar
-api_router.include_router(create_router_calendary, tags=["Calendar"])
-api_router.include_router(collection_router_calendary, tags=["Calendar"])
-api_router.include_router(statistics_router_statistics, tags=["Calendar"])
+# Calendar (tagi deklarują endpointy)
+api_router.include_router(create_router_calendary)
+api_router.include_router(collection_router_calendary)
+api_router.include_router(statistics_router_statistics)
 
-# Calendar Day
-api_router.include_router(update_router_days, tags=["Calendar/Days"])
+# Calendar Day (tag deklaruje endpoint)
+api_router.include_router(update_router_days)

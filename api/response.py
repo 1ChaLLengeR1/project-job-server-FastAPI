@@ -7,7 +7,13 @@ DATA = TypeVar("DATA", default=Any)
 ADDITIONALS = TypeVar("ADDITIONALS", default=Any)
 
 # Mapowanie key_type_error -> HTTP status (konwencja z ARCHITEKTURA.md, sekcja 4.1)
-ERROR_STATUS_CODES = {"IntegrityError": 409, "NotFound": 404, "Forbidden": 403}
+ERROR_STATUS_CODES = {
+    "IntegrityError": 409,
+    "NotFound": 404,
+    "Forbidden": 403,
+    "Unauthorized": 401,
+    "ExternalService": 502,
+}
 
 
 class ApiResponse(BaseModel, Generic[DATA, ADDITIONALS]):

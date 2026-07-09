@@ -1,39 +1,37 @@
-from datetime import datetime
+from datetime import date
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from core.data.response import ResponseData, create_error_response, create_success_response
-from database.psql.database import get_db
+from api.response import ApiErrorData
+from core.repository.psql.calendar.condition.response import WorkConditionResponse, _to_work_condition_response
+from database.psql.database import managed_session
 from database.psql.models.calendar import WorkConditionChange
 
 
-def create_work_condition_change_psql(norm_hours: float, hourly_rate: float) -> ResponseData:
-    db_generator = get_db()
-    db: Session = next(db_generator)
+def create_work_condition_change_psql(
+    norm_hours: float, hourly_rate: float, db_session: Session | None = None
+) -> tuple[WorkConditionResponse | None, ApiErrorData | None, bool]:
     try:
-        new_condition = WorkConditionChange(start_date=datetime.now(), norm_hours=norm_hours, hourly_rate=hourly_rate)
-
-        db.add(new_condition)
-        db.commit()
-        db.refresh(new_condition)
-
-        response_data = {
-            "id": str(new_condition.id),
-            "start_date": new_condition.start_date.isoformat(),
-            "norm_hours": new_condition.norm_hours,
-            "hourly_rate": new_condition.hourly_rate,
-            "created_at": new_condition.created_at.isoformat(),
-            "updated_at": new_condition.updated_at.isoformat(),
-        }
-
-        return create_success_response(data=response_data, status_code=201)
-
+        with managed_session(db_session) as (db, _):
+            new_condition = WorkConditionChange(
+                start_date=date.today(), norm_hours=norm_hours, hourly_rate=hourly_rate
+            )
+            db.add(new_condition)
+            db.flush()
+            db.refresh(new_condition)
+            return _to_work_condition_response(new_condition), None, True
     except IntegrityError as e:
-        db.rollback()
-        return create_error_response(message=f"create_work_condition_change_psql IntegrityError: {e}", status_code=409)
+        return None, ApiErrorData(
+            message=str(e.orig),
+            type_module="create_work_condition_change_psql",
+            type_error="integrity_error",
+            key_type_error="IntegrityError",
+        ), False
     except Exception as e:
-        db.rollback()
-        return create_error_response(message=f"create_work_condition_change_psql Exception: {str(e)}", status_code=417)
-    finally:
-        db.close()
+        return None, ApiErrorData(
+            message=str(e),
+            type_module="create_work_condition_change_psql",
+            type_error="exception",
+            key_type_error="Exception",
+        ), False

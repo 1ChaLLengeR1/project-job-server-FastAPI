@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import date
+from datetime import datetime
 
 from database.psql.models.logs import Logs
 
@@ -9,7 +9,7 @@ class LogResponse:
     id: str
     username: str
     description: str
-    date: date | None
+    date: datetime | None
 
 
 def _to_log_response(model: Logs) -> LogResponse:

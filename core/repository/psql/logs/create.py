@@ -1,5 +1,3 @@
-from datetime import date
-
 from sqlalchemy.orm import Session
 
 from api.response import ApiErrorData
@@ -28,7 +26,8 @@ def create_logs_psql(
                     key_type_error="NotFound",
                 ), False
 
-            new_log = Logs(username=user.username, description=description, date=date.today())
+            # date uzupełnia server_default=func.now() (DateTime z timezone)
+            new_log = Logs(username=user.username, description=description)
             db.add(new_log)
             db.flush()
             db.refresh(new_log)

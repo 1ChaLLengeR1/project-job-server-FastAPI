@@ -2,13 +2,16 @@ from dataclasses import asdict
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
+from sqlalchemy.orm import Session
 
 from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse
 from api.routers import FUEL_CALCULATION
 from api.schemas.fuel_calculator.payload import FuelCalculationPayload
 from api.schemas.fuel_calculator.response import FuelCalculationResponseData
+from core.data.user import UserData
+from core.handler.fuel_calculator.calculation import handler_fuel_calculation
 from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
-from core.service.fuel_calculator.calculation import calculation_fuel
+from database.psql.database import get_db
 
 router = APIRouter()
 
@@ -23,13 +26,16 @@ router = APIRouter()
     },
     status_code=200,
     tags=["FuelCalculator"],
-    dependencies=[Depends(JWTBasicAuthenticationMiddleware())],
 )
 def api_user_fuel_calculation(
     body: FuelCalculationPayload,
+    user_data: UserData = Depends(JWTBasicAuthenticationMiddleware()),
+    db: Session = Depends(get_db),
 ) -> ApiResponse[FuelCalculationResponseData] | JSONResponse:
     try:
-        data, error, success = calculation_fuel(body.way, body.fuel, body.combustion, body.remaining_values)
+        data, error, success = handler_fuel_calculation(
+            user_data["id"], body.way, body.fuel, body.combustion, body.remaining_values, db_session=db
+        )
         if not success:
             status_code = ERROR_STATUS_CODES.get(error.key_type_error, 400)
             return JSONResponse(

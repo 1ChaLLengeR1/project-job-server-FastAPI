@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime
 
 from pydantic import BaseModel
 
@@ -7,4 +7,4 @@ class LogResponseData(BaseModel):
     id: str
     username: str
     description: str
-    date: date | None
+    date: datetime | None
