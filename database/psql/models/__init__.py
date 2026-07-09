@@ -6,5 +6,6 @@ from database.psql.models import (  # noqa: F401
     logs,
     outstanding_money,
     patryk,
+    rentals,
     tasks,
 )

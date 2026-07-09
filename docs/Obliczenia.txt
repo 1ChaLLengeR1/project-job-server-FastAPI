@@ -1,0 +1,134 @@
+///////////////////////////////////////
+
+Główny_licznik_prąd_ostatnio: 21462
+Główny_licznik_prąd_teraz: 22032
+Różnica_liczników: 22032 - 21462 = 570
+Suma_czterech_liczników: 314,26 + 119 + 0 + 135,11 = 568,37
+Błąd_między_licznikami: 11,63 ~ 12
+Do zapłaty: 586,92
+
+///////////////////////////////////////
+
+Państwo_Dudzik
+
+Ostatnio - 4852,72 - prąd
+Ostatnio - 110,037  - woda
+
+Teraz - 5164,98 - prąd
+Teraz - 115,917 - woda
+
+Pokój_PaństwaDudzik: 
+Bład_Licznika: 4
+Prąd(0.80gr za 1kWh): 5164,98 - 4852,72 + 4 = 316,26 * 0,8 = 253,008 ~ 253zł
+Woda(9zł za kubik): 115,917 - 110,037 = 5,88 * 9 = 52,92 ~ 53zł
+Przesył: 0zł
+Śmieci: 54zł
+Internet: 60zł
+Garaż: 200zł
+Razem: 253 + 53 + 0 + 54 + 60 + 200 = 620zł
+
+///////////////////////////////////////
+
+Łukasz Kydr:
+Ostatnio - 4958,04 - prąd
+Ostatnio - 87,944 - woda
+
+Teraz - 5073,04 - prąd
+Teraz - 89,503 - woda
+
+Łukasz Kydr: 
+Bład_Licznika: 
+Prąd(0.80gr za 1kWh): 5073,04 - 4958,04 + 4 = 119 * 0,8 = 95,2 ~ 95zł
+Woda(9zł za kubik): 89,503 - 87,944 = 1,559 * 9 = 14,031 ~ 14zł
+Przesył: zł
+Śmieci: 27zł
+Internet: 0zł
+Razem: 95 + 14 + 0 + 27 + 0 = 136zł
+
+///////////////////////////////////////
+
+Mieszkanie_4:
+Ostatnio - 290,66 - prąd
+Ostatnio - 6,796 - woda
+
+Teraz - 290,66 - prąd
+Teraz - 6,798 - woda
+
+Mieszkanie_4:
+Bład_Licznika: 0  
+Prąd(0.80gr za 1kWh): 0
+Woda(9zł za kubik): 0
+Przesył: 0zł
+Śmieci: 27zł
+Internet: 0zł
+Razem: 27zł
+
+///////////////////////////////////////
+
+Łukasz
+
+Ostatnio - 2726,01   - prąd
+Ostatnio - 383,911 - woda
+
+Teraz - 2857,12 - prąd 
+Teraz - 393,001 - woda
+
+Pokój_Łukasza: 
+Bład_Licznika: 
+Prąd(0.80gr za 1kWh): 2857,12 - 2726,01 + 4 = 135,11 * 0,8 = 108,088 ~ 109zł
+Woda(9zł za kubik): 393,001 - 383,911 - 5,88 - 1,559 = 1,651 * 9 = 14,859 ~ 15zł
+Przesył: 0zł
+Śmieci: 27zł
+Internet: 60zł
+Razem: 109 + 15 + 0 + 27 + 60 = 211zł
+
+
+Ja:
+czynsz łukasz: 1000
+czynsz Dudzik: 100
+czynsz Krzysiek Krupa: 0
+podatek: -90
+telefon: -25
+Razem: 160 + 1000 + 100 - 90 - 25 = 1145
+prąd dla mnie: 253 + 95 + 0 + 109 = 457zł
+
+
+Ojciec:
+czynsz Łukasz Kier: 1000
+czynsz dudzik: 1100
+czynsz mieszkanie_4: 0
+garaż: 200
+podatek: -270
+Zaległe: -224
+Razem: 160 + 1000 + 1100 + 200 - 270 - 224 = 1966zł
+
+Mama:
+czynsz dudzik: 100
+czynsz Krzysiek Krupa: 0
+podatek: 360zł 
+telefon ja: 25zl
+
+woda-dudzik: 53
+internet-dudzik: 60
+śmieci-dudzik: 54
+
+woda-Łukasz-Kydr: 14
+internet-Kier: 0
+śmieci-Kier: 27
+
+woda-mieszkanie_4: 0
+internet-Kurpa: 0
+śmieci-Kurpa: 27
+
+woda-łukasz: 15
+internet-łukasz: 60
+śmieci-łukasz: 27
+
+Razem: 100 + 0 + 360 + 25 + 53 + 60 + 54 + 14 + 0 + 27 + 0 + 0 + 27 + 15 + 60 + 27 = 822zł
+ 
+
+
+
+
+
+

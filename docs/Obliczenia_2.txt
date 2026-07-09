@@ -1,0 +1,65 @@
+Państwo_Dudzik
+
+Ostatnio - 1972,67- prąd
+Ostatnio - 43,721 - woda
+
+Teraz - 2192,15 - prąd
+Teraz - 49,809 - woda
+
+Pokój_PaństwaDudzik: 
+Prąd(1.05gr za 1kWh): 2202,01 - 1972,67 = 229,34 * 1,05 = 240,807 ~ 241zł
+Woda(9zł za kubik): 49,809 - 43,721 = 6,088 * 9 = 54,792 ~ 55zł
+Przesył: 9zł
+Śmieci: 54zł
+Internet: 60zł
+Razem: 241 + 55 + 9 + 54 + 60 = 419zł
+
+
+///////////////////////////////////////
+
+Ania
+
+Ostatnio - 4188,17 - prąd
+Ostatnio - 77,282  - woda
+
+Teraz - 4268,38 - prąd
+Teraz - 79,560 - woda
+
+Pokój_Ania:
+Prąd(1.05gr za 1kWh): 4272,15 - 4188,17 = 83,98 * 1,05 = 88,179 ~ 88zł
+Woda(9zł za kubik): 79,560 - 77,282 = 2,278 * 9 = 20,502 ~ 21zł
+Przesył: 9zł
+Śmieci: 27zł
+Internet: 30zł
+Razem: 88 + 21 + 9 + 27 + 30 = 175zł
+
+///////////////////////////////////////
+
+Łukasz
+
+Ostatnio - 617,01 - prąd
+Ostatnio - 262,277 - woda
+
+Teraz - 922,53 - prąd 
+Teraz - 275,850 - woda
+
+Pokój_Łukasza:
+Prąd(1.05gr za 1kWh): 936,45 - 617,01 = 319,44 * 1,05 = 335,412 ~ 335zł
+Woda(9zł za kubik): 275,850 - 262,277 = 13,573 - 2,278(Ania) - 6,088(Państwo_Dudzik) = 5,207 * 9 = 46,863 ~ 47zł
+Przesył: 9zł
+Śmieci: 27zł
+Internet: 30zł
+Razem: 335 + 47 + 9 +27 + 30 + 260zł(zaległe media) = 708zł
+
+///////////////////////////////////////
+
+Główny_licznik_prąd_ostatnio: 15286
+Główny_licznik_prąd_teraz: 15920
+Różnica_liczników: 634
+Suma_trzech_liczników: 219,48(34%)[9,86] + 80,21(13%)[3,77] + 305,52(48%)[13,92] = 605,21
+Błąd_między_licznikami: 29
+
+
+///////////////////////////////////////
+
+
