@@ -16,6 +16,7 @@ import database.psql.models.calendar  # noqa: F401
 import database.psql.models.logs  # noqa: F401
 import database.psql.models.outstanding_money  # noqa: F401
 import database.psql.models.patryk  # noqa: F401
+import database.psql.models.rentals  # noqa: F401
 import database.psql.models.tasks  # noqa: F401
 from config.settings import settings
 from database.psql.base import Base

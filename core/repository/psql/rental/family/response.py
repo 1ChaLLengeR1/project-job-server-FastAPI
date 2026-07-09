@@ -27,6 +27,7 @@ class AllocationRuleResponse:
     cost_type_id: str | None
     mode: str
     amount: float | None
+    description: str | None
     start_date: date
     end_date: date | None
     created_at: datetime | None
@@ -85,6 +86,7 @@ def _to_allocation_rule_response(model: RentalAllocationRule) -> AllocationRuleR
         cost_type_id=str(model.cost_type_id) if model.cost_type_id else None,
         mode=model.mode,
         amount=float(model.amount) if model.amount is not None else None,
+        description=model.description,
         start_date=model.start_date,
         end_date=model.end_date,
         created_at=model.created_at,

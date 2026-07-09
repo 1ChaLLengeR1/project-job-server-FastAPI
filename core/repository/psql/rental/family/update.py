@@ -71,6 +71,7 @@ def update_allocation_rule_psql(
     new_cost_type_id: str | None,
     new_mode: str,
     new_amount: float | None,
+    new_description: str | None,
     new_start_date: date,
     new_end_date: date | None,
     db_session: Session | None = None,
@@ -95,6 +96,7 @@ def update_allocation_rule_psql(
             rule.cost_type_id = new_cost_type_id
             rule.mode = new_mode
             rule.amount = new_amount
+            rule.description = new_description
             rule.start_date = new_start_date
             rule.end_date = new_end_date
             db.flush()

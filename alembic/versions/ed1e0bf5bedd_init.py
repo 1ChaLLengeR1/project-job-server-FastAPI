@@ -152,6 +152,7 @@ def upgrade() -> None:
     sa.Column('cost_type_id', postgresql.UUID(as_uuid=True), nullable=True),
     sa.Column('mode', sa.String(length=50), nullable=False),
     sa.Column('amount', sa.Numeric(precision=10, scale=2), nullable=True),
+    sa.Column('description', sa.String(length=255), nullable=True),
     sa.Column('start_date', sa.Date(), nullable=False),
     sa.Column('end_date', sa.Date(), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),

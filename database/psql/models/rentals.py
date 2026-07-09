@@ -271,6 +271,7 @@ class RentalAllocationRule(Base):
     )  # dla cost_type
     mode = Column(String(50), nullable=False)  # fixed_amount | full
     amount = Column(Numeric(10, 2), nullable=True)  # wymagane dla fixed_amount/recurring; może być ujemna
+    description = Column(String(255), nullable=True)  # etykieta pozycji (np. "podatek", "telefon")
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

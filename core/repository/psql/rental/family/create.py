@@ -64,6 +64,7 @@ def create_allocation_rule_psql(
     apartment_id: str | None = None,
     cost_type_id: str | None = None,
     amount: float | None = None,
+    description: str | None = None,
     end_date: date | None = None,
     db_session: Session | None = None,
 ) -> tuple[AllocationRuleResponse | None, ApiErrorData | None, bool]:
@@ -76,6 +77,7 @@ def create_allocation_rule_psql(
                 cost_type_id=cost_type_id,
                 mode=mode,
                 amount=amount,
+                description=description,
                 start_date=start_date,
                 end_date=end_date,
             )
