@@ -7,9 +7,25 @@ jobs:
   tests:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     env:
-      # Dummy env - wystarczają do importu aplikacji i lint;
-      # przy dodaniu testów integracyjnych podpiąć services: postgres.
+      # Env dla testów - settings czyta zmienne procesu priorytetowo,
+      # więc pliki env/*.env nie są potrzebne. DB wskazuje na services: postgres;
+      # conftest tworzy z niej bazę {DB_DBNAME}_test.
       DB_HOST: localhost
       DB_PORT: "5432"
       DB_USER: ci
@@ -40,5 +56,3 @@ jobs:
 
       - name: Run tests
         run: make run_test_integration
-        # przy pierwszych testach integracyjnych (marker integration) dodać
-        # services: postgres jak w ARCHITEKTURA.md sekcja 11.1
