@@ -1,13 +1,14 @@
 from dataclasses import asdict
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse
 from api.routers import STATISTICS_TASK
 from api.schemas.tasks.response import TaskStatisticsResponseData
+from config.rate_limit import RATE_LIMIT_READ, auth_or_ip_key, limiter
 from core.data.user import UserData
 from core.handler.tasks.statistics import handler_get_task_statistics_task
 from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
@@ -22,12 +23,15 @@ router = APIRouter()
     response_model=ApiResponse[TaskStatisticsResponseData],
     responses={
         401: {"model": ApiErrorResponse, "description": "Brak lub niepoprawny token"},
+        429: {"model": ApiErrorResponse, "description": "Przekroczony limit zapytań"},
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
     tags=["Tasks"],
 )
+@limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_user_task_statistics(
+    request: Request,
     start_date: datetime | None = Query(None, description="Początek zakresu statystyk (format: yyyy-mm-dd)"),
     end_date: datetime | None = Query(None, description="Koniec zakresu statystyk (format: yyyy-mm-dd)"),
     user_data: UserData = Depends(JWTBasicAuthenticationMiddleware()),

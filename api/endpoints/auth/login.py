@@ -1,6 +1,6 @@
 from dataclasses import asdict
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
@@ -8,6 +8,7 @@ from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, Api
 from api.routers import AUTOMATICALLY_LOGIN, LOGIN
 from api.schemas.auth.payload import LoginPayload
 from api.schemas.auth.response import AuthTokensData
+from config.rate_limit import RATE_LIMIT_AUTH, limiter
 from core.data.user import UserData
 from core.handler.auth.login import handler_automatically_login, handler_login
 from core.middleware.refresh_authorization import JWTRefreshAuthenticationMiddleware
@@ -22,12 +23,15 @@ router = APIRouter()
     response_model=ApiResponse[AuthTokensData],
     responses={
         401: {"model": ApiErrorResponse, "description": "Błędna nazwa użytkownika lub hasło"},
+        429: {"model": ApiErrorResponse, "description": "Przekroczony limit zapytań"},
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
     tags=["Auth"],
 )
+@limiter.limit(RATE_LIMIT_AUTH)
 def api_public_login(
+    request: Request,
     body: LoginPayload,
     db: Session = Depends(get_db),
 ) -> ApiResponse[AuthTokensData] | JSONResponse:
@@ -59,12 +63,15 @@ def api_public_login(
         400: {"model": ApiErrorResponse, "description": "Niepoprawny format user_id"},
         401: {"model": ApiErrorResponse, "description": "Niepoprawny lub cudzy refresh token"},
         404: {"model": ApiErrorResponse, "description": "User nie istnieje"},
+        429: {"model": ApiErrorResponse, "description": "Przekroczony limit zapytań"},
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
     tags=["Auth"],
 )
+@limiter.limit(RATE_LIMIT_AUTH)
 def api_public_automatically_login(
+    request: Request,
     user_data: UserData = Depends(JWTRefreshAuthenticationMiddleware()),
     db: Session = Depends(get_db),
 ) -> ApiResponse[AuthTokensData] | JSONResponse:

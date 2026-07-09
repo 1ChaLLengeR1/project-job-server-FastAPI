@@ -1,12 +1,13 @@
 from dataclasses import asdict
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse
 from api.routers import COLLECTION_LOGS
 from api.schemas.logs.response import LogResponseData
+from config.rate_limit import RATE_LIMIT_READ, auth_or_ip_key, limiter
 from core.handler.logs.collection import handler_collection_logs
 from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
 from database.psql.database import get_db
@@ -21,13 +22,16 @@ router = APIRouter()
     responses={
         401: {"model": ApiErrorResponse, "description": "Brak lub niepoprawny token"},
         403: {"model": ApiErrorResponse, "description": "Brak uprawnień (wymagana rola superadmin)"},
+        429: {"model": ApiErrorResponse, "description": "Przekroczony limit zapytań"},
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
     tags=["Logs"],
     dependencies=[Depends(JWTBasicAuthenticationMiddleware(roles=["superadmin"]))],
 )
+@limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_superadmin_collection_logs(
+    request: Request,
     number: int,
     db: Session = Depends(get_db),
 ) -> ApiResponse[list[LogResponseData]] | JSONResponse:

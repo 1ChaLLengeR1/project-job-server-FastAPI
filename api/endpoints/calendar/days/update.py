@@ -1,6 +1,6 @@
 from dataclasses import asdict
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
@@ -9,6 +9,7 @@ from api.routers import UPDATE_CALENDAR_DAY_WORK_BY_ID, UPDATE_CALENDAR_DAYS, UP
 from api.schemas.calendar.payload import DaysRangeUpdatePayload, DaysSalaryUpdatePayload, DayUpdateByIdPayload
 from api.schemas.calendar.response import SalaryUpdateData, WorkDaysRangeUpdateData, WorkDayUpdateData
 from api.validators import is_valid_uuid
+from config.rate_limit import RATE_LIMIT_WRITE, auth_or_ip_key, limiter
 from core.data.user import UserData
 from core.handler.calendar.days.update import (
     handler_update_day_calendary_by_id,
@@ -30,12 +31,15 @@ router = APIRouter()
         401: {"model": ApiErrorResponse, "description": "Brak lub niepoprawny token"},
         403: {"model": ApiErrorResponse, "description": "Brak uprawnień (wymagana rola superadmin)"},
         404: {"model": ApiErrorResponse, "description": "Dzień pracy nie istnieje"},
+        429: {"model": ApiErrorResponse, "description": "Przekroczony limit zapytań"},
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
     tags=["Calendar/Days"],
 )
+@limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_update_day_by_id(
+    request: Request,
     day_id: str,
     body: DayUpdateByIdPayload,
     user_data: UserData = Depends(JWTBasicAuthenticationMiddleware(roles=["superadmin"])),
@@ -80,12 +84,15 @@ def api_superadmin_update_day_by_id(
         401: {"model": ApiErrorResponse, "description": "Brak lub niepoprawny token"},
         403: {"model": ApiErrorResponse, "description": "Brak uprawnień (wymagana rola superadmin)"},
         404: {"model": ApiErrorResponse, "description": "Brak dni w podanym zakresie"},
+        429: {"model": ApiErrorResponse, "description": "Przekroczony limit zapytań"},
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
     tags=["Calendar/Days"],
 )
+@limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_update_days_range(
+    request: Request,
     body: DaysRangeUpdatePayload,
     user_data: UserData = Depends(JWTBasicAuthenticationMiddleware(roles=["superadmin"])),
     db: Session = Depends(get_db),
@@ -128,12 +135,15 @@ def api_superadmin_update_days_range(
         401: {"model": ApiErrorResponse, "description": "Brak lub niepoprawny token"},
         403: {"model": ApiErrorResponse, "description": "Brak uprawnień (wymagana rola superadmin)"},
         404: {"model": ApiErrorResponse, "description": "Brak dni roboczych z godzinami w miesiącu"},
+        429: {"model": ApiErrorResponse, "description": "Przekroczony limit zapytań"},
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
     tags=["Calendar/Days"],
 )
+@limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_update_days_salary(
+    request: Request,
     body: DaysSalaryUpdatePayload,
     user_data: UserData = Depends(JWTBasicAuthenticationMiddleware(roles=["superadmin"])),
     db: Session = Depends(get_db),

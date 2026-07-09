@@ -1,6 +1,6 @@
 from dataclasses import asdict
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
@@ -8,6 +8,7 @@ from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, Api
 from api.routers import DELETE_TASK
 from api.schemas.tasks.response import TaskResponseData
 from api.validators import is_valid_uuid
+from config.rate_limit import RATE_LIMIT_WRITE, auth_or_ip_key, limiter
 from core.data.user import UserData
 from core.handler.tasks.delete import handler_delete_task
 from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
@@ -25,12 +26,15 @@ router = APIRouter()
         401: {"model": ApiErrorResponse, "description": "Brak lub niepoprawny token"},
         403: {"model": ApiErrorResponse, "description": "Brak uprawnień (wymagana rola superadmin)"},
         404: {"model": ApiErrorResponse, "description": "Task nie istnieje"},
+        429: {"model": ApiErrorResponse, "description": "Przekroczony limit zapytań"},
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
     tags=["Tasks"],
 )
+@limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_delete_task(
+    request: Request,
     task_id: str,
     user_data: UserData = Depends(JWTBasicAuthenticationMiddleware(roles=["superadmin"])),
     db: Session = Depends(get_db),

@@ -1,12 +1,13 @@
 from dataclasses import asdict
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse
 from api.routers import COLLECTION_OUTSTANDING_MONEY
 from api.schemas.outstanding_money.response import OverdueListData
+from config.rate_limit import RATE_LIMIT_READ, auth_or_ip_key, limiter
 from core.data.user import UserData
 from core.handler.outstanding_money.collection import handler_collection_list
 from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
@@ -21,12 +22,15 @@ router = APIRouter()
     response_model=ApiResponse[list[OverdueListData]],
     responses={
         401: {"model": ApiErrorResponse, "description": "Brak lub niepoprawny token"},
+        429: {"model": ApiErrorResponse, "description": "Przekroczony limit zapytań"},
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
     tags=["OutstandingMoney"],
 )
+@limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_user_collection_outstanding_money(
+    request: Request,
     user_data: UserData = Depends(JWTBasicAuthenticationMiddleware()),
     db: Session = Depends(get_db),
 ) -> ApiResponse[list[OverdueListData]] | JSONResponse:

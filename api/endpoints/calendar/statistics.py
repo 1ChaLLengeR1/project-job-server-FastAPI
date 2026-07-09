@@ -1,12 +1,13 @@
 from dataclasses import asdict
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse
 from api.routers import STATISTICS_CALENDAR
 from api.schemas.calendar.response import CalendarStatisticsData
+from config.rate_limit import RATE_LIMIT_READ, auth_or_ip_key, limiter
 from core.data.user import UserData
 from core.handler.calendar.statistics import handler_statistics_calendar
 from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
@@ -21,12 +22,15 @@ router = APIRouter()
     response_model=ApiResponse[CalendarStatisticsData],
     responses={
         401: {"model": ApiErrorResponse, "description": "Brak lub niepoprawny token"},
+        429: {"model": ApiErrorResponse, "description": "Przekroczony limit zapytań"},
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
     tags=["Calendar"],
 )
+@limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_user_statistics_calendar(
+    request: Request,
     year: int = Query(ge=2000, le=2100, description="Rok"),
     user_data: UserData = Depends(JWTBasicAuthenticationMiddleware()),
     db: Session = Depends(get_db),

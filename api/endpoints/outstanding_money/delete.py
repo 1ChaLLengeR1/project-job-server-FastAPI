@@ -1,6 +1,6 @@
 from dataclasses import asdict
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
@@ -8,6 +8,7 @@ from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, Api
 from api.routers import DELETE_ITEM_OUTSTANDING_MONEY, DELETE_LIST_OUTSTANDING_MONEY
 from api.schemas.outstanding_money.response import DeletedListData, OutstandingItemData
 from api.validators import is_valid_uuid
+from config.rate_limit import RATE_LIMIT_WRITE, auth_or_ip_key, limiter
 from core.data.user import UserData
 from core.handler.outstanding_money.delete import handler_delete_item, handler_delete_list
 from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
@@ -35,12 +36,15 @@ def _invalid_uuid_response(type_module: str) -> JSONResponse:
         401: {"model": ApiErrorResponse, "description": "Brak lub niepoprawny token"},
         403: {"model": ApiErrorResponse, "description": "Brak uprawnień (wymagana rola superadmin)"},
         404: {"model": ApiErrorResponse, "description": "Lista o podanym id nie istnieje"},
+        429: {"model": ApiErrorResponse, "description": "Przekroczony limit zapytań"},
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
     tags=["OutstandingMoney"],
 )
+@limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_delete_outstanding_list(
+    request: Request,
     id: str,
     user_data: UserData = Depends(JWTBasicAuthenticationMiddleware(roles=["superadmin"])),
     db: Session = Depends(get_db),
@@ -77,12 +81,15 @@ def api_superadmin_delete_outstanding_list(
         401: {"model": ApiErrorResponse, "description": "Brak lub niepoprawny token"},
         403: {"model": ApiErrorResponse, "description": "Brak uprawnień (wymagana rola superadmin)"},
         404: {"model": ApiErrorResponse, "description": "Pozycja o podanym id nie istnieje"},
+        429: {"model": ApiErrorResponse, "description": "Przekroczony limit zapytań"},
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
     tags=["OutstandingMoney"],
 )
+@limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_delete_outstanding_item(
+    request: Request,
     id: str,
     user_data: UserData = Depends(JWTBasicAuthenticationMiddleware(roles=["superadmin"])),
     db: Session = Depends(get_db),

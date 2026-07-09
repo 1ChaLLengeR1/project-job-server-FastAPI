@@ -1,6 +1,6 @@
 from dataclasses import asdict
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
@@ -8,6 +8,7 @@ from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, Api
 from api.routers import CREATE_CALENDAR
 from api.schemas.calendar.payload import CalendarCreatePayload
 from api.schemas.calendar.response import GeneratedCalendarData
+from config.rate_limit import RATE_LIMIT_WRITE, auth_or_ip_key, limiter
 from core.data.user import UserData
 from core.handler.calendar.create import handler_create_generator_calendar
 from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
@@ -26,12 +27,15 @@ router = APIRouter()
         404: {"model": ApiErrorResponse, "description": "Brak warunków pracy w bazie"},
         409: {"model": ApiErrorResponse, "description": "Kalendarz na ten rok już istnieje"},
         502: {"model": ApiErrorResponse, "description": "Błąd zewnętrznego API świąt (date.nager.at)"},
+        429: {"model": ApiErrorResponse, "description": "Przekroczony limit zapytań"},
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=201,
     tags=["Calendar"],
 )
+@limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_create_calendar(
+    request: Request,
     body: CalendarCreatePayload,
     user_data: UserData = Depends(JWTBasicAuthenticationMiddleware(roles=["superadmin"])),
     db: Session = Depends(get_db),

@@ -1,6 +1,6 @@
 from dataclasses import asdict
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
@@ -8,6 +8,7 @@ from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, Api
 from api.routers import CALCULATOR
 from api.schemas.patryk_router.payload import CalculationPayload
 from api.schemas.patryk_router.response import CalculationResponseData
+from config.rate_limit import RATE_LIMIT_WRITE, auth_or_ip_key, limiter
 from core.data.user import UserData
 from core.handler.patryk.calculator_work.calculator import handler_calculations
 from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
@@ -24,12 +25,15 @@ router = APIRouter()
         401: {"model": ApiErrorResponse, "description": "Brak lub niepoprawny token"},
         403: {"model": ApiErrorResponse, "description": "Brak uprawnień (wymagana rola admin)"},
         404: {"model": ApiErrorResponse, "description": "Brak rekordu kluczy kalkulatora"},
+        429: {"model": ApiErrorResponse, "description": "Przekroczony limit zapytań"},
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
     tags=["Patryk/Calculator"],
 )
+@limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_admin_calculations(
+    request: Request,
     body: CalculationPayload,
     user_data: UserData = Depends(JWTBasicAuthenticationMiddleware(roles=["admin"])),
     db: Session = Depends(get_db),

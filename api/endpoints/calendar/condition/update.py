@@ -1,6 +1,6 @@
 from dataclasses import asdict
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
@@ -9,6 +9,7 @@ from api.routers import UPDATE_CALENDAR_CONDITION
 from api.schemas.calendar.payload import ConditionUpdatePayload
 from api.schemas.calendar.response import WorkConditionData
 from api.validators import is_valid_uuid
+from config.rate_limit import RATE_LIMIT_WRITE, auth_or_ip_key, limiter
 from core.data.user import UserData
 from core.handler.calendar.condition.update import handler_update_work_condition_change
 from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
@@ -26,12 +27,15 @@ router = APIRouter()
         401: {"model": ApiErrorResponse, "description": "Brak lub niepoprawny token"},
         403: {"model": ApiErrorResponse, "description": "Brak uprawnień (wymagana rola superadmin)"},
         404: {"model": ApiErrorResponse, "description": "Warunki pracy nie istnieją"},
+        429: {"model": ApiErrorResponse, "description": "Przekroczony limit zapytań"},
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
     tags=["Calendar/Conditions"],
 )
+@limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_update_work_condition(
+    request: Request,
     condition_id: str,
     body: ConditionUpdatePayload,
     user_data: UserData = Depends(JWTBasicAuthenticationMiddleware(roles=["superadmin"])),
