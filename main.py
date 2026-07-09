@@ -3,12 +3,12 @@ from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from prometheus_fastapi_instrumentator import Instrumentator
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
 from api.api import api_router
+from api.exception_handlers import register_exception_handlers
 from config.rate_limit import limiter, rate_limit_exceeded_handler
 from config.swagger_description.app import APP_DESCRIPTION
 from config.swagger_description.summary import build_endpoint_summary
@@ -56,17 +56,16 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["POST", "GET", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type", "Accept", "x-refresh-token", "UserData"],
-    expose_headers=["Content-Disposition"],
 )
+
+# Globalne exception handlery (AppException + nieobsłużone wyjątki)
+register_exception_handlers(app)
 
 # Routery
 app.include_router(api_router)
 
 # Metryki Prometheus (/metrics)
 Instrumentator().instrument(app).expose(app)
-
-# Pliki statyczne
-app.mount("/file", StaticFiles(directory="file"), name="file")
 
 
 @app.get("/health", tags=["Health"])

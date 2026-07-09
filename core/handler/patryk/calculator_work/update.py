@@ -1,7 +1,7 @@
+﻿from api.validators import validate_required_fields
 from core.data.patryk.calculator.update import KeysCalculatorData
 from core.data.response import ResponseData
 from core.data.user import UserData
-from core.helper.validators import validate_required_fields
 from core.repository.psql.patryk.update import update_calculator_keys_psql
 
 

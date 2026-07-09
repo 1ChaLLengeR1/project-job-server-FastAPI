@@ -34,7 +34,6 @@ from api.patryk_router.calculator_work.calculator import router as patryk_router
 # Patryk_router
 from api.patryk_router.calculator_work.one import router as patryk_router
 from api.patryk_router.calculator_work.update import router as patryk_router_update
-from api.patryk_router.pdfFilter.create import router as create_router_pdf_filter
 from api.tasks.collection import router as collection_router_task
 
 # Tasks
@@ -52,9 +51,6 @@ api_router.include_router(login_router, tags=["Auth"])
 api_router.include_router(patryk_router, tags=["Patryk/Calculator"])
 api_router.include_router(patryk_router_update, tags=["Patryk/Calculator"])
 api_router.include_router(patryk_router_calculations, tags=["Patryk/Calculator"])
-
-# Pdf_filter_patryk
-api_router.include_router(create_router_pdf_filter, tags=["Patryk/PdfFilter"])
 
 # Outstanding_money
 api_router.include_router(collection_router_outstanding_money, tags=["OutstandingMoney"])

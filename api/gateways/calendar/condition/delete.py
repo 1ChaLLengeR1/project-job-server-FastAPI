@@ -1,12 +1,12 @@
-from typing import cast
+﻿from typing import cast
 
 from fastapi import Request
 
 from api.gateways.types.calendar.condition.delete import ApplicationGatewayCalendarConditionDeleteResult
+from api.validators import is_valid_uuid
 from core.data.response import Error
 from core.data.user import UserData
 from core.helper.headers import check_required_headers
-from core.helper.validators import is_valid_uuid
 
 
 def application_gateway_calendar_condition_delete(
@@ -21,7 +21,7 @@ def application_gateway_calendar_condition_delete(
         user_data = cast(UserData, data_header["data"][0]["data"])
 
         if not is_valid_uuid(condition_id):
-            return None, Error(message="Pole 'condition_id' musi być prawidłowym UUID."), False, 422
+            return None, Error(message="Pole 'condition_id' musi byÄ‡ prawidĹ‚owym UUID."), False, 422
 
         result: ApplicationGatewayCalendarConditionDeleteResult = {"condition_id": condition_id, "user_data": user_data}
         return result, None, True, 200

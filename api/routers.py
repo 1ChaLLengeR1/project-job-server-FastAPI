@@ -7,9 +7,6 @@ CALCULATOR_KEYS = "/calculator_work/calculator_keys"
 CALCULATOR_KEYS_UPDATE = "/calculator_work/calculator_keys/update"
 CALCULATOR = "/calculator_work/calculator_keys/calculations"
 
-# Patryk_Pdf_Filter
-CREATE_PDF = "/pdf_filter/create"
-
 # Outstanding_money
 COLLECTION_OUTSTANDING_MONEY = "/outstanding_money/collection"
 CREATE_LIST_OUTSTANDING_MONEY = "/outstanding_money/create_list"

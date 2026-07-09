@@ -1,14 +1,14 @@
-from typing import cast
+﻿from typing import cast
 
 from fastapi import APIRouter, Depends, Request
 
 from api.routers import UPDATE_ACTIVE_TASKS, UPDATE_TASKS
 from api.tasks.schemas import PayloadTaskUpdate, PayloadTaskUpdateActive
+from api.validators import is_valid_uuid
 from core.data.response import ResponseApiData
 from core.data.user import UserData
 from core.handler.tasks.update import handler_update_task, handler_update_task_active
 from core.helper.headers import check_required_headers
-from core.helper.validators import is_valid_uuid
 from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
 
 router = APIRouter()
@@ -44,7 +44,7 @@ def update_task(request: Request, payload: PayloadTaskUpdate, task_id: str):
     if payload.time is None or not isinstance(payload.time, int):
         return ResponseApiData(
             status="ERROR",
-            data={"message": "W body nie ma klucza 'time' lub jest on nullem bądź nie liczbą."},
+            data={"message": "W body nie ma klucza 'time' lub jest on nullem bÄ…dĹş nie liczbÄ…."},
             status_code=400,
             additional=None,
         ).to_response()

@@ -35,8 +35,4 @@ TAGS_METADATA = [
         "name": "Patryk/Calculator",
         "description": "Kalkulator pracy (klucze i obliczenia).",
     },
-    {
-        "name": "Patryk/PdfFilter",
-        "description": "Generowanie PDF z plików XLSX (filtry produktów + obrazy).",
-    },
 ]
