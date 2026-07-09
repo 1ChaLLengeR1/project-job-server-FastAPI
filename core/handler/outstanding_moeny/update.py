@@ -1,12 +1,11 @@
 from core.data.outstanding_moeny.update import EditItem, EditListParams
 from core.data.response import ResponseData
-from core.data.user import UserData
 from core.repository.psql.outstanding_moeny.update import edit_item_psql, edit_name_list_psql
 
 
-def handler_edit_name_list(user_data: UserData, payload: EditListParams) -> ResponseData:
+def handler_edit_name_list(payload: EditListParams) -> ResponseData:
     try:
-        response = edit_name_list_psql(user_data, payload)
+        response = edit_name_list_psql(payload)
         if not response["is_valid"]:
             return ResponseData(
                 is_valid=response["is_valid"],
@@ -27,9 +26,9 @@ def handler_edit_name_list(user_data: UserData, payload: EditListParams) -> Resp
         return ResponseData(is_valid=False, status="ERROR", data=str(e), status_code=500, additional=None)
 
 
-def handler_edit_item(user_data: UserData, payload: EditItem) -> ResponseData:
+def handler_edit_item(payload: EditItem) -> ResponseData:
     try:
-        response = edit_item_psql(user_data, payload)
+        response = edit_item_psql(payload)
         if not response["is_valid"]:
             return ResponseData(
                 is_valid=response["is_valid"],

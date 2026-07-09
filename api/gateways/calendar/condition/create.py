@@ -1,25 +1,12 @@
-from typing import cast
-
-from fastapi import Request
-
 from api.calendar.condition.schema import PayloadCalendarConditionCreate
 from api.gateways.types.calendar.condition.create import ApplicationGatewayCalendarConditionCreateResult
 from core.data.response import Error
-from core.data.user import UserData
-from core.helper.headers import check_required_headers
 
 
 def application_gateway_calendar_condition_create(
-    request: Request, payload: PayloadCalendarConditionCreate
+    payload: PayloadCalendarConditionCreate,
 ) -> tuple[ApplicationGatewayCalendarConditionCreateResult | None, Error | None, bool, int]:
     try:
-        required_headers = ["UserData"]
-        data_header = check_required_headers(request, required_headers)
-        if not data_header["is_valid"]:
-            return None, Error(message=data_header["data"]["message"]), False, data_header["status_code"]
-
-        user_data = cast(UserData, data_header["data"][0]["data"])
-
         if payload.norm_hours is None or not isinstance(payload.norm_hours, (int, float)):
             return None, Error(message="Pole 'norm_hours' musi być liczbą."), False, 422
 
@@ -35,7 +22,6 @@ def application_gateway_calendar_condition_create(
         result: ApplicationGatewayCalendarConditionCreateResult = {
             "norm_hours": float(payload.norm_hours),
             "hourly_rate": float(payload.hourly_rate),
-            "user_data": user_data,
         }
         return result, None, True, 200
 

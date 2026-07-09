@@ -1,31 +1,26 @@
-from core.data.response import ResponseData
-from database.psql.database import get_db
+from sqlalchemy.orm import Session
+
+from api.response import ApiErrorData
+from core.repository.psql.logs.response import LogResponse, _to_log_response
+from database.psql.database import managed_session
 from database.psql.models.logs import Logs
 
 
-def collection_logs_psql(number: int):
-    db_gen = get_db()
-    db = next(db_gen)
+def collection_logs_psql(
+    number: int, db_session: Session | None = None
+) -> tuple[list[LogResponse] | None, ApiErrorData | None, bool]:
     try:
-        if number == 0:
-            row_logs = db.query(Logs).order_by(Logs.date.desc()).all()
-        else:
-            row_logs = db.query(Logs).order_by(Logs.date.desc()).limit(number).all()
+        with managed_session(db_session) as (db, _):
+            query = db.query(Logs).order_by(Logs.date.desc())
+            if number > 0:
+                query = query.limit(number)
+            row_logs = query.all()
 
-        logs = []
-        for item in row_logs:
-            logs.append(
-                {
-                    "id": str(item.id),
-                    "username": item.username,
-                    "description": item.description,
-                    "date": item.date.isoformat(),
-                }
-            )
-
-        return ResponseData(is_valid=True, status="SUCCESS", data=logs, status_code=200, additional=None)
-
+            return [_to_log_response(log) for log in row_logs], None, True
     except Exception as e:
-        return ResponseData(is_valid=False, status="ERROR", data=str(e), status_code=417, additional=None)
-    finally:
-        db.close()
+        return None, ApiErrorData(
+            message=str(e),
+            type_module="collection_logs_psql",
+            type_error="exception",
+            key_type_error="Exception",
+        ), False

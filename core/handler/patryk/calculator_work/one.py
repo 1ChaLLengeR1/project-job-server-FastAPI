@@ -1,26 +1,25 @@
-from core.data.response import ResponseData
+from sqlalchemy.orm import Session
+
+from api.response import ApiErrorData
+from core.repository.psql.logs.create import create_logs_psql
 from core.repository.psql.patryk.one import one_calculator_keys_psql
+from core.repository.psql.patryk.response import KeysCalculatorResponse
 
 
-def handler_one_calculator_keys() -> ResponseData:
+def handler_one_calculator_keys(
+    user_id: str, db_session: Session | None = None
+) -> tuple[KeysCalculatorResponse | None, ApiErrorData | None, bool]:
     try:
-        response = one_calculator_keys_psql()
-        if not response["is_valid"]:
-            return ResponseData(
-                is_valid=response["is_valid"],
-                status=response["status"],
-                data=response["data"],
-                status_code=response["status_code"],
-                additional=response["additional"],
-            )
+        result, err, ok = one_calculator_keys_psql(db_session=db_session)
+        if not ok:
+            return None, err, False
 
-        return ResponseData(
-            is_valid=response["is_valid"],
-            status=response["status"],
-            data=response["data"],
-            status_code=response["status_code"],
-            additional=response["additional"],
-        )
-
+        create_logs_psql(user_id, "calculator_work:one", db_session=db_session)
+        return result, None, True
     except Exception as e:
-        return ResponseData(is_valid=False, status="ERROR", data=str(e), status_code=500, additional=None)
+        return None, ApiErrorData(
+            message=str(e),
+            type_module="handler_one_calculator_keys",
+            type_error="exception",
+            key_type_error="Exception",
+        ), False

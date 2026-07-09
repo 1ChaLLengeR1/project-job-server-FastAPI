@@ -1,8 +1,7 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Header
 
 from api.routers import AUTOMATICALLY_LOGIN, LOGIN
 from core.data.response import ResponseApiData
-from core.helper.headers import check_required_headers
 from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
 
 from .schemas import UserDataPayload
@@ -11,7 +10,7 @@ router = APIRouter()
 
 
 @router.post(LOGIN)
-def login(request: Request, payload: UserDataPayload):
+def login(payload: UserDataPayload):
     basic_auth = JWTBasicAuthenticationMiddleware()
     is_valid, mess, data = basic_auth.encode_jwt(payload.username, payload.password)
 
@@ -27,18 +26,9 @@ def login(request: Request, payload: UserDataPayload):
 
 
 @router.get(AUTOMATICALLY_LOGIN)
-def automatically_login(request: Request, user_id: str):
-    required_headers = ["X-Refresh-Token"]
-    data_header = check_required_headers(request, required_headers)
-    if not data_header["is_valid"]:
-        return ResponseApiData(
-            status="ERROR", data=data_header["data"], status_code=data_header["status_code"], additional=None
-        ).to_response()
-
-    refresh_token_header = data_header["data"][0]["data"]
-
+def automatically_login(user_id: str, x_refresh_token: str = Header(alias="X-Refresh-Token")):
     basic_auth = JWTBasicAuthenticationMiddleware()
-    is_valid, mess, data_user = basic_auth.decode_refresh_jwt(refresh_token_header, user_id)
+    is_valid, mess, data_user = basic_auth.decode_refresh_jwt(x_refresh_token, user_id)
 
     if not is_valid:
         return ResponseApiData(status="ERROR", data=mess, status_code=400, additional=None).to_response()

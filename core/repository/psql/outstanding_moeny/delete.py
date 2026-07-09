@@ -1,24 +1,12 @@
 from core.data.response import ResponseData
-from core.data.user import UserData
-from core.repository.psql.user.check import check_user_role_psql
 from database.psql.database import get_db
 from database.psql.models.outstanding_money import NamesOverdue, OutStandingMoney
 
 
-def delete_list_psql(user_data: UserData, id: str) -> ResponseData:
+def delete_list_psql(id: str) -> ResponseData:
     db_gen = get_db()
     db = next(db_gen)
     try:
-        check_role = check_user_role_psql(user_data, "superadmin")
-        if not check_role["is_valid"]:
-            return ResponseData(
-                is_valid=check_role["is_valid"],
-                status=check_role["status"],
-                data=check_role["data"],
-                status_code=check_role["status_code"],
-                additional=check_role["additional"],
-            )
-
         item_names_overdue = db.query(NamesOverdue).filter(NamesOverdue.id == id).first()
         if not item_names_overdue:
             return ResponseData(
@@ -67,20 +55,10 @@ def delete_list_psql(user_data: UserData, id: str) -> ResponseData:
         db.close()
 
 
-def delete_item_psql(user_data: UserData, id: str) -> ResponseData:
+def delete_item_psql(id: str) -> ResponseData:
     db_gen = get_db()
     db = next(db_gen)
     try:
-        check_role = check_user_role_psql(user_data, "superadmin")
-        if not check_role["is_valid"]:
-            return ResponseData(
-                is_valid=check_role["is_valid"],
-                status=check_role["status"],
-                data=check_role["data"],
-                status_code=check_role["status_code"],
-                additional=check_role["additional"],
-            )
-
         row_out_standing_money = db.query(OutStandingMoney).filter(OutStandingMoney.id == id).first()
         if not row_out_standing_money:
             return ResponseData(

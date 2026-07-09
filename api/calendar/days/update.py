@@ -1,6 +1,6 @@
 from typing import cast
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends
 
 from api.calendar.days.schema import (
     PayloadCalendarDaysWorkSalaryUpdate,
@@ -24,12 +24,12 @@ from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
 router = APIRouter()
 
 
-@router.patch(UPDATE_CALENDAR_DAY_WORK_BY_ID, dependencies=[Depends(JWTBasicAuthenticationMiddleware())])
-def view_update_day_calendary_by_id(request: Request, day_id: str, payload: PayloadCalendarDayWorkUpdateById):
+@router.patch(
+    UPDATE_CALENDAR_DAY_WORK_BY_ID, dependencies=[Depends(JWTBasicAuthenticationMiddleware(roles=["superadmin"]))]
+)
+def view_update_day_calendary_by_id(day_id: str, payload: PayloadCalendarDayWorkUpdateById):
     try:
-        raw_data, raw_error, is_valid, status_code = application_gateway_calendar_day_by_id_update(
-            request, day_id, payload
-        )
+        raw_data, raw_error, is_valid, status_code = application_gateway_calendar_day_by_id_update(day_id, payload)
 
         if not is_valid:
             error = cast(Error, raw_error)
@@ -37,13 +37,12 @@ def view_update_day_calendary_by_id(request: Request, day_id: str, payload: Payl
                 status="ERROR", data={"message": error["message"]}, status_code=status_code, additional=None
             ).to_response()
 
-        user_data = raw_data.get("user_data")
         day_id: str = raw_data.get("day_id")
         norm_hours: float = raw_data.get("norm_hours")
         hours_worked: float = raw_data.get("hours_worked")
         hourly_rate: float = raw_data.get("hourly_rate")
 
-        response = handler_update_day_calendary_by_id(user_data, day_id, norm_hours, hours_worked, hourly_rate)
+        response = handler_update_day_calendary_by_id(day_id, norm_hours, hours_worked, hourly_rate)
         return ResponseApiData(
             status=response["status"],
             data=response["data"],
@@ -57,17 +56,16 @@ def view_update_day_calendary_by_id(request: Request, day_id: str, payload: Payl
         ).to_response()
 
 
-@router.patch(UPDATE_CALENDAR_DAYS, dependencies=[Depends(JWTBasicAuthenticationMiddleware())])
-def view_update_days_calendary(request: Request, payload: PayloadCalendarDaysWorkUpdate):
+@router.patch(UPDATE_CALENDAR_DAYS, dependencies=[Depends(JWTBasicAuthenticationMiddleware(roles=["superadmin"]))])
+def view_update_days_calendary(payload: PayloadCalendarDaysWorkUpdate):
     try:
-        raw_data, raw_error, is_valid, status_code = application_gateway_calendar_days_update(request, payload)
+        raw_data, raw_error, is_valid, status_code = application_gateway_calendar_days_update(payload)
         if not is_valid:
             error = cast(Error, raw_error)
             return ResponseApiData(
                 status="ERROR", data={"message": error["message"]}, status_code=status_code, additional=None
             ).to_response()
 
-        user_data = raw_data.get("user_data")
         year: int = raw_data.get("year")
         month: int = raw_data.get("month")
         start_day: int = raw_data.get("start_day")
@@ -77,7 +75,7 @@ def view_update_days_calendary(request: Request, payload: PayloadCalendarDaysWor
         hourly_rate: float = raw_data.get("hourly_rate")
 
         response = handler_update_days_calendary(
-            user_data, year, month, start_day, end_day, norm_hours, hours_worked, hourly_rate
+            year, month, start_day, end_day, norm_hours, hours_worked, hourly_rate
         )
         return ResponseApiData(
             status=response["status"],
@@ -92,22 +90,23 @@ def view_update_days_calendary(request: Request, payload: PayloadCalendarDaysWor
         ).to_response()
 
 
-@router.patch(UPDATE_CALENDAR_DAYS_SALARY, dependencies=[Depends(JWTBasicAuthenticationMiddleware())])
-def view_update_days_automatically_for_salary(request: Request, payload: PayloadCalendarDaysWorkSalaryUpdate):
+@router.patch(
+    UPDATE_CALENDAR_DAYS_SALARY, dependencies=[Depends(JWTBasicAuthenticationMiddleware(roles=["superadmin"]))]
+)
+def view_update_days_automatically_for_salary(payload: PayloadCalendarDaysWorkSalaryUpdate):
     try:
-        raw_data, raw_error, is_valid, status_code = application_gateway_calendar_days_update_salary(request, payload)
+        raw_data, raw_error, is_valid, status_code = application_gateway_calendar_days_update_salary(payload)
         if not is_valid:
             error = cast(Error, raw_error)
             return ResponseApiData(
                 status="ERROR", data={"message": error["message"]}, status_code=status_code, additional=None
             ).to_response()
 
-        user_data = raw_data.get("user_data")
         year: int = raw_data.get("year")
         month: int = raw_data.get("month")
         salary: float = raw_data.get("salary")
 
-        response = handler_update_days_automatically_for_salary(user_data, year, month, salary)
+        response = handler_update_days_automatically_for_salary(year, month, salary)
         return ResponseApiData(
             status=response["status"],
             data=response["data"],

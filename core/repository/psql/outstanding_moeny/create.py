@@ -4,26 +4,14 @@ from uuid import UUID
 
 from core.data.outstanding_moeny.create import AddItemParams, CreateListParams
 from core.data.response import ResponseData
-from core.data.user import UserData
-from core.repository.psql.user.check import check_user_role_psql
 from database.psql.database import get_db
 from database.psql.models.outstanding_money import NamesOverdue, OutStandingMoney
 
 
-def create_list_psql(user_data: UserData, payload: CreateListParams) -> ResponseData:
+def create_list_psql(payload: CreateListParams) -> ResponseData:
     db_gen = get_db()
     db = next(db_gen)
     try:
-        check_role = check_user_role_psql(user_data, "superadmin")
-        if not check_role["is_valid"]:
-            return ResponseData(
-                is_valid=check_role["is_valid"],
-                status=check_role["status"],
-                data=check_role["data"],
-                status_code=check_role["status_code"],
-                additional=check_role["additional"],
-            )
-
         new_uuid4 = uuid.uuid4()
         new_outstanding_money_list = []
 
@@ -59,20 +47,10 @@ def create_list_psql(user_data: UserData, payload: CreateListParams) -> Response
         db.close()
 
 
-def add_item_psql(user_data: UserData, payload: AddItemParams) -> ResponseData:
+def add_item_psql(payload: AddItemParams) -> ResponseData:
     db_gen = get_db()
     db = next(db_gen)
     try:
-        check_role = check_user_role_psql(user_data, "superadmin")
-        if not check_role["is_valid"]:
-            return ResponseData(
-                is_valid=check_role["is_valid"],
-                status=check_role["status"],
-                data=check_role["data"],
-                status_code=check_role["status_code"],
-                additional=check_role["additional"],
-            )
-
         id_name_uuid = UUID(payload["id_name"])
         row_item = db.query(NamesOverdue).filter(NamesOverdue.id == payload["id_name"]).first()
         if not row_item:

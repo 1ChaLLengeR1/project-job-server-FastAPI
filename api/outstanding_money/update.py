@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends
 
 from api.routers import EDIT_ITEM_OUTSTANDING_MONEY, EDIT_NAME_LIST_OUTSTANDING_MONEY
 from core.data.response import ResponseApiData
 from core.handler.outstanding_moeny.update import handler_edit_item, handler_edit_name_list
-from core.helper.headers import check_required_headers
 from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
 
 from .schemas import EditItem, EditListParams
@@ -11,20 +10,13 @@ from .schemas import EditItem, EditListParams
 router = APIRouter()
 
 
-@router.put(EDIT_NAME_LIST_OUTSTANDING_MONEY, dependencies=[Depends(JWTBasicAuthenticationMiddleware())])
-def edit_name_list(request: Request, payload: EditListParams):
-    required_headers = ["UserData"]
-    data_header = check_required_headers(request, required_headers)
-    if not data_header["is_valid"]:
-        return ResponseApiData(
-            status="ERROR", data=data_header["data"], status_code=data_header["status_code"], additional=None
-        ).to_response()
-
-    user_data = data_header["data"][0]["data"]
-
+@router.put(
+    EDIT_NAME_LIST_OUTSTANDING_MONEY, dependencies=[Depends(JWTBasicAuthenticationMiddleware(roles=["superadmin"]))]
+)
+def edit_name_list(payload: EditListParams):
     data = {"id": payload.id, "name": payload.name}
 
-    response = handler_edit_name_list(user_data, data)
+    response = handler_edit_name_list(data)
     if not response["is_valid"]:
         return ResponseApiData(
             status=response["status"],
@@ -41,20 +33,13 @@ def edit_name_list(request: Request, payload: EditListParams):
     ).to_response()
 
 
-@router.put(EDIT_ITEM_OUTSTANDING_MONEY, dependencies=[Depends(JWTBasicAuthenticationMiddleware())])
-def edit_item(request: Request, payload: EditItem):
-    required_headers = ["UserData"]
-    data_header = check_required_headers(request, required_headers)
-    if not data_header["is_valid"]:
-        return ResponseApiData(
-            status="ERROR", data=data_header["data"], status_code=data_header["status_code"], additional=None
-        ).to_response()
-
-    user_data = data_header["data"][0]["data"]
-
+@router.put(
+    EDIT_ITEM_OUTSTANDING_MONEY, dependencies=[Depends(JWTBasicAuthenticationMiddleware(roles=["superadmin"]))]
+)
+def edit_item(payload: EditItem):
     data = {"id": payload.id, "amount": payload.amount, "name": payload.name}
 
-    response = handler_edit_item(user_data, data)
+    response = handler_edit_item(data)
     if not response["is_valid"]:
         return ResponseApiData(
             status=response["status"],

@@ -1,9 +1,13 @@
-from typing import Generic, Literal, TypeVar
+from typing import Any, Generic, Literal
 
 from pydantic import BaseModel
+from typing_extensions import TypeVar
 
-DATA = TypeVar("DATA")
-ADDITIONALS = TypeVar("ADDITIONALS")
+DATA = TypeVar("DATA", default=Any)
+ADDITIONALS = TypeVar("ADDITIONALS", default=Any)
+
+# Mapowanie key_type_error -> HTTP status (konwencja z ARCHITEKTURA.md, sekcja 4.1)
+ERROR_STATUS_CODES = {"IntegrityError": 409, "NotFound": 404, "Forbidden": 403}
 
 
 class ApiResponse(BaseModel, Generic[DATA, ADDITIONALS]):

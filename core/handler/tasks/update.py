@@ -1,32 +1,48 @@
-from core.data.response import ResponseData, create_error_response
-from core.data.user import UserData
+from sqlalchemy.orm import Session
+
+from api.response import ApiErrorData
+from core.repository.psql.logs.create import create_logs_psql
+from core.repository.psql.tasks.response import TaskResponse
 from core.repository.psql.tasks.update import update_task_active_psql, update_task_psql
-from core.repository.psql.user.check import check_user_role_psql
 
 
-def handler_update_task(user_data: UserData, task_id: str, new_description: str, new_time: int) -> ResponseData:
+def handler_update_task(
+    user_id: str,
+    task_id: str,
+    new_description: str,
+    new_time: int,
+    db_session: Session | None = None,
+) -> tuple[TaskResponse | None, ApiErrorData | None, bool]:
     try:
-        check_role = check_user_role_psql(user_data, "superadmin")
-        if not check_role["is_valid"]:
-            return check_role
+        result, err, ok = update_task_psql(task_id, new_description, new_time, db_session=db_session)
+        if not ok:
+            return None, err, False
 
-        response_update = update_task_psql(task_id, new_description, new_time)
-        if not response_update["is_valid"]:
-            return response_update
-        return response_update
+        create_logs_psql(user_id, "tasks:update", db_session=db_session)
+        return result, None, True
     except Exception as e:
-        return create_error_response(message=str(e), status_code=500)
+        return None, ApiErrorData(
+            message=str(e),
+            type_module="handler_update_task",
+            type_error="exception",
+            key_type_error="Exception",
+        ), False
 
 
-def handler_update_task_active(user_data: UserData, task_id: str, new_active: bool) -> ResponseData:
+def handler_update_task_active(
+    user_id: str, task_id: str, new_active: bool, db_session: Session | None = None
+) -> tuple[TaskResponse | None, ApiErrorData | None, bool]:
     try:
-        check_role = check_user_role_psql(user_data, "superadmin")
-        if not check_role["is_valid"]:
-            return check_role
+        result, err, ok = update_task_active_psql(task_id, new_active, db_session=db_session)
+        if not ok:
+            return None, err, False
 
-        response_update = update_task_active_psql(task_id, new_active)
-        if not response_update["is_valid"]:
-            return response_update
-        return response_update
+        create_logs_psql(user_id, "tasks:update_active", db_session=db_session)
+        return result, None, True
     except Exception as e:
-        return create_error_response(message=str(e), status_code=500)
+        return None, ApiErrorData(
+            message=str(e),
+            type_module="handler_update_task_active",
+            type_error="exception",
+            key_type_error="Exception",
+        ), False

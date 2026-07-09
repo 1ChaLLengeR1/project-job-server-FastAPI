@@ -18,7 +18,6 @@ DELETE_ITEM_OUTSTANDING_MONEY = "/outstanding_money/delete_item/{id}"
 
 # Logs
 COLLECTION_LOGS = "/logs/collection/{number}"
-CREATE_LOG = "/logs/create/{description}"
 
 # Fuel_calculator
 FUEL_CALCULATION = "/fuel/fuel_calculations"

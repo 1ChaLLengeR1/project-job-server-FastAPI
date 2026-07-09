@@ -1,21 +1,33 @@
-from api.tasks.schemas import ResponseSerializerTask
-from core.data.response import ResponseData, create_error_response, create_success_response
-from database.psql.database import get_db
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
+
+from api.response import ApiErrorData
+from core.repository.psql.tasks.response import TaskResponse, _to_task_response
+from database.psql.database import managed_session
 from database.psql.models.tasks import Tasks
 
 
-def create_task_psql(description: str, time: int, active: bool = True) -> ResponseData:
-    db = next(get_db())
+def create_task_psql(
+    description: str, time: int, active: bool = True, db_session: Session | None = None
+) -> tuple[TaskResponse | None, ApiErrorData | None, bool]:
     try:
-        new_task = Tasks(description=description, time=time, active=active)
-        db.add(new_task)
-        db.commit()
-        db.refresh(new_task)
-
-        task_data = ResponseSerializerTask.from_orm(new_task)
-        return create_success_response(data=task_data.model_dump(mode="json"), status_code=200)
+        with managed_session(db_session) as (db, _):
+            new_task = Tasks(description=description, time=time, active=active)
+            db.add(new_task)
+            db.flush()
+            db.refresh(new_task)
+            return _to_task_response(new_task), None, True
+    except IntegrityError as e:
+        return None, ApiErrorData(
+            message=str(e.orig),
+            type_module="create_task_psql",
+            type_error="integrity_error",
+            key_type_error="IntegrityError",
+        ), False
     except Exception as e:
-        db.rollback()
-        return create_error_response(message=str(e), status_code=417)
-    finally:
-        db.close()
+        return None, ApiErrorData(
+            message=str(e),
+            type_module="create_task_psql",
+            type_error="exception",
+            key_type_error="Exception",
+        ), False

@@ -1,12 +1,11 @@
 from core.data.outstanding_moeny.create import AddItemParams, CreateListParams
 from core.data.response import ResponseData
-from core.data.user import UserData
 from core.repository.psql.outstanding_moeny.create import add_item_psql, create_list_psql
 
 
-def handler_create_list(user_data: UserData, payload: CreateListParams) -> ResponseData:
+def handler_create_list(payload: CreateListParams) -> ResponseData:
     try:
-        response_create = create_list_psql(user_data, payload)
+        response_create = create_list_psql(payload)
         if not response_create["is_valid"]:
             return ResponseData(
                 is_valid=response_create["is_valid"],
@@ -28,9 +27,9 @@ def handler_create_list(user_data: UserData, payload: CreateListParams) -> Respo
         return ResponseData(is_valid=False, status="ERROR", data=str(e), status_code=500, additional=None)
 
 
-def handler_add_item(user_data: UserData, payload: AddItemParams) -> ResponseData:
+def handler_add_item(payload: AddItemParams) -> ResponseData:
     try:
-        response_create = add_item_psql(user_data, payload)
+        response_create = add_item_psql(payload)
         if not response_create["is_valid"]:
             return ResponseData(
                 is_valid=response_create["is_valid"],

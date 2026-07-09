@@ -1,6 +1,6 @@
 from typing import cast
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends
 
 from api.calendar.condition.schema import PayloadCalendarConditionCreate
 from api.gateways.calendar.condition.create import application_gateway_calendar_condition_create
@@ -12,9 +12,9 @@ from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
 router = APIRouter()
 
 
-@router.post(CREATE_CALENDAR_CONDITION, dependencies=[Depends(JWTBasicAuthenticationMiddleware())])
-def create_work_condition_change(request: Request, payload: PayloadCalendarConditionCreate):
-    raw_data, raw_error, is_valid, status_code = application_gateway_calendar_condition_create(request, payload)
+@router.post(CREATE_CALENDAR_CONDITION, dependencies=[Depends(JWTBasicAuthenticationMiddleware(roles=["superadmin"]))])
+def create_work_condition_change(payload: PayloadCalendarConditionCreate):
+    raw_data, raw_error, is_valid, status_code = application_gateway_calendar_condition_create(payload)
 
     if not is_valid:
         error = cast(Error, raw_error)
@@ -23,7 +23,7 @@ def create_work_condition_change(request: Request, payload: PayloadCalendarCondi
         ).to_response()
 
     response = handler_create_work_condition_change(
-        user_data=raw_data["user_data"], norm_hours=raw_data["norm_hours"], hourly_rate=raw_data["hourly_rate"]
+        norm_hours=raw_data["norm_hours"], hourly_rate=raw_data["hourly_rate"]
     )
     return ResponseApiData(
         status=response["status"],

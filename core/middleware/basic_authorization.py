@@ -1,56 +1,76 @@
-from datetime import datetime, timedelta
+import uuid
+from datetime import datetime, timedelta, timezone
 
 import jwt
 from fastapi import HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from config.settings import settings
+from core.data.user import UserData
 from core.middleware.utils import verification_password
+from core.repository.psql.user.one import one_user_by_id_psql
 from database.psql.database import get_db
 from database.psql.models.auth import Users
 
 
 class JWTBasicAuthenticationMiddleware(HTTPBearer):
-    def __init__(self, auto_error: bool = True):
+    """Dependency FastAPI (nie klasyczne ASGI middleware).
+
+    Przepływ: Bearer token → dekodowanie JWT → claim `id` walidowany jako UUID →
+    pobranie usera z DB → weryfikacja roli względem `roles` → zwrot danych usera.
+
+    - `roles=None` — wystarczy poprawny token (każdy zalogowany user),
+    - `roles=["admin"]` — wpuszcza admina (i superadmina — superadmin przechodzi każdy check),
+    - 401 — problem z tokenem, 403 — brak uprawnień.
+    """
+
+    def __init__(self, roles: list[str] | None = None, auto_error: bool = True):
         super().__init__(auto_error=auto_error)
+        self.roles = roles
 
-    async def __call__(self, request: Request):
+    async def __call__(self, request: Request) -> UserData:
         try:
-            credentials: HTTPAuthorizationCredentials = await super().__call__(request)
-            if credentials:
-                if not credentials.scheme == "Bearer":
-                    raise HTTPException(status_code=403, detail="Invalid authentication scheme.")
-                auth_header = request.headers.get("Authorization")
-                if not auth_header:
-                    raise HTTPException(status_code=403, detail="You did not provide authorization headers.")
-                token = auth_header.split(" ")[1]
-                is_valid, message = self.decode_jwt(token)
-                if not is_valid:
-                    raise HTTPException(status_code=403, detail=str(message))
+            credentials: HTTPAuthorizationCredentials | None = await super().__call__(request)
+        except HTTPException as err:
+            raise HTTPException(status_code=401, detail=err.detail) from err
 
-                return True
-            else:
-                raise HTTPException(status_code=403, detail="Invalid authorization code.")
+        if not credentials or credentials.scheme != "Bearer":
+            raise HTTPException(status_code=401, detail="Bearer token not provided.")
 
-        except IndexError as err:
-            raise HTTPException(status_code=403, detail="Bearer token not provided.") from err
+        is_valid, message, user_id = self.decode_jwt(credentials.credentials)
+        if not is_valid:
+            raise HTTPException(status_code=401, detail=message)
 
-    def decode_jwt(self, token: str) -> tuple[bool, str]:
+        user, _, ok = one_user_by_id_psql(user_id)
+        if not ok or user is None:
+            raise HTTPException(status_code=401, detail="User from token does not exist.")
+
+        if self.roles and user.type != "superadmin" and user.type not in self.roles:
+            raise HTTPException(status_code=403, detail=f"User '{user.username}' has no permission.")
+
+        return UserData(id=user.id, username=user.username, type=user.type)
+
+    def decode_jwt(self, token: str) -> tuple[bool, str, str | None]:
         try:
             payload = jwt.decode(token, settings.secret_key_token, algorithms=[settings.algorithm])
 
             user_id = payload.get("id")
             if not user_id:
-                return False, "No such user!"
+                return False, "Token has no 'id' claim.", None
 
-            return True, ""
+            try:
+                uuid.UUID(str(user_id))
+            except ValueError:
+                return False, "Claim 'id' is not a valid UUID.", None
+
+            return True, "", str(user_id)
 
         except jwt.ExpiredSignatureError:
-            return False, "Token has expired."
+            return False, "Token has expired.", None
         except jwt.DecodeError as e:
-            return False, f"Token decode error: {e}"
+            return False, f"Token decode error: {e}", None
         except jwt.InvalidTokenError:
-            return False, "Invalid token."
+            return False, "Invalid token.", None
 
     def encode_jwt(self, username: str, password: str, password_on: bool = True) -> tuple[bool, str, dict | None]:
         db_gen = get_db()
@@ -64,9 +84,9 @@ class JWTBasicAuthenticationMiddleware(HTTPBearer):
             if password_on and not verification_password(password, user.password):
                 return False, "Password or user name is not correct", None
 
-            expired = datetime.utcnow() + timedelta(hours=settings.token_expires_hours)
+            expired = datetime.now(timezone.utc) + timedelta(hours=settings.token_expires_hours)
 
-            payload = {"id": str(user.id), "exp": expired, "iat": datetime.utcnow()}
+            payload = {"id": str(user.id), "exp": expired, "iat": datetime.now(timezone.utc)}
 
             token = jwt.encode(payload, settings.secret_key_token, algorithm=settings.algorithm)
 
@@ -83,8 +103,8 @@ class JWTBasicAuthenticationMiddleware(HTTPBearer):
 
     def encode_refresh_jwt(self, user_id: str) -> str:
         token_expires = settings.refresh_token_expires_hours
-        expires_delta = datetime.utcnow() + timedelta(days=token_expires)
-        payload = {"id": user_id, "exp": expires_delta, "iat": datetime.utcnow()}
+        expires_delta = datetime.now(timezone.utc) + timedelta(days=token_expires)
+        payload = {"id": user_id, "exp": expires_delta, "iat": datetime.now(timezone.utc)}
         encode_jwt = jwt.encode(payload, settings.secret_key_refresh_token, settings.algorithm)
         return encode_jwt
 

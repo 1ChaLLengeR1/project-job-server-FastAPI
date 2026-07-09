@@ -1,6 +1,6 @@
 from typing import cast
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends
 
 from api.calendar.schema import PayloadCalendarCreate
 from api.gateways.calendar.create import application_gateway_calendar_create
@@ -12,10 +12,10 @@ from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
 router = APIRouter()
 
 
-@router.post(CREATE_CALENDAR, dependencies=[Depends(JWTBasicAuthenticationMiddleware())])
-def view_create_generator_calendar(request: Request, payload: PayloadCalendarCreate):
+@router.post(CREATE_CALENDAR, dependencies=[Depends(JWTBasicAuthenticationMiddleware(roles=["superadmin"]))])
+def view_create_generator_calendar(payload: PayloadCalendarCreate):
     try:
-        raw_data, raw_error, is_valid, status_code = application_gateway_calendar_create(request, payload.year)
+        raw_data, raw_error, is_valid, status_code = application_gateway_calendar_create(payload.year)
 
         if not is_valid:
             error = cast(Error, raw_error)
@@ -23,10 +23,9 @@ def view_create_generator_calendar(request: Request, payload: PayloadCalendarCre
                 status="ERROR", data={"message": error["message"]}, status_code=status_code, additional=None
             ).to_response()
 
-        user_data = raw_data.get("user_data")
         year = raw_data.get("year")
 
-        response = handler_create_generator_calendar(user_data, year)
+        response = handler_create_generator_calendar(year)
         return ResponseApiData(
             status=response["status"],
             data=response["data"],

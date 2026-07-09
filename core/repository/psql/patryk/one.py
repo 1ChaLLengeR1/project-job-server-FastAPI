@@ -1,28 +1,30 @@
-from core.data.response import ResponseData
-from database.psql.database import get_db
+from sqlalchemy.orm import Session
+
+from api.response import ApiErrorData
+from core.repository.psql.patryk.response import KeysCalculatorResponse, _to_keys_calculator_response
+from database.psql.database import managed_session
 from database.psql.models.patryk import KeysCalculatorPatryk
 
 
-def one_calculator_keys_psql() -> ResponseData:
-    db_gen = get_db()
-    db = next(db_gen)
+def one_calculator_keys_psql(
+    db_session: Session | None = None,
+) -> tuple[KeysCalculatorResponse | None, ApiErrorData | None, bool]:
     try:
-        row_key = db.query(KeysCalculatorPatryk).first()
+        with managed_session(db_session) as (db, _):
+            row_key = db.query(KeysCalculatorPatryk).first()
+            if not row_key:
+                return None, ApiErrorData(
+                    message="Not found calculator keys",
+                    type_module="one_calculator_keys_psql",
+                    type_error="not_found",
+                    key_type_error="NotFound",
+                ), False
 
-        data = {
-            "id": str(row_key.id),
-            "income_tax": row_key.income_tax,
-            "vat": row_key.vat,
-            "inpost_parcel_locker": row_key.inpost_parcel_locker,
-            "inpost_courier": row_key.inpost_courier,
-            "inpost_cash_of_delivery_courier": row_key.inpost_cash_of_delivery_courier,
-            "dpd": row_key.dpd,
-            "allegro_matt": row_key.allegro_matt,
-            "without_smart": row_key.without_smart,
-        }
-
-        return ResponseData(is_valid=True, status="SUCCESS", data=data, status_code=200, additional=None)
+            return _to_keys_calculator_response(row_key), None, True
     except Exception as e:
-        return ResponseData(is_valid=False, status="ERROR", data=str(e), status_code=417, additional=None)
-    finally:
-        db.close()
+        return None, ApiErrorData(
+            message=str(e),
+            type_module="one_calculator_keys_psql",
+            type_error="exception",
+            key_type_error="Exception",
+        ), False

@@ -1,5 +1,6 @@
 from typing import Any, Literal, TypedDict
 
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
 
@@ -28,12 +29,14 @@ class ResponseApiData:
 
     def to_response(self) -> JSONResponse:
         return JSONResponse(
-            content={
-                "status": self.status,
-                "status_code": self.status_code,
-                "data": self.data,
-                "additional": self.additional,
-            },
+            content=jsonable_encoder(
+                {
+                    "status": self.status,
+                    "status_code": self.status_code,
+                    "data": self.data,
+                    "additional": self.additional,
+                }
+            ),
             status_code=self.status_code,
         )
 

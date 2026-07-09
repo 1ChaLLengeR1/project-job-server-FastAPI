@@ -1,25 +1,13 @@
 from core.data.outstanding_moeny.update import EditItem, EditListParams
 from core.data.response import ResponseData
-from core.data.user import UserData
-from core.repository.psql.user.check import check_user_role_psql
 from database.psql.database import get_db
 from database.psql.models.outstanding_money import NamesOverdue, OutStandingMoney
 
 
-def edit_name_list_psql(user_data: UserData, payload: EditListParams) -> ResponseData:
+def edit_name_list_psql(payload: EditListParams) -> ResponseData:
     db_gen = get_db()
     db = next(db_gen)
     try:
-        check_role = check_user_role_psql(user_data, "superadmin")
-        if not check_role["is_valid"]:
-            return ResponseData(
-                is_valid=check_role["is_valid"],
-                status=check_role["status"],
-                data=check_role["data"],
-                status_code=check_role["status_code"],
-                additional=check_role["additional"],
-            )
-
         item_row = db.query(NamesOverdue).filter(NamesOverdue.id == payload["id"]).first()
         if not item_row:
             return ResponseData(
@@ -43,20 +31,10 @@ def edit_name_list_psql(user_data: UserData, payload: EditListParams) -> Respons
         db.close()
 
 
-def edit_item_psql(user_data: UserData, payload: EditItem) -> ResponseData:
+def edit_item_psql(payload: EditItem) -> ResponseData:
     db_gen = get_db()
     db = next(db_gen)
     try:
-        check_role = check_user_role_psql(user_data, "superadmin")
-        if not check_role["is_valid"]:
-            return ResponseData(
-                is_valid=check_role["is_valid"],
-                status=check_role["status"],
-                data=check_role["data"],
-                status_code=check_role["status_code"],
-                additional=check_role["additional"],
-            )
-
         edit_item = db.query(OutStandingMoney).filter(OutStandingMoney.id == payload["id"]).first()
         if not edit_item:
             return ResponseData(

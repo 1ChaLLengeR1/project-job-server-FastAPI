@@ -1,12 +1,25 @@
-from core.data.response import ResponseData, create_error_response
+from sqlalchemy.orm import Session
+
+from api.response import ApiErrorData
+from core.repository.psql.logs.create import create_logs_psql
 from core.repository.psql.tasks.collection import collection_tasks_psql
+from core.repository.psql.tasks.response import TaskResponse
 
 
-def handler_collection_task(active: bool = True) -> ResponseData:
+def handler_collection_task(
+    user_id: str, active: bool = True, db_session: Session | None = None
+) -> tuple[list[TaskResponse] | None, ApiErrorData | None, bool]:
     try:
-        response_collection = collection_tasks_psql(active)
-        if not response_collection["is_valid"]:
-            return response_collection
-        return response_collection
+        result, err, ok = collection_tasks_psql(active, db_session=db_session)
+        if not ok:
+            return None, err, False
+
+        create_logs_psql(user_id, "tasks:collection", db_session=db_session)
+        return result, None, True
     except Exception as e:
-        return create_error_response(message=str(e), status_code=500)
+        return None, ApiErrorData(
+            message=str(e),
+            type_module="handler_collection_task",
+            type_error="exception",
+            key_type_error="Exception",
+        ), False
