@@ -11,6 +11,7 @@ from api.response import ApiErrorData, ApiErrorResponse
 RATE_LIMIT_AUTH = "10/minute"  # login / refresh - ochrona przed brute force (klucz: IP)
 RATE_LIMIT_READ = "120/minute"  # odczyty (klucz: user z JWT, fallback IP)
 RATE_LIMIT_WRITE = "60/minute"  # zapisy (klucz: user z JWT, fallback IP)
+RATE_LIMIT_PUBLIC_CONTACT = "5/minute"  # publiczny formularz kontaktowy - antyspam (klucz: IP)
 
 
 def auth_or_ip_key(request: Request) -> str:

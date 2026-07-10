@@ -35,6 +35,7 @@ jobs:
       # nie przechodzi walidacji access tokena (i odwrotnie).
       SECRET_KEY_TOKEN: ci-access-secret
       SECRET_KEY_REFRESH_TOKEN: ci-refresh-secret
+      SECRET_KEY_CONTACT_TOKEN: ci-contact-secret
       ALGORITHM: HS256
       TOKEN_EXPIRES_HOURS: "1"
       REFRESH_TOKEN_EXPIRES_HOURS: "1"

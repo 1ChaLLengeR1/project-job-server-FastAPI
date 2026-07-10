@@ -17,6 +17,13 @@ from api.endpoints.calendar.create import router as create_router_calendary
 from api.endpoints.calendar.days.update import router as update_router_days
 from api.endpoints.calendar.statistics import router as statistics_router_statistics
 
+# Contact (publiczny create + obsluga zgloszen)
+from api.endpoints.contact.collection import router as collection_router_contact
+from api.endpoints.contact.create import router as create_router_contact
+from api.endpoints.contact.delete import router as delete_router_contact
+from api.endpoints.contact.one import router as one_router_contact
+from api.endpoints.contact.update import router as update_router_contact
+
 # Calculator
 from api.endpoints.fuel_calculator.calculation import router as calculation_router_fuel_calculation
 
@@ -129,3 +136,10 @@ api_router.include_router(collection_router_rental_family)
 api_router.include_router(one_router_rental_family)
 api_router.include_router(update_router_rental_family)
 api_router.include_router(delete_router_rental_family)
+
+# Contact (tagi deklarują endpointy; create publiczny z X-Contact-Token)
+api_router.include_router(create_router_contact)
+api_router.include_router(collection_router_contact)
+api_router.include_router(one_router_contact)
+api_router.include_router(update_router_contact)
+api_router.include_router(delete_router_contact)

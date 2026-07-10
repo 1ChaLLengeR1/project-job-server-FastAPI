@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     # JWT
     secret_key_token: str = Field(validation_alias="SECRET_KEY_TOKEN", min_length=1)
     secret_key_refresh_token: str = Field(validation_alias="SECRET_KEY_REFRESH_TOKEN", min_length=1)
+    # wspólny sekret tokena kontaktowego (X-Contact-Token) — podpisują nim klienci
+    # publicznego endpointu /contact/messages/create (frontendy i backendy)
+    secret_key_contact_token: str = Field(validation_alias="SECRET_KEY_CONTACT_TOKEN", min_length=1)
     algorithm: str = Field(validation_alias="ALGORITHM")
     token_expires_hours: int = Field(validation_alias="TOKEN_EXPIRES_HOURS", gt=0)
     refresh_token_expires_hours: int = Field(validation_alias="REFRESH_TOKEN_EXPIRES_HOURS", gt=0)

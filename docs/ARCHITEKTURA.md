@@ -131,7 +131,8 @@ Domeny projektu: **auth**, **tasks**, **calendar** (+ condition, days), **logs**
 **rental** (rozliczenia mieszkań — poddomeny: **dictionaries** słowniki
 mieszkań/najemców/kosztów/liczników, **billing** okresy rozliczeniowe z
 preview/close/reopen, **family** podział rodzinny; plan:
-docs/PLAN_ROZLICZENIA_MIESZKAN.md).
+docs/PLAN_ROZLICZENIA_MIESZKAN.md), **contact** (publiczny formularz
+kontaktowy wielu aplikacji — token X-Contact-Token, docs/CONTACT_TOKEN.md).
 
 ---
 
@@ -407,17 +408,29 @@ nagłówek `X-Refresh-Token` → weryfikacja tokenu **łącznie ze zgodnością 
 `id` z user_id** (cudzy token → 401) → user z DB → `UserData`.
 Handler `handler_automatically_login` tylko wystawia nową parę tokenów + audyt.
 
-### 7.3 Rate limiting — `config/rate_limit.py`
+### 7.3 `ContactTokenAuthenticationMiddleware` — publiczny endpoint kontaktowy
+
+Jedyny publiczny endpoint zapisu (`POST /contact/messages/create`) nie używa
+JWT usera. Zamiast tego nagłówek **`X-Contact-Token`** — krótkożyciowy JWT HS256
+podpisany wspólnym sekretem `SECRET_KEY_CONTACT_TOKEN`; middleware weryfikuje
+podpis + `exp` i zwraca claim `application` (identyfikator frontendu/backendu
+nadawcy). Dla klientów server-to-server to pełnoprawna autoryzacja; dla
+frontendów przeglądarkowych filtr antybotowy (sekret w bundlu jest jawny),
+dlatego endpoint ma limit `RATE_LIMIT_PUBLIC_CONTACT` per IP.
+Instrukcja podpisywania (JS `jose` / Python `PyJWT`): `docs/CONTACT_TOKEN.md`.
+
+### 7.4 Rate limiting — `config/rate_limit.py`
 
 `SlowAPIMiddleware` + `default_limits=["200/second"]` globalnie oraz
 **jawny `@limiter.limit(...)` na każdym endpoincie** (endpoint musi mieć
 parametr `request: Request`):
 
-| Stała              | Limit        | Klucz                        | Gdzie                |
-|--------------------|--------------|------------------------------|----------------------|
-| `RATE_LIMIT_AUTH`  | `10/minute`  | IP                           | login, refresh       |
-| `RATE_LIMIT_READ`  | `120/minute` | user z JWT (fallback IP)     | wszystkie GET        |
-| `RATE_LIMIT_WRITE` | `60/minute`  | user z JWT (fallback IP)     | POST/PUT/PATCH/DELETE|
+| Stała                       | Limit        | Klucz                        | Gdzie                |
+|-----------------------------|--------------|------------------------------|----------------------|
+| `RATE_LIMIT_AUTH`           | `10/minute`  | IP                           | login, refresh       |
+| `RATE_LIMIT_READ`           | `120/minute` | user z JWT (fallback IP)     | wszystkie GET        |
+| `RATE_LIMIT_WRITE`          | `60/minute`  | user z JWT (fallback IP)     | POST/PUT/PATCH/DELETE|
+| `RATE_LIMIT_PUBLIC_CONTACT` | `5/minute`   | IP                           | publiczny create kontaktu |
 
 `auth_or_ip_key` czyta claim `id` z JWT **bez weryfikacji podpisu** (to tylko
 klucz limitera — autoryzację robi middleware). Handler 429 zwraca standardowy
@@ -504,9 +517,9 @@ SQLAlchemy 1.4 (`Column`), UUID PK (`uuid.uuid4`), timestampy
 `DateTime(timezone=True)` z `server_default=func.now()` (+ `onupdate` dla
 `updated_at`). Wspólna `Base` w `base.py`. Modele: `Users`, `Tasks`, `Logs`,
 `WorkDay`, `WorkConditionChange`, `NamesOverdue`, `OutStandingMoney`,
-`KeysCalculatorPatryk` oraz 14 tabel domeny rental (`Rental*` w
-`models/rentals.py`: słowniki, okresy rozliczeniowe ze snapshotami i podział
-rodzinny).
+`KeysCalculatorPatryk`, `ContactMessage` oraz 14 tabel domeny rental
+(`Rental*` w `models/rentals.py`: słowniki, okresy rozliczeniowe ze
+snapshotami i podział rodzinny).
 
 ### 11.3 Alembic i skrypty
 

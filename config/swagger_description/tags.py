@@ -47,4 +47,9 @@ TAGS_METADATA = [
         "name": "Rentals/Family",
         "description": "Rozliczenia mieszkań - podział rodzinny: beneficjenci, reguły i snapshoty podziału.",
     },
+    {
+        "name": "Contact",
+        "description": "Formularz kontaktowy - publiczny create (token X-Contact-Token, "
+        "podpisywany wspólnym sekretem per aplikacja) + obsługa zgłoszeń przez superadmina.",
+    },
 ]

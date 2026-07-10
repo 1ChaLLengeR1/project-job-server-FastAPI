@@ -13,6 +13,7 @@ from sqlalchemy.orm import sessionmaker
 
 import database.psql.models.auth  # noqa: F401 — rejestracja metadanych
 import database.psql.models.calendar  # noqa: F401
+import database.psql.models.contact  # noqa: F401
 import database.psql.models.logs  # noqa: F401
 import database.psql.models.outstanding_money  # noqa: F401
 import database.psql.models.patryk  # noqa: F401

@@ -3,6 +3,7 @@
 from database.psql.models import (  # noqa: F401
     auth,
     calendar,
+    contact,
     logs,
     outstanding_money,
     patryk,

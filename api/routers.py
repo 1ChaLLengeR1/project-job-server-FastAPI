@@ -124,3 +124,10 @@ DELETE_RENTAL_ALLOCATION_RULE = "/rentals/allocation_rules/delete/{rule_id}"
 
 # Rentals - podział rodzinny: snapshoty podziału per okres
 COLLECTION_RENTAL_BENEFICIARY_SETTLEMENTS = "/rentals/beneficiary_settlements/collection"
+
+# Contact - publiczny formularz kontaktowy (create bez JWT usera, z X-Contact-Token)
+CREATE_CONTACT_MESSAGE = "/contact/messages/create"
+COLLECTION_CONTACT_MESSAGES = "/contact/messages/collection"
+ONE_CONTACT_MESSAGE = "/contact/messages/one/{message_id}"
+UPDATE_CONTACT_MESSAGE_STATUS = "/contact/messages/update/status/{message_id}"
+DELETE_CONTACT_MESSAGE = "/contact/messages/delete/{message_id}"
