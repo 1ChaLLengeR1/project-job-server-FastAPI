@@ -127,7 +127,11 @@ Extras w `pyproject.toml`: `test` (pytest, pytest-asyncio, pytest-cov, pytest-mo
 ```
 
 Domeny projektu: **auth**, **tasks**, **calendar** (+ condition, days), **logs**,
-**outstanding_money**, **fuel_calculator**, **patryk_router** (kalkulator zysku).
+**outstanding_money**, **fuel_calculator**, **patryk_router** (kalkulator zysku),
+**rental** (rozliczenia mieszkań — poddomeny: **dictionaries** słowniki
+mieszkań/najemców/kosztów/liczników, **billing** okresy rozliczeniowe z
+preview/close/reopen, **family** podział rodzinny; plan:
+docs/PLAN_ROZLICZENIA_MIESZKAN.md).
 
 ---
 
@@ -500,7 +504,9 @@ SQLAlchemy 1.4 (`Column`), UUID PK (`uuid.uuid4`), timestampy
 `DateTime(timezone=True)` z `server_default=func.now()` (+ `onupdate` dla
 `updated_at`). Wspólna `Base` w `base.py`. Modele: `Users`, `Tasks`, `Logs`,
 `WorkDay`, `WorkConditionChange`, `NamesOverdue`, `OutStandingMoney`,
-`KeysCalculatorPatryk`.
+`KeysCalculatorPatryk` oraz 14 tabel domeny rental (`Rental*` w
+`models/rentals.py`: słowniki, okresy rozliczeniowe ze snapshotami i podział
+rodzinny).
 
 ### 11.3 Alembic i skrypty
 
@@ -519,10 +525,15 @@ przyjmują środowisko `[local|dev|prod]` — wywoływane przez `make migration_
   `api_integration` (zewnętrzne API, np. date.nager.at).
 - CI uruchamia `make run_test_integration`.
 
-Docelowa struktura (jak we wzorcu): lustrzane odbicie kodu — testy `_psql`
-osobno, handlerów osobno, endpointów (TestClient) osobno; klasy
+Struktura (jak we wzorcu): lustrzane odbicie kodu — testy `_psql`
+osobno, serwisów osobno, endpointów (TestClient) osobno; klasy
 `Test{Action}{Domain}Psql`, metody `test_{action}{nn:02d}_{opis}`.
-**Stan obecny: tylko `tests/test_sanity.py`** — do rozbudowy (sekcja 18).
+Fabryki modeli per domena w `tests/core/repository/psql/{domain}/helper.py`,
+testy endpointów budują aplikację przez `tests/api/helper.py::make_client`
+(tylko potrzebne routery, mock autoryzacji `authorized_as`). Domena rental ma
+dodatkowo test e2e pełnego przepływu miesiąca
+(`tests/api/endpoints/rental/test_api_e2e_full_flow.py` — scenariusz z
+docs/Obliczenia_3.txt: 4 mieszkania, licznik główny, korekty, podział Ja/Ojciec/Mama).
 
 ---
 

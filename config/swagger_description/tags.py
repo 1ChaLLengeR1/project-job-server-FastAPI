@@ -35,4 +35,16 @@ TAGS_METADATA = [
         "name": "Patryk/Calculator",
         "description": "Kalkulator pracy (klucze i obliczenia).",
     },
+    {
+        "name": "Rentals/Dictionaries",
+        "description": "Rozliczenia mieszkań - słowniki: mieszkania, najemcy, najmy, koszty, liczniki.",
+    },
+    {
+        "name": "Rentals/Billing",
+        "description": "Rozliczenia mieszkań - okresy, odczyty liczników, preview/close/reopen i snapshoty.",
+    },
+    {
+        "name": "Rentals/Family",
+        "description": "Rozliczenia mieszkań - podział rodzinny: beneficjenci, reguły i snapshoty podziału.",
+    },
 ]
