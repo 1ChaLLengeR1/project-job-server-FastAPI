@@ -35,6 +35,11 @@ migration_down:
 migration_restart:
 	bash infra/scripts/database/restart.sh $(ENV)
 
+# Dump bazy: MODE=full (custom, do pg_restore) lub MODE=data (plain SQL, tylko dane)
+MODE ?= full
+db_dump:
+	bash infra/scripts/database/dump.sh $(ENV) $(MODE)
+
 # Wgrywa dane z dumpow docs/*.sql (data-only) - uruchamiac PO migration_restart
 seed_dump:
 	bash infra/scripts/database/seed_from_dump.sh $(ENV)

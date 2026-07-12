@@ -62,6 +62,8 @@ SKIP_TABLES="${SKIP_TABLES:-alembic_version users keyscalculatorpatryk}"
 #   - linie zaczynajace sie od "\" (\restrict, \unrestrict, \connect) - dyrektywy pg_dump 18,
 #     ktore przelaczylyby psql na baze "project_job"/"jobs" zamiast tej z env/<ENV>.env
 #   - CREATE/ALTER DATABASE - jw.
+#   - SET transaction_timeout - parametr istnieje dopiero od PG 17, a docelowy serwer
+#     (stg) to PG 14; pg_dump 18 zawsze wpisuje go w naglowek
 #   - INSERT-y do tabel z SKIP_TABLES
 # Reszta (SET, INSERT-y kwalifikowane przez public.*) przechodzi bez zmian.
 FILTER_AWK='
@@ -69,6 +71,7 @@ BEGIN { n = split(skip, a, " "); for (i = 1; i <= n; i++) sk[i] = "INSERT INTO p
 substr($0, 1, 1) == "\\" { next }
 /^CREATE DATABASE / { next }
 /^ALTER DATABASE / { next }
+/^SET transaction_timeout / { next }
 { for (i = 1; i <= n; i++) if (index($0, sk[i]) == 1) next; print }
 '
 
