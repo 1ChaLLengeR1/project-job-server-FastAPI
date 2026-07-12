@@ -1,0 +1,61 @@
+name: CI - Tests (runner)
+
+on:
+  workflow_call:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      # Env dla testów - settings czyta zmienne procesu priorytetowo,
+      # więc pliki env/*.env nie są potrzebne. DB wskazuje na services: postgres;
+      # conftest tworzy z niej bazę {DB_DBNAME}_test.
+      DB_HOST: localhost
+      DB_PORT: "5432"
+      DB_USER: ci
+      DB_PASSWORD: ci
+      DB_DBNAME: ci
+      # Sekrety MUSZĄ się różnić - testy tokenów sprawdzają, że refresh token
+      # nie przechodzi walidacji access tokena (i odwrotnie).
+      SECRET_KEY_TOKEN: ci-access-secret
+      SECRET_KEY_REFRESH_TOKEN: ci-refresh-secret
+      SECRET_KEY_CONTACT_TOKEN: ci-contact-secret
+      ALGORITHM: HS256
+      TOKEN_EXPIRES_HOURS: "1"
+      REFRESH_TOKEN_EXPIRES_HOURS: "1"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install Python + dependencies
+        run: |
+          uv python install 3.10
+          uv sync --all-extras
+
+      - name: Import smoke (main + routery + modele)
+        run: uv run python -c "import main; print('import ok')"
+
+      - name: Run tests
+        run: make run_test_integration

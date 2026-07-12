@@ -1,41 +1,41 @@
-from core.data.response import ResponseData
-from database.db import get_db
-from database.logs.models import Logs
-from core.data.user import UserData
-import datetime
+from sqlalchemy.orm import Session
+
+from api.response import ApiErrorData
+from core.repository.psql.logs.response import LogResponse, _to_log_response
+from database.psql.database import managed_session
+from database.psql.models.auth import Users
+from database.psql.models.logs import Logs
 
 
-def create_logs_psql(user_data: UserData, description: str):
-    db_gen = get_db()
-    db = next(db_gen)
+def create_logs_psql(
+    user_id: str, description: str, db_session: Session | None = None
+) -> tuple[LogResponse | None, ApiErrorData | None, bool]:
+    """Audytowy zapis akcji usera — wołany z handlerów po udanej operacji.
+
+    `description` opisuje moduł/akcję slugiem `{domain}:{action}`, np. "tasks:create".
+    Username dociągany z tabeli users po `user_id` (z tokenu, nie od klienta).
+    """
     try:
+        with managed_session(db_session) as (db, _):
+            user = db.query(Users).filter(Users.id == user_id).first()
+            if not user:
+                return None, ApiErrorData(
+                    message=f"Not found user with id: {user_id}",
+                    type_module="create_logs_psql",
+                    type_error="not_found",
+                    key_type_error="NotFound",
+                ), False
 
-        new_log = Logs(username=user_data['username'], description=description, date=datetime.datetime.now())
-        db.add(new_log)
-        db.commit()
-
-        data = {
-            'id': str(new_log.id),
-            'username': new_log.username,
-            'description': new_log.description,
-            'date': new_log.date.isoformat()
-        }
-
-        return ResponseData(
-            is_valid=True,
-            status="SUCCESS",
-            data=data,
-            status_code=200,
-            additional=None
-        )
-
+            # date uzupełnia server_default=func.now() (DateTime z timezone)
+            new_log = Logs(username=user.username, description=description)
+            db.add(new_log)
+            db.flush()
+            db.refresh(new_log)
+            return _to_log_response(new_log), None, True
     except Exception as e:
-        return ResponseData(
-            is_valid=False,
-            status="ERROR",
-            data=str(e),
-            status_code=417,
-            additional=None
-        )
-    finally:
-        db.close()
+        return None, ApiErrorData(
+            message=str(e),
+            type_module="create_logs_psql",
+            type_error="exception",
+            key_type_error="Exception",
+        ), False

@@ -1,43 +1,36 @@
-from core.data.response import ResponseData
-from core.repository.psql.patryk.calculator import calculations_psql
-from core.data.patryk.calculator.calculator import CalculatorData
-from core.data.user import UserData
+from sqlalchemy.orm import Session
+
+from api.response import ApiErrorData
+from core.repository.psql.logs.create import create_logs_psql
+from core.repository.psql.patryk.one import one_calculator_keys_psql
+from core.service.patryk.calculation import calculation_profit
+from core.service.patryk.response import CalculationResponse
 
 
-def handler_calculations(user_data: UserData, payload: CalculatorData):
+def handler_calculations(
+    user_id: str,
+    gross_sales: float,
+    gross_purchase: float,
+    provision: float,
+    distinction: float,
+    referrer: str,
+    db_session: Session | None = None,
+) -> tuple[CalculationResponse | None, ApiErrorData | None, bool]:
     try:
-        if payload['gross_sales'] == 0 or payload['gross_purchase'] == 0:
-            return ResponseData(
-                is_valid=False,
-                status="ERROR",
-                data=str(f"gross_sales and gross_purchase can't by 0"),
-                status_code=400,
-                additional=None
-            )
+        keys, err, ok = one_calculator_keys_psql(db_session=db_session)
+        if not ok:
+            return None, err, False
 
-        response = calculations_psql(user_data, payload)
-        if not response['is_valid']:
-            return ResponseData(
-                is_valid=response['is_valid'],
-                status=response['status'],
-                data=response['data'],
-                status_code=response['status_code'],
-                additional=response['additional']
-            )
+        result, err, ok = calculation_profit(keys, gross_sales, gross_purchase, provision, distinction, referrer)
+        if not ok:
+            return None, err, False
 
-        return ResponseData(
-            is_valid=response['is_valid'],
-            status=response['status'],
-            data=response['data'],
-            status_code=response['status_code'],
-            additional=response['additional']
-        )
-
+        create_logs_psql(user_id, "calculator_work:calculations", db_session=db_session)
+        return result, None, True
     except Exception as e:
-        return ResponseData(
-            is_valid=False,
-            status="ERROR",
-            data=str(e),
-            status_code=500,
-            additional=None
-        )
+        return None, ApiErrorData(
+            message=str(e),
+            type_module="handler_calculations",
+            type_error="exception",
+            key_type_error="Exception",
+        ), False

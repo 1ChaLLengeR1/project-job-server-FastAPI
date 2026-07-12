@@ -1,45 +1,69 @@
-from api.tasks.schemas import ResponseSerializerTask
-from core.data.response import ResponseData, create_success_response, create_error_response
-from database.db import get_db
-from database.tasks.models import Tasks
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
+
+from api.response import ApiErrorData
+from core.repository.psql.tasks.response import TaskResponse, _to_task_response
+from database.psql.database import managed_session
+from database.psql.models.tasks import Tasks
 
 
-def update_task_psql(task_id: str, new_description: str, new_time: int) -> ResponseData:
-    db = next(get_db())
+def update_task_psql(
+    task_id: str, new_description: str, new_time: int, db_session: Session | None = None
+) -> tuple[TaskResponse | None, ApiErrorData | None, bool]:
     try:
-        task = db.query(Tasks).filter(Tasks.id == task_id).first()
-        if not task:
-            return create_error_response(message="Task nie istnieje", status_code=400)
+        with managed_session(db_session) as (db, _):
+            task = db.query(Tasks).filter(Tasks.id == task_id).first()
+            if not task:
+                return None, ApiErrorData(
+                    message="Task nie istnieje",
+                    type_module="update_task_psql",
+                    type_error="not_found",
+                    key_type_error="NotFound",
+                ), False
 
-        task.description = new_description
-        task.time = new_time
-        db.commit()
-        db.refresh(task)
-
-        task_data = ResponseSerializerTask.from_orm(task)
-        return create_success_response(data=task_data.model_dump(mode="json"), status_code=200)
+            task.description = new_description
+            task.time = new_time
+            db.flush()
+            db.refresh(task)
+            return _to_task_response(task), None, True
+    except IntegrityError as e:
+        return None, ApiErrorData(
+            message=str(e.orig),
+            type_module="update_task_psql",
+            type_error="integrity_error",
+            key_type_error="IntegrityError",
+        ), False
     except Exception as e:
-        db.rollback()
-        return create_error_response(message=str(e), status_code=417)
-    finally:
-        db.close()
+        return None, ApiErrorData(
+            message=str(e),
+            type_module="update_task_psql",
+            type_error="exception",
+            key_type_error="Exception",
+        ), False
 
 
-def update_task_active_psql(task_id: str, new_active: bool) -> ResponseData:
-    db = next(get_db())
+def update_task_active_psql(
+    task_id: str, new_active: bool, db_session: Session | None = None
+) -> tuple[TaskResponse | None, ApiErrorData | None, bool]:
     try:
-        task = db.query(Tasks).filter(Tasks.id == task_id).first()
-        if not task:
-            return create_error_response(message="Task nie istnieje", status_code=400)
+        with managed_session(db_session) as (db, _):
+            task = db.query(Tasks).filter(Tasks.id == task_id).first()
+            if not task:
+                return None, ApiErrorData(
+                    message="Task nie istnieje",
+                    type_module="update_task_active_psql",
+                    type_error="not_found",
+                    key_type_error="NotFound",
+                ), False
 
-        task.active = new_active
-        db.commit()
-        db.refresh(task)
-
-        task_data = ResponseSerializerTask.from_orm(task)
-        return create_success_response(data=task_data.model_dump(mode="json"), status_code=200)
+            task.active = new_active
+            db.flush()
+            db.refresh(task)
+            return _to_task_response(task), None, True
     except Exception as e:
-        db.rollback()
-        return create_error_response(message=str(e), status_code=417)
-    finally:
-        db.close()
+        return None, ApiErrorData(
+            message=str(e),
+            type_module="update_task_active_psql",
+            type_error="exception",
+            key_type_error="Exception",
+        ), False

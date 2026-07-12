@@ -1,24 +1,33 @@
-from core.data.response import ResponseData, create_success_response, create_error_response
-from database.db import get_db
-from database.tasks.models import Tasks
-from api.tasks.schemas import ResponseSerializerTask
+from sqlalchemy.orm import Session
+
+from api.response import ApiErrorData
+from core.repository.psql.tasks.response import TaskResponse, _to_task_response
+from database.psql.database import managed_session
+from database.psql.models.tasks import Tasks
 
 
-def delete_task_psql(task_id: str) -> ResponseData:
-    db = next(get_db())
+def delete_task_psql(
+    task_id: str, db_session: Session | None = None
+) -> tuple[TaskResponse | None, ApiErrorData | None, bool]:
     try:
-        task = db.query(Tasks).filter(Tasks.id == task_id).first()
-        if not task:
-            return create_error_response(message="Task nie istnieje", status_code=404)
+        with managed_session(db_session) as (db, _):
+            task = db.query(Tasks).filter(Tasks.id == task_id).first()
+            if not task:
+                return None, ApiErrorData(
+                    message="Task nie istnieje",
+                    type_module="delete_task_psql",
+                    type_error="not_found",
+                    key_type_error="NotFound",
+                ), False
 
-        deleted_task = task
-        db.delete(task)
-        db.commit()
-
-        task_data = ResponseSerializerTask.from_orm(deleted_task)
-        return create_success_response(data=task_data.model_dump(mode="json"), status_code=200)
+            deleted_task = _to_task_response(task)
+            db.delete(task)
+            db.flush()
+            return deleted_task, None, True
     except Exception as e:
-        db.rollback()
-        return create_error_response(message=str(e), status_code=417)
-    finally:
-        db.close()
+        return None, ApiErrorData(
+            message=str(e),
+            type_module="delete_task_psql",
+            type_error="exception",
+            key_type_error="Exception",
+        ), False

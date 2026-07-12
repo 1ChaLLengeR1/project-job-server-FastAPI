@@ -1,23 +1,22 @@
-from api.tasks.schemas import ResponseSerializerTask
-from core.data.response import ResponseData, create_success_response, create_error_response
-from database.db import get_db
-from database.tasks.models import Tasks
+from sqlalchemy.orm import Session
+
+from api.response import ApiErrorData
+from core.repository.psql.tasks.response import TaskResponse, _to_task_response
+from database.psql.database import managed_session
+from database.psql.models.tasks import Tasks
 
 
-def collection_tasks_psql(active: bool = True) -> ResponseData:
-    db = next(get_db())
+def collection_tasks_psql(
+    active: bool = True, db_session: Session | None = None
+) -> tuple[list[TaskResponse] | None, ApiErrorData | None, bool]:
     try:
-        tasks = (
-            db.query(Tasks)
-            .filter(Tasks.active == active)
-            .order_by(Tasks.updated_at.desc())
-            .all()
-        )
-        task_data = [ResponseSerializerTask.from_orm(task) for task in tasks]
-        serialized = [task.model_dump(mode="json") for task in task_data]
-        return create_success_response(data=serialized, status_code=200)
+        with managed_session(db_session) as (db, _):
+            tasks = db.query(Tasks).filter(Tasks.active == active).order_by(Tasks.updated_at.desc()).all()
+            return [_to_task_response(task) for task in tasks], None, True
     except Exception as e:
-        db.rollback()
-        return create_error_response(message=str(e), status_code=417)
-    finally:
-        db.close()
+        return None, ApiErrorData(
+            message=str(e),
+            type_module="collection_tasks_psql",
+            type_error="exception",
+            key_type_error="Exception",
+        ), False

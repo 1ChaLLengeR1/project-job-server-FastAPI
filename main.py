@@ -1,15 +1,22 @@
-from fastapi import FastAPI
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from contextlib import asynccontextmanager
-from api.api import api_router
 
-from fastapi.staticfiles import StaticFiles
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
+from api.api import api_router
+from api.exception_handlers import register_exception_handlers
+from config.rate_limit import limiter, rate_limit_exceeded_handler
+from config.swagger_description.app import APP_DESCRIPTION
+from config.swagger_description.summary import build_endpoint_summary
+from config.swagger_description.tags import TAGS_METADATA
 from core.repository.psql.calendar.days.update import update_day_automatically_psql
 
 scheduler = AsyncIOScheduler()
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -18,22 +25,29 @@ async def lifespan(app: FastAPI):
     yield
     scheduler.shutdown()
 
+
 app = FastAPI(
     title="project_job",
-    description="The project I use every day for my everyday work"
+    description=build_endpoint_summary(api_router) + APP_DESCRIPTION,
+    openapi_tags=TAGS_METADATA,
+    docs_url="/docs",
+    redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
-app.include_router(api_router)
-Instrumentator().instrument(app).expose(app)
-app.mount("/file", StaticFiles(directory="file"), name="file")
+# Rate limiting (slowapi)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
+# CORS
 origins = [
     "https://arturscibor.pl",
     "https://praca.strona.arturscibor.pl",
     "http://localhost",
     "http://localhost:5173",
     "http://127.0.0.1",
-    "http://127.0.0.1:5173"
+    "http://127.0.0.1:5173",
 ]
 
 app.add_middleware(
@@ -41,11 +55,19 @@ app.add_middleware(
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=["POST", "GET", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type", "Accept", "x-refresh-token", "UserData"],
-    expose_headers=["Content-Disposition"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "x-refresh-token"],
 )
 
+# Globalne exception handlery (AppException + nieobsłużone wyjątki)
+register_exception_handlers(app)
 
-@app.get("/health")
+# Routery
+app.include_router(api_router)
+
+# Metryki Prometheus (/metrics)
+Instrumentator().instrument(app).expose(app)
+
+
+@app.get("/health", tags=["Health"])
 async def health():
     return {"status": "ok"}

@@ -1,14 +1,25 @@
+from sqlalchemy.orm import Session
+
+from api.response import ApiErrorData
+from core.repository.psql.calendar.response import CalendarStatisticsResponse
 from core.repository.psql.calendar.statistics import statistics_calendar_psql
-from core.data.response import ResponseData, create_error_response
+from core.repository.psql.logs.create import create_logs_psql
 
 
 def handler_statistics_calendar(
-        year: int,
-) -> ResponseData:
+    user_id: str, year: int, db_session: Session | None = None
+) -> tuple[CalendarStatisticsResponse | None, ApiErrorData | None, bool]:
     try:
-        response_create = statistics_calendar_psql(year)
-        if not response_create['is_valid']:
-            return response_create
-        return response_create
+        result, err, ok = statistics_calendar_psql(year, db_session=db_session)
+        if not ok:
+            return None, err, False
+
+        create_logs_psql(user_id, "calendar:statistics", db_session=db_session)
+        return result, None, True
     except Exception as e:
-        return create_error_response(message=str(e), status_code=500)
+        return None, ApiErrorData(
+            message=str(e),
+            type_module="handler_statistics_calendar",
+            type_error="exception",
+            key_type_error="Exception",
+        ), False

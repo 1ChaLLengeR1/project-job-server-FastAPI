@@ -1,71 +1,92 @@
-from core.data.user import UserData
-from core.repository.psql.calendar.days.update import update_days_calendary_psql, update_day_calendary_by_id_psql, \
-    update_days_automatically_for_salary
-from core.data.response import ResponseData, create_error_response
-from core.repository.psql.user.check import check_user_role_psql
+from sqlalchemy.orm import Session
+
+from api.response import ApiErrorData
+from core.repository.psql.calendar.days.response import (
+    SalaryUpdateResponse,
+    WorkDaysRangeUpdateResponse,
+    WorkDayUpdateResponse,
+)
+from core.repository.psql.calendar.days.update import (
+    update_day_calendary_by_id_psql,
+    update_days_automatically_for_salary,
+    update_days_calendary_psql,
+)
+from core.repository.psql.logs.create import create_logs_psql
 
 
 def handler_update_day_calendary_by_id(
-        user_data: UserData,
-        day_id: str,
-        norm_hours: float,
-        hours_worked: float,
-        hourly_rate: float,
-) -> ResponseData:
+    user_id: str,
+    day_id: str,
+    norm_hours: float,
+    hours_worked: float,
+    hourly_rate: float,
+    db_session: Session | None = None,
+) -> tuple[WorkDayUpdateResponse | None, ApiErrorData | None, bool]:
     try:
+        result, err, ok = update_day_calendary_by_id_psql(
+            day_id, norm_hours, hours_worked, hourly_rate, db_session=db_session
+        )
+        if not ok:
+            return None, err, False
 
-        check_role = check_user_role_psql(user_data, 'superadmin')
-        if not check_role['is_valid']:
-            return check_role
-
-        response_update = update_day_calendary_by_id_psql(day_id, norm_hours, hours_worked, hourly_rate)
-        if not response_update['is_valid']:
-            return response_update
-        return response_update
+        create_logs_psql(user_id, "calendar_days:update_by_id", db_session=db_session)
+        return result, None, True
     except Exception as e:
-        return create_error_response(message=str(e), status_code=500)
+        return None, ApiErrorData(
+            message=str(e),
+            type_module="handler_update_day_calendary_by_id",
+            type_error="exception",
+            key_type_error="Exception",
+        ), False
 
 
 def handler_update_days_calendary(
-        user_data: UserData,
-        year: int,
-        month: int,
-        start_day: int,
-        end_day: int,
-        norm_hours: float,
-        hours_worked: float,
-        hourly_rate: float,
-) -> ResponseData:
+    user_id: str,
+    year: int,
+    month: int,
+    start_day: int,
+    end_day: int,
+    norm_hours: float,
+    hours_worked: float,
+    hourly_rate: float,
+    db_session: Session | None = None,
+) -> tuple[WorkDaysRangeUpdateResponse | None, ApiErrorData | None, bool]:
     try:
-
-        check_role = check_user_role_psql(user_data, 'superadmin')
-        if not check_role['is_valid']:
-            return check_role
-
-        response_update = update_days_calendary_psql(
-            year, month, start_day, end_day, norm_hours, hours_worked, hourly_rate
+        result, err, ok = update_days_calendary_psql(
+            year, month, start_day, end_day, norm_hours, hours_worked, hourly_rate, db_session=db_session
         )
-        if not response_update['is_valid']:
-            return response_update
-        return response_update
+        if not ok:
+            return None, err, False
+
+        create_logs_psql(user_id, "calendar_days:update_range", db_session=db_session)
+        return result, None, True
     except Exception as e:
-        return create_error_response(message=str(e), status_code=500)
+        return None, ApiErrorData(
+            message=str(e),
+            type_module="handler_update_days_calendary",
+            type_error="exception",
+            key_type_error="Exception",
+        ), False
 
 
 def handler_update_days_automatically_for_salary(
-        user_data: UserData,
-        year: int,
-        month: int,
-        salary: float,
-) -> ResponseData:
+    user_id: str,
+    year: int,
+    month: int,
+    salary: float,
+    db_session: Session | None = None,
+) -> tuple[SalaryUpdateResponse | None, ApiErrorData | None, bool]:
     try:
-        check_role = check_user_role_psql(user_data, 'superadmin')
-        if not check_role['is_valid']:
-            return check_role
+        result, err, ok = update_days_automatically_for_salary(year, month, salary, db_session=db_session)
+        if not ok:
+            return None, err, False
 
-        response_update = update_days_automatically_for_salary(year, month, salary)
-        if not response_update['is_valid']:
-            return response_update
-        return response_update
+        create_logs_psql(user_id, "calendar_days:update_salary", db_session=db_session)
+        return result, None, True
     except Exception as e:
-        return create_error_response(message=str(e), status_code=500)
+        return None, ApiErrorData(
+            message=str(e),
+            type_module="handler_update_days_automatically_for_salary",
+            type_error="exception",
+            key_type_error="Exception",
+        ), False

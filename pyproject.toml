@@ -1,0 +1,55 @@
+[project]
+name = "project_job_backend"
+version = "1.0.0"
+description = "Backend FastAPI - projekt do codziennej pracy"
+requires-python = ">=3.10,<3.11"
+dependencies = [
+    "fastapi==0.111.1",
+    "uvicorn==0.30.3",
+    "passlib==1.7.4",
+    "bcrypt==3.2.2",
+    "sqlalchemy==1.4.39",
+    "psycopg2==2.9.9",
+    "alembic==1.13.3",
+    "slowapi==0.1.9",
+    "pydantic-settings>=2.6,<3",
+    "PyJWT==2.4.0",
+    "prometheus-fastapi-instrumentator==7.1.0",
+    "APScheduler==3.11.0",
+    "requests==2.32.3",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+    "pytest-mock",
+    "httpx",
+]
+dev = [
+    "ruff",
+]
+prod = [
+    "gunicorn==23.0.0",
+]
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["api*", "core*", "config*", "database*"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+exclude = [".venv", "alembic/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "SIM"]
+ignore = ["B008"]
+
+[tool.ruff.lint.per-file-ignores]
+"api/api.py" = ["E402"]
+"alembic/**" = ["E402"]
