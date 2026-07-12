@@ -1,8 +1,8 @@
 """init
 
-Revision ID: ed1e0bf5bedd
+Revision ID: c20be806b10a
 Revises: 
-Create Date: 2026-07-09 15:47:58.229395
+Create Date: 2026-07-12 19:12:02.438209
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = 'ed1e0bf5bedd'
+revision: str = 'c20be806b10a'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -43,6 +43,20 @@ def upgrade() -> None:
     sa.UniqueConstraint('date')
     )
     op.create_index(op.f('ix_calendar_work_days_id'), 'calendar_work_days', ['id'], unique=False)
+    op.create_table('contact_messages',
+    sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+    sa.Column('first_name', sa.String(length=255), nullable=False),
+    sa.Column('last_name', sa.String(length=255), nullable=True),
+    sa.Column('phone_number', sa.String(length=30), nullable=False),
+    sa.Column('email', sa.String(length=255), nullable=True),
+    sa.Column('description', sa.String(), nullable=False),
+    sa.Column('application', sa.String(length=100), nullable=False),
+    sa.Column('status', sa.String(), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_contact_messages_application'), 'contact_messages', ['application'], unique=False)
     op.create_table('keyscalculatorpatryk',
     sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
     sa.Column('income_tax', sa.Float(), nullable=True),
@@ -330,6 +344,8 @@ def downgrade() -> None:
     op.drop_table('namesoverdue')
     op.drop_table('logs')
     op.drop_table('keyscalculatorpatryk')
+    op.drop_index(op.f('ix_contact_messages_application'), table_name='contact_messages')
+    op.drop_table('contact_messages')
     op.drop_index(op.f('ix_calendar_work_days_id'), table_name='calendar_work_days')
     op.drop_table('calendar_work_days')
     op.drop_index(op.f('ix_calendar_work_condition_changes_id'), table_name='calendar_work_condition_changes')

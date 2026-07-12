@@ -35,6 +35,13 @@ migration_down:
 migration_restart:
 	bash infra/scripts/database/restart.sh $(ENV)
 
+# Wgrywa dane z dumpow docs/*.sql (data-only) - uruchamiac PO migration_restart
+seed_dump:
+	bash infra/scripts/database/seed_from_dump.sh $(ENV)
+
+# Pelny reset: schemat od zera + dane z dumpow
+migration_restart_with_data: migration_restart seed_dump
+
 # ── ansible-vault (infra/ansible/secrets.yml) ────────────────────────────────
 # Uzycie: ANSIBLE_PASSWORD='haslo' make vault_decrypt|vault_encrypt|vault_view
 
