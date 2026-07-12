@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  fastapi_backend_project_job:
+  backend:
     image: ${BACKEND_IMAGE:-arturscibor/praca.server.arturscibor.pl:latest}
     # Bundle env z Dopplera montowany jako docker secret i źródłowany przy starcie
     # - zero plików .env na dysku serwera.
