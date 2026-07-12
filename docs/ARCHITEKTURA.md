@@ -122,7 +122,7 @@ Extras w `pyproject.toml`: `test` (pytest, pytest-asyncio, pytest-cov, pytest-mo
 ├── infra/
 │   ├── ansible/                ← deploy (playbook + taski + vault secrets)
 │   ├── dockerfiles/            ← production/vault dockerfile, compose, swarm, nginx
-│   └── scripts/                ← ci_smoke, migracje DB, vault, run_mode
+│   └── scripts/                ← ci_smoke, migracje DB, dump/seed, vault
 └── docs/                       ← dokumentacja
 ```
 
@@ -462,16 +462,18 @@ Endpointu do ręcznego tworzenia logów **nie ma** — audyt jest wyłącznie we
 ### 9.1 `config/settings.py` — pydantic-settings + .env
 
 Klasa `Settings(BaseSettings)`; singleton `settings = Settings()`. Czyta
-`env/{ENV_MODE}.env` (tryb z `config/app_config.py`), przy czym **zmienne
-środowiskowe procesu mają priorytet nad plikiem** (CI i docker secret działają
-bez plików env/). Grupy: DB (`DB_*`), JWT (`SECRET_KEY_TOKEN`,
-`SECRET_KEY_REFRESH_TOKEN`, `ALGORITHM`, `TOKEN_EXPIRES_HOURS`,
-`REFRESH_TOKEN_EXPIRES_HOURS`).
+`env/{ENV_MODE}.env` (tryb ze zmiennej `ENV_MODE`, domyślnie `local`), przy czym
+**zmienne środowiskowe procesu mają priorytet nad plikiem** (CI i docker secret
+działają bez plików env/). Grupy: DB (`DB_*`), JWT (`SECRET_KEY_TOKEN`,
+`SECRET_KEY_REFRESH_TOKEN`, `SECRET_KEY_CONTACT_TOKEN`, `ALGORITHM`,
+`TOKEN_EXPIRES_HOURS`, `REFRESH_TOKEN_EXPIRES_HOURS`).
 
 ### 9.2 `config/app_config.py`
 
-Cienki moduł: `ENV_MODE` (local|dev|prod), `BASE_DIR`, `ENV_PATH`.
-Skrypt `infra/scripts/run_mode.sh` podmienia `ENV_MODE` (sed).
+Cienki moduł: `ENV_MODE`, `BASE_DIR`, `ENV_PATH`.
+`ENV_MODE` (local|stg|prod) czytany ze zmiennej środowiskowej, domyślnie `local`.
+Obraz produkcyjny ma `ENV_MODE=prod` w `production.dockerfile`; lokalnie:
+`ENV_MODE=stg make run_app`.
 
 ### 9.3 `config/gunicorn.py` i `config/swagger_description/`
 
@@ -578,8 +580,8 @@ Każdy etap gejtuje następny przez `needs`. Env w CI ustawiany wprost na jobie
 - **`ansible/`** — `playbook_deploy.yml` + taski (checkout, networks,
   secret_env, deploy, cleanup); sekrety infry w `secrets.yml` (ansible-vault,
   obsługa przez `make vault_*` / `infra/scripts/vault.sh`).
-- **`scripts/`** — `ci/ci_smoke.sh`, `database/*` (migracje), `run_mode.sh`,
-  `docker_entrypoint.sh`.
+- **`scripts/`** — `ci/ci_smoke.sh`, `database/*` (migracje, `dump.sh`,
+  `seed_from_dump.sh`), `docker_entrypoint.sh`.
 
 ---
 
