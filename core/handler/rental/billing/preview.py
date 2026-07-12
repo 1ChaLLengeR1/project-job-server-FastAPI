@@ -40,16 +40,14 @@ from core.service.rental.meters.response import MeterReadingInput
 def _compute_period(
     period_id: str,
     adjustments: list[PeriodAdjustmentInput] | None = None,
-    settlement_ids: dict[str, str] | None = None,
     db_session: Session | None = None,
 ) -> tuple[PeriodPreviewResponse | None, ApiErrorData | None, bool]:
     """Pełne wyliczenie okresu — wspólne dla preview i close.
 
-    settlement_ids: mapa apartment_id -> settlement_id (przy close podpina pozycje
-    podziału rodzinnego do zapisanych snapshotów; przy preview None).
+    Pozycje beneficjentów niosą apartment_id — close podpina po nim id snapshotów
+    rozliczeń bez ponownego przeliczania okresu.
     """
     adjustments = adjustments or []
-    settlement_ids = settlement_ids or {}
     warnings: list[str] = []
 
     period, err, ok = one_billing_period_psql(period_id, db_session=db_session)
@@ -248,7 +246,6 @@ def _compute_period(
             rent_amount=preview.settlement.rent_amount,
             electricity_cost=preview.settlement.electricity_cost,
             water_cost=preview.settlement.water_cost,
-            settlement_id=settlement_ids.get(preview.apartment_id),
             items=[
                 AllocationSettlementItemInput(
                     name=item.name, kind=item.kind, amount=item.amount, cost_type_id=item.cost_type_id
