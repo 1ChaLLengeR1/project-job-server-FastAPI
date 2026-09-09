@@ -21,3 +21,6 @@ __pycache__/
 
 # Dumpy bazy (make db_dump)
 backups/
+
+# IDE (JetBrains)
+.idea/
