@@ -106,6 +106,7 @@ Extras w `pyproject.toml`: `test` (pytest, pytest-asyncio, pytest-cov, pytest-mo
 │   ├── middleware/             ← JWTBasicAuthenticationMiddleware, JWTRefreshAuthenticationMiddleware
 │   ├── helper/                 ← password (bcrypt)
 │   ├── exceptions/             ← AppException + hierarchia
+│   ├── infra/s3/                ← integracja S3 (boto3): config.py (klient), init.py (presigned upload), delete.py, response.py
 │   └── data/                   ← UserData (TypedDict zwracany przez middleware)
 ├── config/                     ← konfiguracja aplikacji
 │   ├── settings.py             ← pydantic-settings, czyta env/{ENV_MODE}.env
@@ -132,7 +133,10 @@ Domeny projektu: **auth**, **tasks**, **calendar** (+ condition, days), **logs**
 mieszkań/najemców/kosztów/liczników, **billing** okresy rozliczeniowe z
 preview/close/reopen, **family** podział rodzinny; plan:
 docs/PLAN_ROZLICZENIA_MIESZKAN.md), **contact** (publiczny formularz
-kontaktowy wielu aplikacji — token X-Contact-Token, docs/CONTACT_TOKEN.md).
+kontaktowy wielu aplikacji — token X-Contact-Token, docs/CONTACT_TOKEN.md),
+**files** (magazyn plików w S3 — na razie warstwa infra/model/repository
+(`core/infra/s3/`, `database/psql/models/file.py`, `core/repository/psql/file/`),
+bez handlera/endpointu; plan: docs/PLAN_MAGAZYN_PLIKOW.md).
 
 ---
 
@@ -466,7 +470,9 @@ Klasa `Settings(BaseSettings)`; singleton `settings = Settings()`. Czyta
 środowiskowe procesu mają priorytet nad plikiem** (CI i docker secret działają
 bez plików env/). Grupy: DB (`DB_*`), JWT (`SECRET_KEY_TOKEN`,
 `SECRET_KEY_REFRESH_TOKEN`, `ALGORITHM`, `TOKEN_EXPIRES_HOURS`,
-`REFRESH_TOKEN_EXPIRES_HOURS`).
+`REFRESH_TOKEN_EXPIRES_HOURS`), AWS/S3 (`AWS_ACCESS_KEY_ID`,
+`AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `S3_BUCKET_NAME` — klient w
+`core/infra/s3/config.py`).
 
 ### 9.2 `config/app_config.py`
 
@@ -517,9 +523,10 @@ SQLAlchemy 1.4 (`Column`), UUID PK (`uuid.uuid4`), timestampy
 `DateTime(timezone=True)` z `server_default=func.now()` (+ `onupdate` dla
 `updated_at`). Wspólna `Base` w `base.py`. Modele: `Users`, `Tasks`, `Logs`,
 `WorkDay`, `WorkConditionChange`, `NamesOverdue`, `OutStandingMoney`,
-`KeysCalculatorPatryk`, `ContactMessage` oraz 14 tabel domeny rental
-(`Rental*` w `models/rentals.py`: słowniki, okresy rozliczeniowe ze
-snapshotami i podział rodzinny).
+`KeysCalculatorPatryk`, `ContactMessage`, `File` (`models/file.py` — enumy
+`FileStatus`/`FileType`, S3 key/prefix/url, śledzenie multipart uploadu) oraz
+14 tabel domeny rental (`Rental*` w `models/rentals.py`: słowniki, okresy
+rozliczeniowe ze snapshotami i podział rodzinny).
 
 ### 11.3 Alembic i skrypty
 
@@ -592,6 +599,7 @@ Czytane przez `config/settings.py` (env procesu ma priorytet):
 |-------|--------------------------------------------------------------------------|
 | Baza  | `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_DBNAME`              |
 | JWT   | `SECRET_KEY_TOKEN`, `SECRET_KEY_REFRESH_TOKEN`, `ALGORITHM`, `TOKEN_EXPIRES_HOURS`, `REFRESH_TOKEN_EXPIRES_HOURS` |
+| AWS/S3 | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `S3_BUCKET_NAME` |
 
 **Uwaga:** `REFRESH_TOKEN_EXPIRES_HOURS` jest historycznie interpretowane jako
 **dni** (`timedelta(days=...)` w `core/service/auth/tokens.py`).

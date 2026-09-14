@@ -10,6 +10,42 @@
 
 ---
 
+## 0. Status implementacji (2026-09-14)
+
+Pierwszy przyrost zrobiony jako port istniejącego, prostszego modułu S3 z
+innego projektu — **odbiega od modelu danych opisanego w sekcji 3** poniżej.
+Zrobione:
+
+- `database/psql/models/file.py` — **jedna tabela `files`** (bez podziału na
+  `files_nodes` + `files` z sekcji 3): `id`, `user_id` (FK → `users.id`,
+  nullable), `original_name`, `name`, `size`, `file_type`, `mime_type`,
+  `s3_key` (unique), `s3_prefix`, **`url`** (kolumna jednak jest — inaczej niż
+  ustalono w sekcji 3.2 „brak kolumny `url`"), `status`, pola pod multipart
+  upload (`multipart_upload_id`, `chunk_size`, `total_chunks`,
+  `uploaded_chunks`), `created_at`/`updated_at`. Enumy `FileStatus`/`FileType`
+  jak w planie, ale bez `FileType.DOCUMENT` i bez słowników
+  `ALLOWED_EXTENSIONS`/`MAX_FILE_SIZE_BYTES`. Brak drzewa podmiotów, brak
+  `parent_file_id`, brak dat gwarancji, brak `CHECK` constraintu.
+- `config/settings.py` — pola `aws_access_key_id`, `aws_secret_access_key`,
+  `aws_region`, `s3_bucket_name` (bez `s3_kms_key_id` i bez pól
+  `file_*_url_expire_seconds` z sekcji 4.1 — SSE-KMS jeszcze nieużyty).
+- `core/infra/s3/` (nie `core/service/files/s3.py` jak w sekcji 4) —
+  `config.py` (`get_s3_client()`), `init.py`
+  (`initialization_url_upload_file()` — tworzy rekord `File` przez
+  `create_file_psql` i wystawia presigned PUT), `delete.py`
+  (`delete_file_s3()` — `head_object` + `delete_object`), `response.py`
+  (`S3InitUploadFileResponse`).
+- `core/repository/psql/file/` — `create_file_psql` + `FileResponse` wg
+  wzorca `_psql` z `ARCHITEKTURA.md` (tuple `(result, error, ok)`).
+
+Nie zrobione jeszcze: handler, endpoint, audyt (`create_logs_psql`), presigned
+GET (preview/download), SSE-KMS, drzewo węzłów, gwarancje, testy. Sekcje 1–9
+poniżej to **oryginalny plan docelowy** (jedno drzewo podmiotów, brak
+publicznych URL, SSE-KMS) — przy dalszej pracy albo dociągamy obecny model do
+tego planu, albo świadomie go uprościmy i zaktualizujemy ten dokument.
+
+---
+
 ## 1. Ustalenia (odpowiedzi na pytania projektowe)
 
 | Temat | Decyzja |
