@@ -35,5 +35,11 @@ class Settings(BaseSettings):
     token_expires_hours: int = Field(validation_alias="TOKEN_EXPIRES_HOURS", gt=0)
     refresh_token_expires_hours: int = Field(validation_alias="REFRESH_TOKEN_EXPIRES_HOURS", gt=0)
 
+    # AWS / S3
+    aws_access_key_id: str = Field(validation_alias="AWS_ACCESS_KEY_ID")
+    aws_secret_access_key: str = Field(validation_alias="AWS_SECRET_ACCESS_KEY")
+    aws_region: str = Field(validation_alias="AWS_REGION")
+    s3_bucket_name: str = Field(validation_alias="S3_BUCKET_NAME")
+
 
 settings = Settings()
