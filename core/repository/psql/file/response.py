@@ -37,3 +37,38 @@ def _to_file_response(model: File) -> FileResponse:
         created_at=model.created_at,
         updated_at=model.updated_at,
     )
+
+
+@dataclass
+class RepositoryDeleteFileResponse:
+    id: str
+    s3_key: str
+
+
+def _to_delete_file_response(model: File) -> RepositoryDeleteFileResponse:
+    return RepositoryDeleteFileResponse(id=str(model.id), s3_key=model.s3_key)
+
+
+@dataclass
+class RepositoryConfirmFileResponse:
+    file_id: str
+    status: str
+
+
+def _to_confirm_file_response(model: File) -> RepositoryConfirmFileResponse:
+    return RepositoryConfirmFileResponse(file_id=str(model.id), status=model.status.value)
+
+
+@dataclass
+class RepositoryCollectionFilePagination:
+    has_more: bool
+    page: int
+    limit: int
+    offset: int
+    total: int
+
+
+@dataclass
+class RepositoryCollectionFileResponse:
+    data: list[FileResponse]
+    pagination: RepositoryCollectionFilePagination

@@ -35,8 +35,19 @@ Zrobione:
   `create_file_psql` i wystawia presigned PUT), `delete.py`
   (`delete_file_s3()` — `head_object` + `delete_object`), `response.py`
   (`S3InitUploadFileResponse`).
-- `core/repository/psql/file/` — `create_file_psql` + `FileResponse` wg
-  wzorca `_psql` z `ARCHITEKTURA.md` (tuple `(result, error, ok)`).
+- `core/repository/psql/file/` — `create_file_psql`, `collection_files_psql`
+  (filtry `file_type`/`original_name`/`catalog`, paginacja), `delete_file_psql`,
+  `confirm_file_by_id_psql` (ustawia `status=COMPLETED` — upload potwierdzony,
+  zob. status pliku w sekcji 1) + odpowiadające im response dataclassy w
+  jednym `response.py`, wg wzorca `_psql` z `ARCHITEKTURA.md`
+  (tuple `(result, error, ok)`, `db.query().filter()`, bez ręcznego
+  `db.commit()` — robi to `managed_session`). `check.py` zostawiony pusty:
+  nic jeszcze nie referencjonuje `files.id` z innej tabeli, więc nie ma czego
+  sprawdzać pod „plik w użyciu" — dopisać, gdy pojawi się pierwsza domena
+  konsumująca pliki (i wtedy też przełącznik na `CONFIRMED` przy podpięciu).
+- `core/service/file/delete.py` (+ `response.py`) — usuwa rekord przez
+  `delete_file_psql`, potem obiekt z S3 przez `delete_file_s3`; bez kroku
+  „w użyciu" (patrz wyżej).
 - Konfiguracja AWS zweryfikowana end-to-end na realnym koncie: dedykowany
   user IAM (nie root) z inline policy ograniczoną do jednego bucketu
   (`s3:PutObject`/`GetObject`/`DeleteObject`/`ListBucket` na
