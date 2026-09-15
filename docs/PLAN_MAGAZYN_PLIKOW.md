@@ -10,7 +10,7 @@
 
 ---
 
-## 0. Status implementacji (2026-09-14)
+## 0. Status implementacji (2026-09-15)
 
 Pierwszy przyrost zrobiony jako port istniejącego, prostszego modułu S3 z
 innego projektu — **odbiega od modelu danych opisanego w sekcji 3** poniżej.
@@ -37,12 +37,30 @@ Zrobione:
   (`S3InitUploadFileResponse`).
 - `core/repository/psql/file/` — `create_file_psql` + `FileResponse` wg
   wzorca `_psql` z `ARCHITEKTURA.md` (tuple `(result, error, ok)`).
+- Konfiguracja AWS zweryfikowana end-to-end na realnym koncie: dedykowany
+  user IAM (nie root) z inline policy ograniczoną do jednego bucketu
+  (`s3:PutObject`/`GetObject`/`DeleteObject`/`ListBucket` na
+  `storage-fastapi-s3`), klucze w `env/local.env`. Wszystkie zmienne env
+  (nie tylko AWS/S3) dostały prefiks `BACKEND_SERVER_JOB_` —
+  `config/settings.py` czyta go teraz przez `env_prefix` w `model_config`
+  (bez `validation_alias` na polach, gdzie nazwa pola pokrywa się z nazwą
+  zmiennej; wyjątek: `db_name` → `DB_DBNAME`, jawny pełny alias, bo
+  `env_prefix` nie dokłada się automatycznie do pól z ustawionym aliasem).
+- `tests/core/infra/s3/test_init.py` + `test_delete.py` — testy integracyjne
+  oznaczone `@pytest.mark.full_integration` (realny S3, poza domyślnym
+  zakresem `make run_test`/`run_test_integration`, odpalane ręcznie przez
+  `make run_test_full` albo `-m full_integration`): upload realnego pliku
+  przez wystawiony presigned PUT + `head_object`, usuwanie obiektu i
+  ścieżka błędu `NotFound` dla brakującego klucza. Każdy test sam czyści po
+  sobie obiekty wgrane na S3 (`finally`/bezpiecznik).
 
 Nie zrobione jeszcze: handler, endpoint, audyt (`create_logs_psql`), presigned
-GET (preview/download), SSE-KMS, drzewo węzłów, gwarancje, testy. Sekcje 1–9
-poniżej to **oryginalny plan docelowy** (jedno drzewo podmiotów, brak
-publicznych URL, SSE-KMS) — przy dalszej pracy albo dociągamy obecny model do
-tego planu, albo świadomie go uprościmy i zaktualizujemy ten dokument.
+GET (preview/download), SSE-KMS, drzewo węzłów, gwarancje, migracja Alembic
+dla tabeli `files`, testy `_psql` (repository) i testy handlera/endpointu.
+Sekcje 1–9 poniżej to **oryginalny plan docelowy** (jedno drzewo podmiotów,
+brak publicznych URL, SSE-KMS) — przy dalszej pracy albo dociągamy obecny
+model do tego planu, albo świadomie go uprościmy i zaktualizujemy ten
+dokument.
 
 ---
 

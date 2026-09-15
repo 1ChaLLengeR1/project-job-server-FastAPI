@@ -35,7 +35,7 @@ set -a
 source "$ENV_FILE"
 set +a
 
-for var in DB_HOST DB_PORT DB_USER DB_PASSWORD DB_DBNAME; do
+for var in BACKEND_SERVER_JOB_DB_HOST BACKEND_SERVER_JOB_DB_PORT BACKEND_SERVER_JOB_DB_USER BACKEND_SERVER_JOB_DB_PASSWORD BACKEND_SERVER_JOB_DB_DBNAME; do
     if [ -z "${!var:-}" ]; then
         show_error "$var nie jest ustawione w pliku $ENV.env"
     fi
@@ -75,9 +75,9 @@ substr($0, 1, 1) == "\\" { next }
 { for (i = 1; i <= n; i++) if (index($0, sk[i]) == 1) next; print }
 '
 
-export PGPASSWORD="$DB_PASSWORD"
+export PGPASSWORD="$BACKEND_SERVER_JOB_DB_PASSWORD"
 
-show_info "Środowisko: $ENV (baza $DB_DBNAME @ $DB_HOST:$DB_PORT)"
+show_info "Środowisko: $ENV (baza $BACKEND_SERVER_JOB_DB_DBNAME @ $BACKEND_SERVER_JOB_DB_HOST:$BACKEND_SERVER_JOB_DB_PORT)"
 show_info "Pomijane tabele: $SKIP_TABLES"
 
 for DUMP in "${DUMPS[@]}"; do
@@ -91,7 +91,7 @@ for DUMP in "${DUMPS[@]}"; do
 
     if ! awk -v skip="$SKIP_TABLES" "$FILTER_AWK" "$DUMP" \
       | psql -v ON_ERROR_STOP=1 --single-transaction \
-             -h "$DB_HOST" -U "$DB_USER" -d "$DB_DBNAME" -p "$DB_PORT" -q -f -; then
+             -h "$BACKEND_SERVER_JOB_DB_HOST" -U "$BACKEND_SERVER_JOB_DB_USER" -d "$BACKEND_SERVER_JOB_DB_DBNAME" -p "$BACKEND_SERVER_JOB_DB_PORT" -q -f -; then
         show_error "Import $(basename "$DUMP") nie powiódł się (transakcja wycofana)."
     fi
 
@@ -101,12 +101,12 @@ done
 echo "================================"
 echo "Liczba wierszy po imporcie:"
 echo "================================"
-psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_DBNAME" -p "$DB_PORT" -At -c "
+psql -h "$BACKEND_SERVER_JOB_DB_HOST" -U "$BACKEND_SERVER_JOB_DB_USER" -d "$BACKEND_SERVER_JOB_DB_DBNAME" -p "$BACKEND_SERVER_JOB_DB_PORT" -At -c "
 SELECT relname || ': ' || n_live_tup
 FROM pg_stat_user_tables
 WHERE n_live_tup > 0
 ORDER BY relname;"
 
 echo "================================"
-echo "SUKCES: Dane z dumpów wgrane do bazy $DB_DBNAME"
+echo "SUKCES: Dane z dumpów wgrane do bazy $BACKEND_SERVER_JOB_DB_DBNAME"
 echo "================================"
