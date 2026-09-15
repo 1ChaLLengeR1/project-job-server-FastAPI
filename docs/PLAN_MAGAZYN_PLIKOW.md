@@ -16,16 +16,42 @@ Pierwszy przyrost zrobiony jako port istniejącego, prostszego modułu S3 z
 innego projektu — **odbiega od modelu danych opisanego w sekcji 3** poniżej.
 Zrobione:
 
-- `database/psql/models/file.py` — **jedna tabela `files`** (bez podziału na
-  `files_nodes` + `files` z sekcji 3): `id`, `user_id` (FK → `users.id`,
-  nullable), `original_name`, `name`, `size`, `file_type`, `mime_type`,
-  `s3_key` (unique), `s3_prefix`, **`url`** (kolumna jednak jest — inaczej niż
-  ustalono w sekcji 3.2 „brak kolumny `url`"), `status`, pola pod multipart
-  upload (`multipart_upload_id`, `chunk_size`, `total_chunks`,
-  `uploaded_chunks`), `created_at`/`updated_at`. Enumy `FileStatus`/`FileType`
-  jak w planie, ale bez `FileType.DOCUMENT` i bez słowników
-  `ALLOWED_EXTENSIONS`/`MAX_FILE_SIZE_BYTES`. Brak drzewa podmiotów, brak
-  `parent_file_id`, brak dat gwarancji, brak `CHECK` constraintu.
+- `database/psql/models/file.py` — `files` (nie ma podziału na osobny plik
+  `files.py`/`files_nodes.py` z sekcji 3 — obie tabele w jednym module): `id`,
+  `user_id` (FK → `users.id`, nullable), `original_name`, `name`, `size`,
+  `file_type`, `mime_type`, `s3_key` (unique), `s3_prefix`, **`url`** (kolumna
+  jednak jest — inaczej niż ustalono w sekcji 3.2 „brak kolumny `url`"),
+  `status`, pola pod multipart upload (`multipart_upload_id`, `chunk_size`,
+  `total_chunks`, `uploaded_chunks`), `created_at`/`updated_at`. Enumy
+  `FileStatus`/`FileType` jak w planie, ale bez `FileType.DOCUMENT` i bez
+  słowników `ALLOWED_EXTENSIONS`/`MAX_FILE_SIZE_BYTES`. Brak dat gwarancji,
+  brak `CHECK` constraintu.
+- **Drzewo podmiotów (`FilesNode`/`files_nodes`)** — dodane w tej samej
+  konwencji co planowano (sekcja 3.1): `id`, `name`, `parent_id` (self-FK,
+  `RESTRICT`), `description`, `is_active`, `created_at`/`updated_at`,
+  `UniqueConstraint(parent_id, name)`. Na `files` dodane `node_id` (FK →
+  `files_nodes.id`, `RESTRICT`, nullable) i `parent_file_id` (self-FK,
+  **`CASCADE`** — jedyny wyjątek od `RESTRICT` w bazie, plik-dziecko nie ma
+  sensu bez rodzica). **Bez M:M** między `files` i `files_nodes` — jeden plik
+  = jeden węzeł + opcjonalnie jeden plik-rodzic; potwierdzone end-to-end
+  (Artur → Faktura/Faktura 2/Faktura 3 przez `node_id`, Faktura →
+  faktura-1-2 przez `parent_file_id`, `RESTRICT` poprawnie blokuje usunięcie
+  węzła z przypisanym plikiem). M:M („wolne tagi") zostaje jako opcjonalny
+  dodatek na przyszłość (sekcja 7), nie zamiennik.
+- `core/repository/psql/file/node/` — podstawowe `_psql` dla węzłów:
+  `create_files_node_psql`, `collection_files_nodes_psql` (jeden poziom po
+  `parent_id`, bez rekursji po poddrzewie na razie), `update_files_node_psql`
+  (partial — `None` = nie dotykaj pola, tak jak `update_file_psql`; **znana
+  wada**: nie da się tak przenieść węzła na najwyższy poziom, bo `None` w
+  `new_parent_id` znaczy „nie zmieniaj", nie „wyczyść" — do poprawienia przy
+  pisaniu handlera/endpointu), `delete_files_node_psql` (`RESTRICT` z bazy →
+  `IntegrityError`/409, gdy węzeł ma dzieci-węzły lub przypisane pliki).
+  Jeszcze bez handlera/endpointu/schematów — czysta warstwa `_psql`.
+- `database/psql/sql/database_down.sql` — dopisane `DROP TABLE
+  files`/`files_nodes` (w ogóle ich nie było) oraz `DROP TYPE
+  file_type`/`file_status` — `DROP TABLE ... CASCADE` nie usuwa natywnych
+  enumów Postgresa, więc kolejny `migration_up` po `migration_restart`
+  wybuchał `DuplicateObject: typ "file_type" już istnieje`.
 - `config/settings.py` — pola `aws_access_key_id`, `aws_secret_access_key`,
   `aws_region`, `s3_bucket_name` (bez `s3_kms_key_id` i bez pól
   `file_*_url_expire_seconds` z sekcji 4.1 — SSE-KMS jeszcze nieużyty).
@@ -83,13 +109,15 @@ Zrobione:
   ścieżka błędu `NotFound` dla brakującego klucza. Każdy test sam czyści po
   sobie obiekty wgrane na S3 (`finally`/bezpiecznik).
 
-Nie zrobione jeszcze: presigned GET (preview/download), SSE-KMS, drzewo
-węzłów (`files_nodes`, więc też `assign`/`metadata`/`node_id`), gwarancje,
-testy `_psql` dla `create`/`collection`/`delete`/`confirm`, testy
-handlera/endpointu. Sekcje 1–9 poniżej to **oryginalny plan docelowy** (jedno
-drzewo podmiotów, brak publicznych URL, SSE-KMS) — przy dalszej pracy albo
-dociągamy obecny model do tego planu, albo świadomie go uprościmy i
-zaktualizujemy ten dokument.
+Nie zrobione jeszcze: handler/endpoint/schematy dla węzłów
+(`POST /files/nodes/create` itd. z sekcji 5.1), `assign`/`metadata` na
+plikach (wymagają węzłów — teraz są, ale endpointy jeszcze nie), presigned
+GET (preview/download), SSE-KMS, gwarancje, testy `_psql` dla
+`create`/`collection`/`delete`/`confirm`/węzłów, testy handlera/endpointu.
+Sekcje 1–9 poniżej to **oryginalny plan docelowy** (jedno drzewo podmiotów,
+brak publicznych URL, SSE-KMS) — przy dalszej pracy albo dociągamy obecny
+model do tego planu, albo świadomie go uprościmy i zaktualizujemy ten
+dokument.
 
 ---
 
