@@ -131,3 +131,9 @@ COLLECTION_CONTACT_MESSAGES = "/contact/messages/collection"
 ONE_CONTACT_MESSAGE = "/contact/messages/one/{message_id}"
 UPDATE_CONTACT_MESSAGE_STATUS = "/contact/messages/update/status/{message_id}"
 DELETE_CONTACT_MESSAGE = "/contact/messages/delete/{message_id}"
+
+# Files - magazyn plikow (init/update statusu, collection, delete)
+INIT_FILE = "/files/init"
+UPDATE_FILE = "/files/update/{file_id}"
+COLLECTION_FILES = "/files/collection"
+DELETE_FILE = "/files/delete/{file_id}"

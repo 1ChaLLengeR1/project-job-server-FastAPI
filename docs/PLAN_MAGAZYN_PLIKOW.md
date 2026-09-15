@@ -38,16 +38,34 @@ Zrobione:
 - `core/repository/psql/file/` — `create_file_psql`, `collection_files_psql`
   (filtry `file_type`/`original_name`/`catalog`, paginacja), `delete_file_psql`,
   `confirm_file_by_id_psql` (ustawia `status=COMPLETED` — upload potwierdzony,
-  zob. status pliku w sekcji 1) + odpowiadające im response dataclassy w
-  jednym `response.py`, wg wzorca `_psql` z `ARCHITEKTURA.md`
-  (tuple `(result, error, ok)`, `db.query().filter()`, bez ręcznego
-  `db.commit()` — robi to `managed_session`). `check.py` zostawiony pusty:
-  nic jeszcze nie referencjonuje `files.id` z innej tabeli, więc nie ma czego
-  sprawdzać pod „plik w użyciu" — dopisać, gdy pojawi się pierwsza domena
-  konsumująca pliki (i wtedy też przełącznik na `CONFIRMED` przy podpięciu).
+  zob. status pliku w sekcji 1), `update_file_psql` (edycja `name`/`status`,
+  oba parametry opcjonalne — `None` = nie dotykaj pola) — wszystkie zwracają
+  jeden wspólny `FileResponse` z `response.py`, wg wzorca `_psql` z
+  `ARCHITEKTURA.md` (tuple `(result, error, ok)`, `db.query().filter()`, bez
+  ręcznego `db.commit()` — robi to `managed_session`). `check.py` zostawiony
+  pusty: nic jeszcze nie referencjonuje `files.id` z innej tabeli, więc nie ma
+  czego sprawdzać pod „plik w użyciu" — dopisać, gdy pojawi się pierwsza
+  domena konsumująca pliki (i wtedy też przełącznik na `CONFIRMED` przy
+  podpięciu).
 - `core/service/file/delete.py` (+ `response.py`) — usuwa rekord przez
   `delete_file_psql`, potem obiekt z S3 przez `delete_file_s3`; bez kroku
   „w użyciu" (patrz wyżej).
+- **Handler + endpoint (etapy 4–6, bez węzłów/assign)** — pierwszy kawałek
+  modułu wywoływalny przez HTTP: `core/handler/file/` (`init.py`,
+  `update.py`, `delete.py`, `collection.py`, audyt `create_logs_psql` ze
+  slotami `files:init`/`files:update`/`files:delete_file`/`files:collection`)
+  → `api/schemas/file/` (`payload.py`, `response.py`) → `api/endpoints/file/`
+  → `POST /files/init`, `PUT /files/update/{file_id}`,
+  `DELETE /files/delete/{file_id}`, `GET /files/collection` (stałe w
+  `api/routers.py`, wpięte w `api/api.py`, tag Swagger „Files" w
+  `config/swagger_description/tags.py`). Rola superadmin dla wszystkiego,
+  `RATE_LIMIT_WRITE`/`RATE_LIMIT_READ` jak w `rentals`. Szczególny przypadek
+  w `handler_update_file`: gdy w body przyjdzie `status="confirmed"`, handler
+  odpala `confirm_file_by_id_psql` (dedykowana ścieżka „upload potwierdzony");
+  dla każdego innego statusu (albo samej `name`) idzie ogólny
+  `update_file_psql`. Brak testów dla handlera/endpointu — na razie
+  zweryfikowane ręcznie przez `main.app.openapi()` + pełny test suite (bez
+  regresji).
 - Konfiguracja AWS zweryfikowana end-to-end na realnym koncie: dedykowany
   user IAM (nie root) z inline policy ograniczoną do jednego bucketu
   (`s3:PutObject`/`GetObject`/`DeleteObject`/`ListBucket` na
@@ -65,13 +83,13 @@ Zrobione:
   ścieżka błędu `NotFound` dla brakującego klucza. Każdy test sam czyści po
   sobie obiekty wgrane na S3 (`finally`/bezpiecznik).
 
-Nie zrobione jeszcze: handler, endpoint, audyt (`create_logs_psql`), presigned
-GET (preview/download), SSE-KMS, drzewo węzłów, gwarancje, migracja Alembic
-dla tabeli `files`, testy `_psql` (repository) i testy handlera/endpointu.
-Sekcje 1–9 poniżej to **oryginalny plan docelowy** (jedno drzewo podmiotów,
-brak publicznych URL, SSE-KMS) — przy dalszej pracy albo dociągamy obecny
-model do tego planu, albo świadomie go uprościmy i zaktualizujemy ten
-dokument.
+Nie zrobione jeszcze: presigned GET (preview/download), SSE-KMS, drzewo
+węzłów (`files_nodes`, więc też `assign`/`metadata`/`node_id`), gwarancje,
+testy `_psql` dla `create`/`collection`/`delete`/`confirm`, testy
+handlera/endpointu. Sekcje 1–9 poniżej to **oryginalny plan docelowy** (jedno
+drzewo podmiotów, brak publicznych URL, SSE-KMS) — przy dalszej pracy albo
+dociągamy obecny model do tego planu, albo świadomie go uprościmy i
+zaktualizujemy ten dokument.
 
 ---
 

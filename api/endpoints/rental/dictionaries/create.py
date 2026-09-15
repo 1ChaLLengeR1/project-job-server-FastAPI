@@ -57,7 +57,7 @@ router = APIRouter()
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=201,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/Apartments"],
 )
 @limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_create_rental_apartment(
@@ -100,7 +100,7 @@ def api_superadmin_create_rental_apartment(
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=201,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/Tenants"],
 )
 @limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_create_rental_tenant(
@@ -144,7 +144,7 @@ def api_superadmin_create_rental_tenant(
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=201,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/Tenancies"],
 )
 @limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_create_rental_tenancy(
@@ -194,7 +194,7 @@ def api_superadmin_create_rental_tenancy(
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=201,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/CostTypes"],
 )
 @limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_create_rental_cost_type(
@@ -238,7 +238,7 @@ def api_superadmin_create_rental_cost_type(
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=201,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/ApartmentCosts"],
 )
 @limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_create_rental_apartment_cost(
@@ -288,7 +288,7 @@ def api_superadmin_create_rental_apartment_cost(
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=201,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/Meters"],
 )
 @limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_create_rental_meter(

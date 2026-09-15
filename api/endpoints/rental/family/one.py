@@ -45,7 +45,7 @@ def _invalid_uuid_response(field_name: str, type_module: str) -> JSONResponse:
     response_model=ApiResponse[RentalBeneficiaryResponseData],
     responses=_ONE_RESPONSES,
     status_code=200,
-    tags=["Rentals/Family"],
+    tags=["Rentals/Beneficiaries"],
 )
 @limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_superadmin_one_rental_beneficiary(
@@ -83,7 +83,7 @@ def api_superadmin_one_rental_beneficiary(
     response_model=ApiResponse[RentalAllocationRuleResponseData],
     responses=_ONE_RESPONSES,
     status_code=200,
-    tags=["Rentals/Family"],
+    tags=["Rentals/AllocationRules"],
 )
 @limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_superadmin_one_rental_allocation_rule(

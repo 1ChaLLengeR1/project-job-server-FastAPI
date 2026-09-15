@@ -61,7 +61,7 @@ def _invalid_uuid_response(field_name: str, type_module: str) -> JSONResponse:
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/Apartments"],
 )
 @limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_superadmin_collection_rental_apartments(
@@ -103,7 +103,7 @@ def api_superadmin_collection_rental_apartments(
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/Tenants"],
 )
 @limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_superadmin_collection_rental_tenants(
@@ -146,7 +146,7 @@ def api_superadmin_collection_rental_tenants(
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/Tenancies"],
 )
 @limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_superadmin_collection_rental_tenancies(
@@ -197,7 +197,7 @@ def api_superadmin_collection_rental_tenancies(
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/CostTypes"],
 )
 @limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_superadmin_collection_rental_cost_types(
@@ -240,7 +240,7 @@ def api_superadmin_collection_rental_cost_types(
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/ApartmentCosts"],
 )
 @limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_superadmin_collection_rental_apartment_costs(
@@ -289,7 +289,7 @@ def api_superadmin_collection_rental_apartment_costs(
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/Meters"],
 )
 @limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_superadmin_collection_rental_meters(

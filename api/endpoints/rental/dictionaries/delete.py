@@ -64,7 +64,7 @@ def _invalid_uuid_response(field_name: str, type_module: str) -> JSONResponse:
     response_model=ApiResponse[RentalApartmentResponseData],
     responses=_DELETE_RESPONSES,
     status_code=200,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/Apartments"],
 )
 @limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_delete_rental_apartment(
@@ -102,7 +102,7 @@ def api_superadmin_delete_rental_apartment(
     response_model=ApiResponse[RentalTenantResponseData],
     responses=_DELETE_RESPONSES,
     status_code=200,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/Tenants"],
 )
 @limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_delete_rental_tenant(
@@ -140,7 +140,7 @@ def api_superadmin_delete_rental_tenant(
     response_model=ApiResponse[RentalTenancyResponseData],
     responses=_DELETE_RESPONSES,
     status_code=200,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/Tenancies"],
 )
 @limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_delete_rental_tenancy(
@@ -178,7 +178,7 @@ def api_superadmin_delete_rental_tenancy(
     response_model=ApiResponse[RentalCostTypeResponseData],
     responses=_DELETE_RESPONSES,
     status_code=200,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/CostTypes"],
 )
 @limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_delete_rental_cost_type(
@@ -216,7 +216,7 @@ def api_superadmin_delete_rental_cost_type(
     response_model=ApiResponse[RentalApartmentCostResponseData],
     responses=_DELETE_RESPONSES,
     status_code=200,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/ApartmentCosts"],
 )
 @limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_delete_rental_apartment_cost(
@@ -254,7 +254,7 @@ def api_superadmin_delete_rental_apartment_cost(
     response_model=ApiResponse[RentalMeterResponseData],
     responses=_DELETE_RESPONSES,
     status_code=200,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/Meters"],
 )
 @limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_delete_rental_meter(

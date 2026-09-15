@@ -1,0 +1,39 @@
+from sqlalchemy.orm import Session
+
+from api.response import ApiErrorData
+from core.repository.psql.file.collection import collection_files_psql
+from core.repository.psql.file.response import RepositoryCollectionFileResponse
+from core.repository.psql.logs.create import create_logs_psql
+from database.psql.models.file import FileType
+
+
+def handler_collection_file(
+    user_id: str,
+    limit: int = 32,
+    offset: int = 0,
+    file_type: FileType | None = None,
+    original_name: str | None = None,
+    catalog: str | None = None,
+    db_session: Session | None = None,
+) -> tuple[RepositoryCollectionFileResponse | None, ApiErrorData | None, bool]:
+    try:
+        result, err, ok = collection_files_psql(
+            limit=limit,
+            offset=offset,
+            file_type=file_type,
+            original_name=original_name,
+            catalog=catalog,
+            db_session=db_session,
+        )
+        if not ok:
+            return None, err, False
+
+        create_logs_psql(user_id, "files:collection", db_session=db_session)
+        return result, None, True
+    except Exception as e:
+        return None, ApiErrorData(
+            message=str(e),
+            type_module="handler_collection_file",
+            type_error="exception",
+            key_type_error="Exception",
+        ), False

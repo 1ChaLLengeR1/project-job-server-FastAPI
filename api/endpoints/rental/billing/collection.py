@@ -51,7 +51,7 @@ def _invalid_uuid_response(field_name: str, type_module: str) -> JSONResponse:
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
-    tags=["Rentals/Billing"],
+    tags=["Rentals/Periods"],
 )
 @limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_superadmin_collection_rental_periods(
@@ -95,7 +95,7 @@ def api_superadmin_collection_rental_periods(
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
-    tags=["Rentals/Billing"],
+    tags=["Rentals/MeterReadings"],
 )
 @limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_superadmin_collection_rental_meter_readings(
@@ -142,7 +142,7 @@ def api_superadmin_collection_rental_meter_readings(
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
-    tags=["Rentals/Billing"],
+    tags=["Rentals/Settlements"],
 )
 @limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_superadmin_collection_rental_settlements(

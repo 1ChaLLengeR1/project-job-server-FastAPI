@@ -50,16 +50,6 @@ def _to_delete_file_response(model: File) -> RepositoryDeleteFileResponse:
 
 
 @dataclass
-class RepositoryConfirmFileResponse:
-    file_id: str
-    status: str
-
-
-def _to_confirm_file_response(model: File) -> RepositoryConfirmFileResponse:
-    return RepositoryConfirmFileResponse(file_id=str(model.id), status=model.status.value)
-
-
-@dataclass
 class RepositoryCollectionFilePagination:
     has_more: bool
     page: int

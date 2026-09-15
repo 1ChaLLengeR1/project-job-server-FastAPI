@@ -35,7 +35,7 @@ router = APIRouter()
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
-    tags=["Rentals/Billing"],
+    tags=["Rentals/Periods"],
 )
 @limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_superadmin_preview_rental_period(
