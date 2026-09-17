@@ -25,3 +25,15 @@ def _to_files_node_response(model: FilesNode) -> FilesNodeResponse:
         created_at=model.created_at,
         updated_at=model.updated_at,
     )
+
+
+@dataclass
+class FilesNodeBreadcrumbItem:
+    id: str
+    name: str
+
+
+@dataclass
+class FilesNodeWithBreadcrumbResponse:
+    node: FilesNodeResponse
+    breadcrumb: list[FilesNodeBreadcrumbItem]

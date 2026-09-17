@@ -2,13 +2,13 @@ from sqlalchemy.orm import Session
 
 from api.response import ApiErrorData
 from core.repository.psql.file.node.one import one_files_node_psql
-from core.repository.psql.file.node.response import FilesNodeResponse
+from core.repository.psql.file.node.response import FilesNodeWithBreadcrumbResponse
 from core.repository.psql.logs.create import create_logs_psql
 
 
 def handler_one_files_node(
     user_id: str, node_id: str, db_session: Session | None = None
-) -> tuple[FilesNodeResponse | None, ApiErrorData | None, bool]:
+) -> tuple[FilesNodeWithBreadcrumbResponse | None, ApiErrorData | None, bool]:
     try:
         result, err, ok = one_files_node_psql(node_id, db_session=db_session)
         if not ok:

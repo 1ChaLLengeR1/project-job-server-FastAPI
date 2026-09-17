@@ -11,3 +11,13 @@ class FilesNodeResponseData(BaseModel):
     is_active: bool
     created_at: datetime | None
     updated_at: datetime | None
+
+
+class FilesNodeBreadcrumbItemData(BaseModel):
+    id: str
+    name: str
+
+
+class FilesNodeWithBreadcrumbResponseData(BaseModel):
+    node: FilesNodeResponseData
+    breadcrumb: list[FilesNodeBreadcrumbItemData]

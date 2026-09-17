@@ -91,8 +91,22 @@ class TestApiFilesNode:
             found = client.get(f"/files/nodes/one/{node.id}", headers=headers)
             missing = client.get(f"/files/nodes/one/{uuid4()}", headers=headers)
 
-        assert found.status_code == 200 and found.json()["data"]["name"] == "Mama"
+        assert found.status_code == 200
+        assert found.json()["data"]["node"]["name"] == "Mama"
         assert missing.status_code == 404
+
+    def test_node07b_one_returns_breadcrumb_from_root_to_node(self, db_session: Session):
+        root = make_files_node(db_session, name="Praca 2025-2026")
+        middle = make_files_node(db_session, name="Faktury", parent_id=str(root.id))
+        leaf = make_files_node(db_session, name="Faktura 3", parent_id=str(middle.id))
+        client = make_client(db_session, one_router)
+
+        with authorized_as("superadmin") as headers:
+            response = client.get(f"/files/nodes/one/{leaf.id}", headers=headers)
+
+        assert response.status_code == 200
+        names = [item["name"] for item in response.json()["data"]["breadcrumb"]]
+        assert names == ["Praca 2025-2026", "Faktury", "Faktura 3"]
 
     def test_node08_one_invalid_uuid_returns_400(self, db_session: Session):
         client = make_client(db_session, one_router)

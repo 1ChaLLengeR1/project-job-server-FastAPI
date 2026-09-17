@@ -137,12 +137,12 @@ kontaktowy wielu aplikacji — token X-Contact-Token, docs/CONTACT_TOKEN.md),
 **files** (magazyn plików w S3 — pełny stos, poddomeny: **file** pliki
 (upload z presigned PUT, status flow, assign/metadata, gwarancje, preview/
 download z presigned GET, delete z kaskadą S3 dla plików-dzieci), **node**
-drzewo węzłów/podmiotów (`files_nodes`, self-FK, CRUD); bucket S3 w pełni
-prywatny (Block Public Access + brak bucket policy, dostęp wyłącznie przez
-krótkoterminowe presigned URL) - CORS na buckecie skonfigurowany osobno od
-`CORSMiddleware` w `main.py` (S3 nie zna configu backendu); plan:
-docs/PLAN_MAGAZYN_PLIKOW.md, etapy 1-8 zrobione, zostały: SSE-KMS,
-breadcrumb węzła w `GET /files/nodes/one/{node_id}`).
+drzewo węzłów/podmiotów (`files_nodes`, self-FK, CRUD, `GET .../one/{id}`
+z breadcrumb od korzenia); bucket S3 w pełni prywatny (Block Public Access
++ brak bucket policy, dostęp wyłącznie przez krótkoterminowe presigned
+URL) - CORS na buckecie skonfigurowany osobno od `CORSMiddleware` w
+`main.py` (S3 nie zna configu backendu); plan: docs/PLAN_MAGAZYN_PLIKOW.md,
+etapy 1-8 zrobione, zostało: SSE-KMS).
 
 ---
 
@@ -703,8 +703,7 @@ Czytane przez `config/settings.py` (env procesu ma priorytet):
 
 1. **Domena `files`** — SSE-KMS (szyfrowanie S3 kluczem KMS) zaplanowane w
    docs/PLAN_MAGAZYN_PLIKOW.md, ale nieużyte (presigned PUT nic tego nie
-   wymusza); `GET /files/nodes/one/{node_id}` bez breadcrumb (ścieżki
-   przodków w drzewie węzłów) — świadomie odłożone.
+   wymusza).
 2. **Rate limiter in-memory** — limity liczone per worker gunicorna;
    przy skalowaniu na repliki dodać Redis jako storage.
 3. **`REFRESH_TOKEN_EXPIRES_HOURS`** działa jako dni — do przemianowania na

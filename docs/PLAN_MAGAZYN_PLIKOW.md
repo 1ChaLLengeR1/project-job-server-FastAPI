@@ -396,9 +396,25 @@ Zrobione:
   S3, więc bez markera `full_integration` (jak testy `rentals`) - realna
   baza wystarczy. Pełny domyślny suite: 601 passed (+45), wszystkie
   `full_integration` razem: 23 passed (+8), zero leftoverów na buckecie.
+- **Breadcrumb dla `GET /files/nodes/one/{node_id}`** — response
+  zmieniony z gołego rekordu węzła na `{node, breadcrumb}`. `breadcrumb`
+  to lista od korzenia do węzła włącznie (`[{id, name}, ...]`) - budowana
+  prostą pętlą po `parent_id` w górę (`_build_breadcrumb` w
+  `core/repository/psql/file/node/one.py`), nie BFS (to zawsze jeden
+  łańcuch, bez rozgałęzień, w przeciwieństwie do zejścia po poddrzewie w
+  `collection_files_psql?recursive=true`). Nowe dataclassy
+  `FilesNodeBreadcrumbItem`/`FilesNodeWithBreadcrumbResponse`
+  (`core/repository/psql/file/node/response.py`) i odpowiadające im
+  schematy Pydantic w `api/schemas/file/node/response.py`. **Breaking
+  change kształtu odpowiedzi** `GET /files/nodes/one/{node_id}` — dane
+  węzła teraz pod kluczem `data.node`, nie płasko pod `data` (frontend
+  musi się dostosować, jeśli już korzysta z tego endpointu). Testy: 2
+  nowe w `test_one.py` (korzeń ma breadcrumb z samym sobą, 3-poziomowy
+  łańcuch w poprawnej kolejności) + 1 API (`test_api_node.py`). Pełny
+  suite: 604 passed, bez regresji.
 
-Nie zrobione jeszcze: SSE-KMS, breadcrumb dla
-`GET /files/nodes/one/{node_id}`, `docs/ARCHITEKTURA.md` nieaktualny.
+Nie zrobione jeszcze: SSE-KMS, `docs/ARCHITEKTURA.md` — sekcja o SSE-KMS
+w TODO wciąż aktualna (breadcrumb już usunięty stamtąd).
 Sekcje 1–9 poniżej to **oryginalny plan docelowy** (jedno drzewo podmiotów,
 brak publicznych URL, SSE-KMS) — przy dalszej pracy albo dociągamy obecny
 model do tego planu, albo świadomie go uprościmy i zaktualizujemy ten

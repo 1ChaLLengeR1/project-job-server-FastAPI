@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse, invalid_uuid_response
 from api.routers import ONE_FILES_NODE
-from api.schemas.file.node.response import FilesNodeResponseData
+from api.schemas.file.node.response import FilesNodeWithBreadcrumbResponseData
 from api.validators import is_valid_uuid
 from config.rate_limit import RATE_LIMIT_READ, auth_or_ip_key, limiter
 from core.data.user import UserData
@@ -19,8 +19,8 @@ router = APIRouter()
 
 @router.get(
     ONE_FILES_NODE,
-    summary="[Superadmin] Pobierz węzeł",
-    response_model=ApiResponse[FilesNodeResponseData],
+    summary="[Superadmin] Pobierz węzeł (+ breadcrumb od korzenia)",
+    response_model=ApiResponse[FilesNodeWithBreadcrumbResponseData],
     responses={
         400: {"model": ApiErrorResponse, "description": "Niepoprawny format node_id"},
         401: {"model": ApiErrorResponse, "description": "Brak lub niepoprawny token"},
@@ -38,7 +38,7 @@ def api_superadmin_one_files_node(
     node_id: str,
     user_data: UserData = Depends(JWTBasicAuthenticationMiddleware(roles=["superadmin"])),
     db: Session = Depends(get_db),
-) -> ApiResponse[FilesNodeResponseData] | JSONResponse:
+) -> ApiResponse[FilesNodeWithBreadcrumbResponseData] | JSONResponse:
     try:
         if not is_valid_uuid(node_id):
             return invalid_uuid_response("Node_id", "api_superadmin_one_files_node")
@@ -51,7 +51,7 @@ def api_superadmin_one_files_node(
                 content=ApiErrorResponse(status_code=status_code, data=error).model_dump(),
             )
 
-        return ApiResponse(status="SUCCESS", status_code=200, data=FilesNodeResponseData(**asdict(data)))
+        return ApiResponse(status="SUCCESS", status_code=200, data=FilesNodeWithBreadcrumbResponseData(**asdict(data)))
     except Exception as e:
         error = ApiErrorData(
             message=str(e),
