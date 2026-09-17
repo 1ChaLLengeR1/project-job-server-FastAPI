@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse
+from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse, invalid_uuid_response
 from api.routers import UPDATE_FILES_NODE
 from api.schemas.file.node.payload import FilesNodeUpdatePayload
 from api.schemas.file.node.response import FilesNodeResponseData
@@ -44,13 +44,7 @@ def api_superadmin_update_files_node(
 ) -> ApiResponse[FilesNodeResponseData] | JSONResponse:
     try:
         if not is_valid_uuid(node_id):
-            error = ApiErrorData(
-                message="Node_id nie jest poprawnego formatu uuid.",
-                type_module="api_superadmin_update_files_node",
-                type_error="validation_error",
-                key_type_error="Exception",
-            )
-            return JSONResponse(status_code=400, content=ApiErrorResponse(status_code=400, data=error).model_dump())
+            return invalid_uuid_response("Node_id", "api_superadmin_update_files_node")
 
         # Jawne `parent_id: null` w body przenosi węzeł na najwyższy poziom; brak klucza
         # `parent_id` w body = nie dotykaj rodzica. Oba przypadki dają `body.parent_id is None`,

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse
+from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse, invalid_uuid_response
 from api.routers import UPDATE_CALENDAR_CONDITION
 from api.schemas.calendar.payload import ConditionUpdatePayload
 from api.schemas.calendar.response import WorkConditionData
@@ -43,13 +43,7 @@ def api_superadmin_update_work_condition(
 ) -> ApiResponse[WorkConditionData] | JSONResponse:
     try:
         if not is_valid_uuid(condition_id):
-            error = ApiErrorData(
-                message="Condition_id nie jest poprawnego formatu uuid.",
-                type_module="api_superadmin_update_work_condition",
-                type_error="validation_error",
-                key_type_error="Exception",
-            )
-            return JSONResponse(status_code=400, content=ApiErrorResponse(status_code=400, data=error).model_dump())
+            return invalid_uuid_response("Condition_id", "api_superadmin_update_work_condition")
 
         data, error, success = handler_update_work_condition_change(
             user_data["id"], condition_id, body.norm_hours, body.hourly_rate, db_session=db

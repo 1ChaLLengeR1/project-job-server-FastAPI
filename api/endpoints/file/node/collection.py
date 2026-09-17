@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse
+from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse, invalid_uuid_response
 from api.routers import COLLECTION_FILES_NODES
 from api.schemas.file.node.response import FilesNodeResponseData
 from api.validators import is_valid_uuid
@@ -42,13 +42,7 @@ def api_superadmin_collection_files_nodes(
 ) -> ApiResponse[list[FilesNodeResponseData]] | JSONResponse:
     try:
         if parent_id is not None and not is_valid_uuid(parent_id):
-            error = ApiErrorData(
-                message="Parent_id nie jest poprawnego formatu uuid.",
-                type_module="api_superadmin_collection_files_nodes",
-                type_error="validation_error",
-                key_type_error="Exception",
-            )
-            return JSONResponse(status_code=400, content=ApiErrorResponse(status_code=400, data=error).model_dump())
+            return invalid_uuid_response("Parent_id", "api_superadmin_collection_files_nodes")
 
         data, error, success = handler_collection_files_nodes(user_data["id"], parent_id, db_session=db)
         if not success:

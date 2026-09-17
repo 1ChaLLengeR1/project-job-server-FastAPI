@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse
+from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse, invalid_uuid_response
 from api.routers import UPDATE_RENTAL_METER_READING, UPDATE_RENTAL_PERIOD
 from api.schemas.rental.billing.payload import (
     RentalBillingPeriodUpdatePayload,
@@ -25,16 +25,6 @@ from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
 from database.psql.database import get_db
 
 router = APIRouter()
-
-
-def _invalid_uuid_response(field_name: str, type_module: str) -> JSONResponse:
-    error = ApiErrorData(
-        message=f"{field_name} nie jest poprawnego formatu uuid.",
-        type_module=type_module,
-        type_error="validation_error",
-        key_type_error="Exception",
-    )
-    return JSONResponse(status_code=400, content=ApiErrorResponse(status_code=400, data=error).model_dump())
 
 
 @router.put(
@@ -64,7 +54,7 @@ def api_superadmin_update_rental_period(
 ) -> ApiResponse[RentalBillingPeriodResponseData] | JSONResponse:
     try:
         if not is_valid_uuid(period_id):
-            return _invalid_uuid_response("Period_id", "api_superadmin_update_rental_period")
+            return invalid_uuid_response("Period_id", "api_superadmin_update_rental_period")
 
         data, error, success = handler_update_billing_period(
             user_data["id"],
@@ -120,7 +110,7 @@ def api_superadmin_update_rental_meter_reading(
 ) -> ApiResponse[RentalMeterReadingResponseData] | JSONResponse:
     try:
         if not is_valid_uuid(reading_id):
-            return _invalid_uuid_response("Reading_id", "api_superadmin_update_rental_meter_reading")
+            return invalid_uuid_response("Reading_id", "api_superadmin_update_rental_meter_reading")
 
         data, error, success = handler_update_meter_reading(
             user_data["id"],

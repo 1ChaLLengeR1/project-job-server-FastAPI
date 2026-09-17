@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse
+from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse, invalid_uuid_response
 from api.routers import ASSIGN_FILE
 from api.schemas.file.payload import FileAssignPayload
 from api.schemas.file.response import FileResponseData
@@ -47,13 +47,7 @@ def api_superadmin_assign_file(
 ) -> ApiResponse[FileResponseData] | JSONResponse:
     try:
         if not is_valid_uuid(file_id):
-            error = ApiErrorData(
-                message="File_id nie jest poprawnego formatu uuid.",
-                type_module="api_superadmin_assign_file",
-                type_error="validation_error",
-                key_type_error="Exception",
-            )
-            return JSONResponse(status_code=400, content=ApiErrorResponse(status_code=400, data=error).model_dump())
+            return invalid_uuid_response("File_id", "api_superadmin_assign_file")
 
         data, error, success = handler_assign_file(
             user_data["id"], file_id, body.node_id, body.parent_file_id, db_session=db

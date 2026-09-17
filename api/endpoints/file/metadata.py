@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse
+from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse, invalid_uuid_response
 from api.routers import UPDATE_FILE_METADATA
 from api.schemas.file.payload import FileMetadataPayload
 from api.schemas.file.response import FileResponseData
@@ -44,13 +44,7 @@ def api_superadmin_update_file_metadata(
 ) -> ApiResponse[FileResponseData] | JSONResponse:
     try:
         if not is_valid_uuid(file_id):
-            error = ApiErrorData(
-                message="File_id nie jest poprawnego formatu uuid.",
-                type_module="api_superadmin_update_file_metadata",
-                type_error="validation_error",
-                key_type_error="Exception",
-            )
-            return JSONResponse(status_code=400, content=ApiErrorResponse(status_code=400, data=error).model_dump())
+            return invalid_uuid_response("File_id", "api_superadmin_update_file_metadata")
 
         # Jawne `null` dla parent_file_id/description/dat gwarancji je czysci; brak klucza
         # w body = nie dotykaj. Oba przypadki daja `None` w Pythonie, wiec rozroznienie

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Body, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse
+from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse, invalid_uuid_response
 from api.routers import PREVIEW_RENTAL_PERIOD
 from api.schemas.rental.billing.payload import RentalPeriodComputePayload
 from api.schemas.rental.billing.response import RentalPeriodPreviewResponseData
@@ -47,13 +47,7 @@ def api_superadmin_preview_rental_period(
 ) -> ApiResponse[RentalPeriodPreviewResponseData] | JSONResponse:
     try:
         if not is_valid_uuid(period_id):
-            error = ApiErrorData(
-                message="Period_id nie jest poprawnego formatu uuid.",
-                type_module="api_superadmin_preview_rental_period",
-                type_error="validation_error",
-                key_type_error="Exception",
-            )
-            return JSONResponse(status_code=400, content=ApiErrorResponse(status_code=400, data=error).model_dump())
+            return invalid_uuid_response("Period_id", "api_superadmin_preview_rental_period")
 
         adjustments = [
             PeriodAdjustmentInput(apartment_id=item.apartment_id, name=item.name, amount=item.amount)

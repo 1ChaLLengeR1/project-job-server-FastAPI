@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse
+from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse, invalid_uuid_response
 from api.routers import (
     COLLECTION_RENTAL_ALLOCATION_RULES,
     COLLECTION_RENTAL_BENEFICIARIES,
@@ -28,16 +28,6 @@ from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
 from database.psql.database import get_db
 
 router = APIRouter()
-
-
-def _invalid_uuid_response(field_name: str, type_module: str) -> JSONResponse:
-    error = ApiErrorData(
-        message=f"{field_name} nie jest poprawnego formatu uuid.",
-        type_module=type_module,
-        type_error="validation_error",
-        key_type_error="Exception",
-    )
-    return JSONResponse(status_code=400, content=ApiErrorResponse(status_code=400, data=error).model_dump())
 
 
 @router.get(
@@ -107,9 +97,9 @@ def api_superadmin_collection_rental_allocation_rules(
 ) -> ApiResponse[list[RentalAllocationRuleResponseData]] | JSONResponse:
     try:
         if beneficiary_id is not None and not is_valid_uuid(beneficiary_id):
-            return _invalid_uuid_response("Beneficiary_id", "api_superadmin_collection_rental_allocation_rules")
+            return invalid_uuid_response("Beneficiary_id", "api_superadmin_collection_rental_allocation_rules")
         if apartment_id is not None and not is_valid_uuid(apartment_id):
-            return _invalid_uuid_response("Apartment_id", "api_superadmin_collection_rental_allocation_rules")
+            return invalid_uuid_response("Apartment_id", "api_superadmin_collection_rental_allocation_rules")
 
         data, error, success = handler_collection_allocation_rules(
             user_data["id"], beneficiary_id, apartment_id, active_on, db_session=db
@@ -159,9 +149,9 @@ def api_superadmin_collection_rental_beneficiary_settlements(
 ) -> ApiResponse[list[RentalBeneficiarySettlementResponseData]] | JSONResponse:
     try:
         if period_id is not None and not is_valid_uuid(period_id):
-            return _invalid_uuid_response("Period_id", "api_superadmin_collection_rental_beneficiary_settlements")
+            return invalid_uuid_response("Period_id", "api_superadmin_collection_rental_beneficiary_settlements")
         if beneficiary_id is not None and not is_valid_uuid(beneficiary_id):
-            return _invalid_uuid_response("Beneficiary_id", "api_superadmin_collection_rental_beneficiary_settlements")
+            return invalid_uuid_response("Beneficiary_id", "api_superadmin_collection_rental_beneficiary_settlements")
 
         data, error, success = handler_collection_beneficiary_settlements(
             user_data["id"], period_id, beneficiary_id, db_session=db
