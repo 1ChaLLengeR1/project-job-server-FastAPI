@@ -106,7 +106,7 @@ Extras w `pyproject.toml`: `test` (pytest, pytest-asyncio, pytest-cov, pytest-mo
 │   ├── middleware/             ← JWTBasicAuthenticationMiddleware, JWTRefreshAuthenticationMiddleware
 │   ├── helper/                 ← password (bcrypt)
 │   ├── exceptions/             ← AppException + hierarchia
-│   ├── infra/s3/                ← integracja S3 (boto3): config.py (klient), init.py (presigned upload), delete.py, response.py
+│   ├── infra/s3/                ← integracja S3 (boto3): config.py (klient), init.py (presigned PUT), get.py (presigned GET - preview/download), delete.py, response.py
 │   └── data/                   ← UserData (TypedDict zwracany przez middleware)
 ├── config/                     ← konfiguracja aplikacji
 │   ├── settings.py             ← pydantic-settings, czyta env/{ENV_MODE}.env
@@ -134,9 +134,15 @@ mieszkań/najemców/kosztów/liczników, **billing** okresy rozliczeniowe z
 preview/close/reopen, **family** podział rodzinny; plan:
 docs/PLAN_ROZLICZENIA_MIESZKAN.md), **contact** (publiczny formularz
 kontaktowy wielu aplikacji — token X-Contact-Token, docs/CONTACT_TOKEN.md),
-**files** (magazyn plików w S3 — na razie warstwa infra/model/repository
-(`core/infra/s3/`, `database/psql/models/file.py`, `core/repository/psql/file/`),
-bez handlera/endpointu; plan: docs/PLAN_MAGAZYN_PLIKOW.md).
+**files** (magazyn plików w S3 — pełny stos, poddomeny: **file** pliki
+(upload z presigned PUT, status flow, assign/metadata, gwarancje, preview/
+download z presigned GET, delete z kaskadą S3 dla plików-dzieci), **node**
+drzewo węzłów/podmiotów (`files_nodes`, self-FK, CRUD); bucket S3 w pełni
+prywatny (Block Public Access + brak bucket policy, dostęp wyłącznie przez
+krótkoterminowe presigned URL) - CORS na buckecie skonfigurowany osobno od
+`CORSMiddleware` w `main.py` (S3 nie zna configu backendu); plan:
+docs/PLAN_MAGAZYN_PLIKOW.md, etapy 1-8 zrobione, zostały: SSE-KMS,
+breadcrumb węzła w `GET /files/nodes/one/{node_id}`).
 
 ---
 
@@ -472,7 +478,9 @@ bez plików env/). Grupy: DB (`DB_*`), JWT (`SECRET_KEY_TOKEN`,
 `SECRET_KEY_REFRESH_TOKEN`, `ALGORITHM`, `TOKEN_EXPIRES_HOURS`,
 `REFRESH_TOKEN_EXPIRES_HOURS`), AWS/S3 (`AWS_ACCESS_KEY_ID`,
 `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `S3_BUCKET_NAME` — klient w
-`core/infra/s3/config.py`).
+`core/infra/s3/config.py`; `FILE_PREVIEW_URL_EXPIRE_SECONDS` domyślnie 180,
+`FILE_DOWNLOAD_URL_EXPIRE_SECONDS` domyślnie 60 — obie z defaultem w
+Pythonie, nieobowiązkowe w `env/*.env`).
 
 ### 9.2 `config/app_config.py`
 
@@ -496,8 +504,10 @@ Kolejność montażu:
 2. **Lifespan**: APScheduler — cron `update_day_automatically_psql` codziennie 00:00
    (uzupełnia zaległe dni robocze wg ostatnich warunków pracy).
 3. Rate limiting: `app.state.limiter = limiter` + handler 429 + `SlowAPIMiddleware`.
-4. CORS (arturscibor.pl, localhost:5173; nagłówki: Authorization, Content-Type,
-   Accept, x-refresh-token).
+4. CORS (`arturscibor.pl`, `praca.strona.arturscibor.pl`, `localhost`/
+   `127.0.0.1` z portem 5173 i bez; nagłówki: Authorization, Content-Type,
+   Accept, x-refresh-token). To CORS backendu (wołania do naszego API) -
+   S3 ma własny, osobny CORS skonfigurowany na buckecie, niezależny od tego.
 5. `register_exception_handlers(app)`.
 6. `app.include_router(api_router)`.
 7. Prometheus: `Instrumentator().instrument(app).expose(app)` → `/metrics`.
@@ -523,9 +533,25 @@ SQLAlchemy 1.4 (`Column`), UUID PK (`uuid.uuid4`), timestampy
 `DateTime(timezone=True)` z `server_default=func.now()` (+ `onupdate` dla
 `updated_at`). Wspólna `Base` w `base.py`. Modele: `Users`, `Tasks`, `Logs`,
 `WorkDay`, `WorkConditionChange`, `NamesOverdue`, `OutStandingMoney`,
-`KeysCalculatorPatryk`, `ContactMessage`, `File` (`models/file.py` — enumy
-`FileStatus`/`FileType`, S3 key/prefix/url, śledzenie multipart uploadu) oraz
-14 tabel domeny rental (`Rental*` w `models/rentals.py`: słowniki, okresy
+`KeysCalculatorPatryk`, `ContactMessage`, `File`/`FilesNode`
+(`models/file.py`):
+- `File` — enumy `FileStatus` (`pending→completed→confirmed`/`failed`) i
+  `FileType`, `s3_key`/`s3_prefix` (bez kolumny `url` publicznej - bucket
+  jest prywatny, dostęp tylko przez presigned URL), `node_id`
+  (FK → `files_nodes.id`, `RESTRICT`) i `parent_file_id` (self-FK,
+  **jedyny `CASCADE`** w bazie - plik-dziecko nie ma sensu bez rodzica),
+  `description`/`guarantee_start_date`/`guarantee_end_date`, śledzenie
+  multipart uploadu. `CHECK (status != 'CONFIRMED' OR node_id IS NOT
+  NULL)` — **uwaga**: natywny enum Postgresa trzyma wielkie litery
+  (`.name`, nie `.value` enuma Pythona), CHECK musi się do tego
+  dostosować.
+- `FilesNode` — drzewo podmiotów (osoba/kategoria, jeden generyczny byt),
+  self-FK `parent_id` (`RESTRICT`), `UniqueConstraint(parent_id, name)` —
+  **uwaga**: dwa węzły najwyższego poziomu (`parent_id IS NULL`) o tej
+  samej nazwie **nie kolidują** (`NULL != NULL` w unique constraint
+  Postgresa), duplikat łapie się tylko pod tym samym, realnym rodzicem.
+
+oraz 14 tabel domeny rental (`Rental*` w `models/rentals.py`: słowniki, okresy
 rozliczeniowe ze snapshotami i podział rodzinny).
 
 ### 11.3 Alembic i skrypty
@@ -533,6 +559,18 @@ rozliczeniowe ze snapshotami i podział rodzinny).
 `alembic.ini` → `script_location = alembic`. Migracje w `alembic/versions/`.
 Skrypty `infra/scripts/database/{migration_up,migration_down,restart}.sh`
 przyjmują środowisko `[local|dev|prod]` — wywoływane przez `make migration_*`.
+
+**Uwaga — jedna squashnięta migracja, nie łańcuch rewizji.** Repo trzyma
+tylko jeden plik w `alembic/versions/` (`..._init.py`, `down_revision=None`).
+`make migration_restart ENV=...` robi `alembic downgrade base` →
+`migration_down.sh` (czyści `alembic_version` + enumy, których `DROP TABLE
+... CASCADE` nie usuwa) → **kasuje wszystkie pliki w `versions/`** →
+`alembic revision --autogenerate -m init` (świeża migracja z aktualnych
+modeli) → `migration_up.sh`. Po zmianie modelu edytuje się `database/psql/
+models/*.py`, a migrację regeneruje się tym poleceniem (albo edytuje
+ręcznie ten sam plik `..._init.py`, jak dotąd robiono przy kolejnych
+przyrostach domeny `files`) — nie tworzy się nowej rewizji z `down_revision`
+wskazującym na poprzednią.
 
 ---
 
@@ -554,6 +592,17 @@ testy endpointów budują aplikację przez `tests/api/helper.py::make_client`
 dodatkowo test e2e pełnego przepływu miesiąca
 (`tests/api/endpoints/rental/test_api_e2e_full_flow.py` — scenariusz z
 docs/Obliczenia_3.txt: 4 mieszkania, licznik główny, korekty, podział Ja/Ojciec/Mama).
+
+**Testy `full_integration` na realnym S3** (domena `files`) — jedyne testy w
+repo, które bez mocków bijają w prawdziwy bucket (`tests/core/infra/s3/`:
+`test_init.py`/`test_get.py`/`test_delete.py` — presigned PUT/GET/delete;
+`tests/api/endpoints/file/test_api_init_update_delete.py` i
+`test_api_preview_download.py` — te same operacje przez pełne HTTP).
+Obowiązkowo sprzątają po sobie (`try/finally` z `delete_object` na
+wykorzystanych kluczach) — realny upload, więc zostawiony obiekt kosztuje i
+zaśmieca bucket. Reszta domeny `files` (węzły, assign/metadata, collection/
+one/unassigned/guarantees) nie dotyka S3, więc leci bez markera, jak
+pozostałe domeny.
 
 ---
 
@@ -652,8 +701,10 @@ Czytane przez `config/settings.py` (env procesu ma priorytet):
 
 ## 18. Znane rozbieżności / TODO
 
-1. **Testy** — w repo jest tylko sanity test; docelowo struktura lustrzana
-   z fabrykami i realnym Postgresem w CI (services w `run_ci_test_local.yml`).
+1. **Domena `files`** — SSE-KMS (szyfrowanie S3 kluczem KMS) zaplanowane w
+   docs/PLAN_MAGAZYN_PLIKOW.md, ale nieużyte (presigned PUT nic tego nie
+   wymusza); `GET /files/nodes/one/{node_id}` bez breadcrumb (ścieżki
+   przodków w drzewie węzłów) — świadomie odłożone.
 2. **Rate limiter in-memory** — limity liczone per worker gunicorna;
    przy skalowaniu na repliki dodać Redis jako storage.
 3. **`REFRESH_TOKEN_EXPIRES_HOURS`** działa jako dni — do przemianowania na
