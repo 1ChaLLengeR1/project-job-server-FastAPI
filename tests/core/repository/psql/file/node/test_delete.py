@@ -3,6 +3,8 @@ from uuid import uuid4
 from sqlalchemy.orm import Session
 
 from core.repository.psql.file.node.delete import delete_files_node_psql
+from database.psql.models.file import FileStatus
+from tests.core.repository.psql.file.helper import make_file
 from tests.core.repository.psql.file.node.helper import make_files_node
 
 
@@ -29,3 +31,26 @@ class TestDeleteFilesNodePsql:
 
         assert ok is False and result is None
         assert err.key_type_error == "IntegrityError"
+
+    def test_delete04_blocks_with_assigned_file_with_clear_message(self, db_session: Session):
+        node = make_files_node(db_session, name="Mama")
+        make_file(db_session, status=FileStatus.CONFIRMED, node_id=str(node.id))
+
+        result, err, ok = delete_files_node_psql(str(node.id), db_session=db_session)
+
+        assert ok is False and result is None
+        assert err.key_type_error == "IntegrityError"
+        assert "przypisane pliki" in err.message
+
+    def test_delete05_allows_delete_after_last_file_unlinked(self, db_session: Session):
+        node = make_files_node(db_session, name="Mama")
+        file = make_file(db_session, status=FileStatus.CONFIRMED, node_id=str(node.id))
+        # confirmed => node_id NOT NULL (ck_files_confirmed_requires_node) - realny "unassign"
+        # zmienia tez status, nie tylko czysci node_id.
+        file.status = FileStatus.COMPLETED
+        file.node_id = None
+        db_session.flush()
+
+        result, err, ok = delete_files_node_psql(str(node.id), db_session=db_session)
+
+        assert ok is True and err is None

@@ -203,10 +203,43 @@ Zrobione:
     `main.app.openapi()` (obie ścieżki widoczne) + pełny test suite (514
     passed, bez regresji).
 
+- **Czytelny błąd przy usuwaniu węzła z przypisanymi plikami** —
+  `delete_files_node_psql` dostał jawny pre-check (`SELECT COUNT ... WHERE
+  files.node_id = :node_id`) przed `DELETE`: gdy węzeł ma choć jeden
+  przypisany plik, zwraca `IntegrityError`/409 z czytelnym komunikatem
+  „Węzeł {id} ma przypisane pliki ({n}) - nie można usunąć." zamiast
+  surowego błędu Postgresa. `RESTRICT` z bazy zostaje jako druga linia
+  obrony (np. dzieci-węzły - tam komunikat wciąż jest z samej bazy).
+  Testy: blokada z przypisanym plikiem (sprawdzone dosłowne "przypisane
+  pliki" w komunikacie) + happy path po odczepieniu ostatniego pliku.
+  Pełny test suite: 516 passed, bez regresji.
+
+- **Test e2e całego przepływu magazynu plików, realny S3** —
+  `tests/api/endpoints/file/notes/test_api_e2e_full_flow.py`, oznaczony
+  `@pytest.mark.full_integration` (bije w prawdziwy bucket S3 i realną
+  bazę, tak jak strzelałby frontend - wzorzec:
+  `tests/api/endpoints/rental/test_api_e2e_full_flow.py` dla HTTP przez
+  `TestClient`/`authorized_as`/`make_client`,
+  `tests/core/infra/s3/test_init.py` dla prawdziwego `PUT` na presigned
+  URL). Flow: `POST /files/nodes/create` → per plik (x3) `POST
+  /files/init` → prawdziwy `requests.put` na S3 → `PUT
+  /files/update/{id}` (`status=confirmed` → wewnętrznie `completed`) →
+  `PUT /files/assign/{id}` (→ `confirmed`, `node_id` ustawiony) → próba
+  `DELETE /files/nodes/delete/{node_id}` z podpiętymi plikami (409,
+  asercja na treść komunikatu „przypisane pliki" - weryfikuje e2e
+  checker z poprzedniego przyrostu) → `DELETE /files/delete/{id}`
+  pojedynczo dla każdego pliku (asercja, że obiekt realnie zniknął z S3
+  przez `head_object` → `ClientError` 404) → `DELETE
+  /files/nodes/delete/{node_id}` teraz przechodzi (200). `finally` z
+  bezpiecznikiem czyszczącym S3, gdyby asercja wybuchła w środku. Domyślny
+  test suite bez zmian (516 passed, nowy test poprawnie odseparowany
+  marker-em, nie odpala się bez `-m full_integration`).
+
 Nie zrobione jeszcze: presigned GET (preview/download), SSE-KMS,
 breadcrumb dla `GET /files/nodes/one/{node_id}`, testy `_psql` dla
 `create`/`collection`/`delete`/`confirm` plików, testy handlera/endpointu
-(plików, węzłów, assign/metadata).
+(plików, węzłów, assign/metadata) poza powyższym e2e, kaskada S3 dla
+plików-dzieci przy delete.
 Sekcje 1–9 poniżej to **oryginalny plan docelowy** (jedno drzewo podmiotów,
 brak publicznych URL, SSE-KMS) — przy dalszej pracy albo dociągamy obecny
 model do tego planu, albo świadomie go uprościmy i zaktualizujemy ten
