@@ -368,10 +368,37 @@ Zrobione:
   Pełny test suite: 556 passed (bez zmian - nowe testy `full_integration`,
   domyślnie odseparowane), wszystkie `full_integration` razem: 15 passed.
 
+- **Testy API dla reszty domeny files** — dociągnięte wg tego samego
+  wzorca (`make_client`/`authorized_as`, bez mocków poza JWT):
+  - `tests/api/endpoints/file/node/test_api_node.py` (17) - pełny CRUD
+    węzłów: create/collection/one/update/delete, duplikat nazwy pod tym
+    samym rodzicem (409 - **uwaga**: dwa węzły najwyższego poziomu z tą
+    samą nazwą NIE kolidują, `NULL != NULL` w Postgresie, test musiał to
+    uwzględnić), `clear`/pominięty `parent_id` przy update, `RESTRICT`
+    (dziecko-węzeł i przypisany plik, z asercją na treść komunikatu),
+    400/404/401/403, audit log
+  - `tests/api/endpoints/file/test_api_assign_metadata.py` (15) - `assign`
+    (completed→confirmed, `parent_file_id`, zły status→409, 400/404/422,
+    audit log), `metadata` (rename, zmiana węzła, `clear`/pominięty
+    `parent_file_id`, opis/gwarancje, 400/404, audit log)
+  - `tests/api/endpoints/file/test_api_collection_one_unassigned_guarantees.py`
+    (13) - filtry `collection` (`file_type`, `node_id`+`recursive`,
+    zakres dat, `guarantee_status`, paginacja), `one` (plik + dzieci
+    bezpośrednie, 404/400), `unassigned`, `guarantees/expiring`
+  - `tests/api/endpoints/file/test_api_preview_download.py` (8,
+    `full_integration`, realny S3) - `preview`/`download` zwracają
+    faktycznie działający presigned URL (pobrane bajty == wgrane bajty,
+    poprawny `Content-Disposition`), `download` weryfikowany przez
+    prawdziwy redirect (`follow_redirects=False` + ręczne podążenie),
+    zły status→409, 400/404
+
+  Węzły/assign/metadata/collection/one/unassigned/guarantees nie dotykają
+  S3, więc bez markera `full_integration` (jak testy `rentals`) - realna
+  baza wystarczy. Pełny domyślny suite: 601 passed (+45), wszystkie
+  `full_integration` razem: 23 passed (+8), zero leftoverów na buckecie.
+
 Nie zrobione jeszcze: SSE-KMS, breadcrumb dla
-`GET /files/nodes/one/{node_id}`, testy API dla reszty domeny (węzły,
-assign/metadata, collection/one/unassigned/guarantees, preview/download)
-poza jednym dużym e2e, `docs/ARCHITEKTURA.md` nieaktualny.
+`GET /files/nodes/one/{node_id}`, `docs/ARCHITEKTURA.md` nieaktualny.
 Sekcje 1–9 poniżej to **oryginalny plan docelowy** (jedno drzewo podmiotów,
 brak publicznych URL, SSE-KMS) — przy dalszej pracy albo dociągamy obecny
 model do tego planu, albo świadomie go uprościmy i zaktualizujemy ten
