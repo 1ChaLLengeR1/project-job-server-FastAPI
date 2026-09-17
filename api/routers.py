@@ -139,6 +139,7 @@ COLLECTION_FILES = "/files/collection"
 DELETE_FILE = "/files/delete/{file_id}"
 ONE_FILE = "/files/one/{file_id}"
 COLLECTION_UNASSIGNED_FILES = "/files/unassigned"
+COLLECTION_EXPIRING_GUARANTEES = "/files/guarantees/expiring"
 
 # Files - przypisanie do wezla i edycja metadanych (po uploadzie)
 ASSIGN_FILE = "/files/assign/{file_id}"

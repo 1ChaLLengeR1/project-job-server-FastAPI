@@ -265,12 +265,34 @@ Zrobione:
   testów. Pełny test suite: 534 passed, bez regresji; e2e
   `full_integration` (S3) też bez regresji.
 
+- **Gwarancje (etap 8, dokończenie sekcji 5.5)** — bez nowego endpointu do
+  zapisu: `PUT /files/metadata/{file_id}` (a pod spodem `update_file_psql`)
+  już od przyrostu 5 umiał ustawiać/czyścić `guarantee_start_date`/
+  `guarantee_end_date`, więc etap 8 to wyłącznie odczyt/filtrowanie.
+  `collection_files_psql` dostał `guarantee_status: active|expired|none`
+  (liczone względem `guarantee_end_date` i `date.today()` w timezone sesji
+  DB): `active` = `end_date >= dziś`, `expired` = `end_date < dziś`,
+  `none` = brak `end_date` (**ustalone z użytkownikiem**: plik z samym
+  `guarantee_start_date`, ale bez `end_date`, też liczy się jako `none` -
+  bez daty końca nie da się ocenić aktywności). Nowy `GET
+  /files/guarantees/expiring` (`core/repository/psql/file/guarantees.py`,
+  `collection_expiring_guarantees_psql`) - sztywne 30 dni
+  (`EXPIRING_WITHIN_DAYS`, bez parametru w API - **ustalone z
+  użytkownikiem**, na razie brak potrzeby na konfigurowalność), plik ma
+  gwarancję kończącą się w `[dziś, dziś+30]` (obie granice włącznie),
+  posortowane rosnąco po `guarantee_end_date` (najpilniejsze pierwsze).
+  Pełny stos (repo → handler → schema reużyta `FileCollectionResponseData`
+  → endpoint → `routers.py`/`api.py`), audyt `files:guarantees_expiring`.
+  Testy: 5 nowych w `tests/core/repository/psql/file/`
+  (`test_collection.py` +2 dla `guarantee_status`, nowy
+  `test_guarantees.py` +3 dla granic okna 30 dni). Pełny test suite: 539
+  passed, bez regresji.
+
 Nie zrobione jeszcze: presigned GET (preview/download), SSE-KMS,
 breadcrumb dla `GET /files/nodes/one/{node_id}`, testy `_psql` dla
 `create`/`confirm` plików (repo istnieje od dawna, wciąż bez testów),
-testy handlera/endpointu (plików, węzłów, assign/metadata) poza e2e
-S3, filtr `guarantee_status` w collection, `GET
-/files/guarantees/expiring`.
+testy handlera/endpointu (plików, węzłów, assign/metadata/guarantees)
+poza e2e S3.
 Sekcje 1–9 poniżej to **oryginalny plan docelowy** (jedno drzewo podmiotów,
 brak publicznych URL, SSE-KMS) — przy dalszej pracy albo dociągamy obecny
 model do tego planu, albo świadomie go uprościmy i zaktualizujemy ten

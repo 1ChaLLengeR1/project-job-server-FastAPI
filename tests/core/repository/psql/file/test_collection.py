@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 from sqlalchemy.orm import Session
 
@@ -67,3 +67,26 @@ class TestCollectionFilesPsql:
 
         assert ok is True
         assert result.data == []
+
+    def test_collection06_guarantee_status_active_expired_none(self, db_session: Session):
+        today = date.today()
+        make_file(db_session, name="aktywna.png", guarantee_end_date=today + timedelta(days=10))
+        make_file(db_session, name="wygasla.png", guarantee_end_date=today - timedelta(days=1))
+        make_file(db_session, name="bez_gwarancji.png")
+        make_file(db_session, name="tylko_start.png", guarantee_start_date=today - timedelta(days=5))
+
+        active, _, _ = collection_files_psql(guarantee_status="active", db_session=db_session)
+        expired, _, _ = collection_files_psql(guarantee_status="expired", db_session=db_session)
+        none, _, _ = collection_files_psql(guarantee_status="none", db_session=db_session)
+
+        assert [f.name for f in active.data] == ["aktywna.png"]
+        assert [f.name for f in expired.data] == ["wygasla.png"]
+        # "tylko_start" ma start_date, ale bez end_date liczy sie jako "none" (ustalone z uzytkownikiem)
+        assert {f.name for f in none.data} == {"bez_gwarancji.png", "tylko_start.png"}
+
+    def test_collection07_guarantee_active_includes_end_date_today(self, db_session: Session):
+        make_file(db_session, name="dzis.png", guarantee_end_date=date.today())
+
+        active, _, _ = collection_files_psql(guarantee_status="active", db_session=db_session)
+
+        assert [f.name for f in active.data] == ["dzis.png"]

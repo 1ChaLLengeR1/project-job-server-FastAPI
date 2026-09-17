@@ -20,6 +20,7 @@ def handler_collection_file(
     recursive: bool = False,
     created_at_from: date | None = None,
     created_at_to: date | None = None,
+    guarantee_status: str | None = None,
     db_session: Session | None = None,
 ) -> tuple[RepositoryCollectionFileResponse | None, ApiErrorData | None, bool]:
     try:
@@ -33,6 +34,7 @@ def handler_collection_file(
             recursive=recursive,
             created_at_from=created_at_from,
             created_at_to=created_at_to,
+            guarantee_status=guarantee_status,
             db_session=db_session,
         )
         if not ok:

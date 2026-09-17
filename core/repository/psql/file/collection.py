@@ -37,6 +37,7 @@ def collection_files_psql(
     recursive: bool = False,
     created_at_from: date | None = None,
     created_at_to: date | None = None,
+    guarantee_status: str | None = None,
     db_session: Session | None = None,
 ) -> tuple[RepositoryCollectionFileResponse | None, ApiErrorData | None, bool]:
     try:
@@ -63,6 +64,15 @@ def collection_files_psql(
 
             if created_at_to is not None:
                 query = query.filter(File.created_at < created_at_to + timedelta(days=1))
+
+            if guarantee_status is not None:
+                today = date.today()
+                if guarantee_status == "active":
+                    query = query.filter(File.guarantee_end_date.isnot(None), File.guarantee_end_date >= today)
+                elif guarantee_status == "expired":
+                    query = query.filter(File.guarantee_end_date.isnot(None), File.guarantee_end_date < today)
+                elif guarantee_status == "none":
+                    query = query.filter(File.guarantee_end_date.is_(None))
 
             total = query.count()
             files = query.order_by(File.created_at.desc()).limit(limit).offset(offset).all()

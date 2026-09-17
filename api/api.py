@@ -28,6 +28,7 @@ from api.endpoints.contact.update import router as update_router_contact
 from api.endpoints.file.assign import router as assign_router_file
 from api.endpoints.file.collection import router as collection_router_file
 from api.endpoints.file.delete import router as delete_router_file
+from api.endpoints.file.guarantees import router as guarantees_router_file
 from api.endpoints.file.init import router as init_router_file
 from api.endpoints.file.metadata import router as metadata_router_file
 from api.endpoints.file.node.collection import router as collection_router_file_node
@@ -164,6 +165,7 @@ api_router.include_router(init_router_file)
 api_router.include_router(collection_router_file)
 api_router.include_router(one_router_file)
 api_router.include_router(unassigned_router_file)
+api_router.include_router(guarantees_router_file)
 api_router.include_router(update_router_file)
 api_router.include_router(delete_router_file)
 api_router.include_router(assign_router_file)

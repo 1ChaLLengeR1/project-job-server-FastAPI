@@ -1,5 +1,6 @@
 from dataclasses import asdict
 from datetime import date
+from typing import Literal
 
 from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse
@@ -47,6 +48,9 @@ def api_superadmin_collection_files(
     ),
     created_at_from: date | None = Query(default=None, description="Tylko pliki dodane od tej daty (włącznie)"),
     created_at_to: date | None = Query(default=None, description="Tylko pliki dodane do tej daty (włącznie)"),
+    guarantee_status: Literal["active", "expired", "none"] | None = Query(
+        default=None, description="Filtr po statusie gwarancji względem guarantee_end_date"
+    ),
     user_data: UserData = Depends(JWTBasicAuthenticationMiddleware(roles=["superadmin"])),
     db: Session = Depends(get_db),
 ) -> ApiResponse[FileCollectionResponseData] | JSONResponse:
@@ -65,6 +69,7 @@ def api_superadmin_collection_files(
             recursive=recursive,
             created_at_from=created_at_from,
             created_at_to=created_at_to,
+            guarantee_status=guarantee_status,
             db_session=db,
         )
         if not success:
