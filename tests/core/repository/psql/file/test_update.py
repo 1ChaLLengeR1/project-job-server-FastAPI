@@ -1,8 +1,9 @@
 from datetime import date
+from uuid import uuid4
 
 from sqlalchemy.orm import Session
 
-from core.repository.psql.file.update import update_file_psql
+from core.repository.psql.file.update import confirm_file_by_id_psql, update_file_psql
 from database.psql.models.file import FileStatus
 from tests.core.repository.psql.file.helper import make_file
 from tests.core.repository.psql.file.node.helper import make_files_node
@@ -89,3 +90,29 @@ class TestUpdateFilePsql:
         assert clear_ok is True
         assert clear_result.guarantee_start_date is None
         assert clear_result.guarantee_end_date is None
+
+
+class TestConfirmFileByIdPsql:
+    def test_confirm01_sets_status_to_completed(self, db_session: Session):
+        file = make_file(db_session, status=FileStatus.PENDING)
+
+        result, err, ok = confirm_file_by_id_psql(str(file.id), db_session=db_session)
+
+        assert ok is True and err is None
+        assert result.id == str(file.id)
+        assert result.status == FileStatus.COMPLETED
+
+    def test_confirm02_not_found_returns_not_found(self, db_session: Session):
+        result, err, ok = confirm_file_by_id_psql(str(uuid4()), db_session=db_session)
+
+        assert ok is False and result is None
+        assert err.key_type_error == "NotFound"
+        assert err.type_module == "confirm_file_by_id_psql"
+
+    def test_confirm03_idempotent_when_already_completed(self, db_session: Session):
+        file = make_file(db_session, status=FileStatus.COMPLETED)
+
+        result, err, ok = confirm_file_by_id_psql(str(file.id), db_session=db_session)
+
+        assert ok is True and err is None
+        assert result.status == FileStatus.COMPLETED

@@ -331,13 +331,47 @@ Zrobione:
   usuwa istniejących wartości u istniejących rekordów) - to nie jest
   migracja czyszcząca stare dane, tylko zmiana zachowania dla nowych.
 
+- **Bucket S3 zamknięty na produkcji** — `Block all public access` włączone,
+  usunięta bucket policy z `Principal: "*"` (jawnie zezwalała każdemu w
+  internecie na `GetObject`/`PutObject` bez podpisu - realna dziura,
+  znaleziona przy weryfikacji konsoli AWS), dopisany CORS na buckecie pod
+  `https://praca.strona.arturscibor.pl` (+ localhost pod dev) dla
+  `PUT`/`GET`/`HEAD` - wymagane, żeby frontend mógł wgrywać pliki na
+  `signed_url` z `/files/init` (S3 ma własny, osobny CORS, niezależny od
+  `CORSMiddleware` w `main.py`, który dotyczy tylko wołań do naszego API).
+  Zweryfikowane: wszystkie testy `full_integration` (realny S3) przeszły
+  po zablokowaniu publicznego dostępu.
+- **Testy `_psql` dla `create_file_psql`/`confirm_file_by_id_psql`** —
+  jedyne dwie funkcje repo w całej domenie `files` bez własnych testów
+  (istniały od pierwszego przyrostu). Nowy
+  `tests/core/repository/psql/file/test_create.py` (3: pola +
+  domyślny status `PENDING`, realny `user_id`, duplikat `s3_key` →
+  `IntegrityError` z `UniqueConstraint`). `confirm_file_by_id_psql`
+  dostał nową klasę `TestConfirmFileByIdPsql` w istniejącym
+  `test_update.py` (3: `PENDING→COMPLETED`, `NotFound`, idempotencja gdy
+  już `COMPLETED`). Pełny test suite: 556 passed, bez regresji.
+
+- **Testy API (TestClient) dla `init`/`update`/`delete` plików, bez
+  mocków poza JWT (full_integration)** — nowy
+  `tests/api/endpoints/file/test_api_init_update_delete.py`. Wzorzec:
+  `make_client`/`authorized_as` z `tests/api/helper.py` (JWT mockowane
+  przez podmianę lookupu usera w middleware, reszta - baza `db_session` i
+  S3 - prawdziwa), nie testy handlerów (handler to cienka warstwa
+  orkiestracji/audytu, logika biznesowa jest w repo/service, więc testy
+  handlerów byłyby w dużej mierze duplikatem testów repo-level).
+  10 testów: `init` (rekord `PENDING` bez `url`, realny PUT na S3 +
+  `head_object`, 422 przy złym payloadzie, 401 bez auth), `update`
+  (`confirmed`→`completed`, rename bez ruszania statusu, 400 zły format
+  id, 404 nie istnieje), `delete` (rekord + realny obiekt S3 znika,
+  **kaskada S3 dla plików-dzieci przetestowana na realnym S3 pierwszy
+  raz** - wcześniej tylko mock na poziomie service, 404 nie istnieje).
+  Pełny test suite: 556 passed (bez zmian - nowe testy `full_integration`,
+  domyślnie odseparowane), wszystkie `full_integration` razem: 15 passed.
+
 Nie zrobione jeszcze: SSE-KMS, breadcrumb dla
-`GET /files/nodes/one/{node_id}`, testy `_psql` dla `create`/`confirm`
-plików (repo istnieje od dawna, wciąż bez testów), testy
-handlera/endpointu (plików, węzłów, assign/metadata/guarantees/preview/
-download) poza e2e S3, `docs/ARCHITEKTURA.md` nieaktualny, weryfikacja
-Block Public Access na buckecie `storage-fastapi-s3` (poza kodem, w
-konsoli AWS).
+`GET /files/nodes/one/{node_id}`, testy API dla reszty domeny (węzły,
+assign/metadata, collection/one/unassigned/guarantees, preview/download)
+poza jednym dużym e2e, `docs/ARCHITEKTURA.md` nieaktualny.
 Sekcje 1–9 poniżej to **oryginalny plan docelowy** (jedno drzewo podmiotów,
 brak publicznych URL, SSE-KMS) — przy dalszej pracy albo dociągamy obecny
 model do tego planu, albo świadomie go uprościmy i zaktualizujemy ten
