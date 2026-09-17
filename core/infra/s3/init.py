@@ -23,8 +23,10 @@ def initialization_url_upload_file(
     try:
         unique_name = f"{uuid4()}_{name}"
         s3_key = f"{catalog}/{unique_name}"
-        url = f"https://{settings.s3_bucket_name}.s3.{settings.aws_region}.amazonaws.com/{s3_key}"
 
+        # bucket jest prywatny - goly URL S3 nie dziala bez podpisu, wiec nie budujemy
+        # i nie zapisujemy go w ogole (jedyny dzialajacy dostep to presigned URL:
+        # `signed_url` ponizej przy uploadzie, `preview`/`download` pozniej)
         file, error, success = create_file_psql(
             user_id=user_id,
             name=unique_name,
@@ -34,7 +36,7 @@ def initialization_url_upload_file(
             mime_type=mime_type,
             s3_key=s3_key,
             s3_prefix=catalog,
-            url=url,
+            url=None,
             db_session=db_session,
         )
 
@@ -55,7 +57,7 @@ def initialization_url_upload_file(
         return S3InitUploadFileResponse(
             file_id=file.id,
             signed_url=signed_url,
-            url=url,
+            url=None,
         ), None, True
     except Exception as error:
         return None, ApiErrorData(

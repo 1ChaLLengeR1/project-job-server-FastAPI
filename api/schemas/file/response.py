@@ -29,7 +29,7 @@ class FileResponseData(BaseModel):
 class FileInitResponseData(BaseModel):
     file_id: str
     signed_url: str
-    url: str
+    url: str | None
 
 
 class FileDeleteResponseData(BaseModel):
@@ -52,3 +52,9 @@ class FileCollectionResponseData(BaseModel):
 class FileWithChildrenResponseData(BaseModel):
     file: FileResponseData
     children: list[FileResponseData]
+
+
+class FileUrlResponseData(BaseModel):
+    file_id: str
+    url: str
+    expires_in_seconds: int

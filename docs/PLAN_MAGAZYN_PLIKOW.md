@@ -288,11 +288,56 @@ Zrobione:
   `test_guarantees.py` +3 dla granic okna 30 dni). Pełny test suite: 539
   passed, bez regresji.
 
-Nie zrobione jeszcze: presigned GET (preview/download), SSE-KMS,
-breadcrumb dla `GET /files/nodes/one/{node_id}`, testy `_psql` dla
-`create`/`confirm` plików (repo istnieje od dawna, wciąż bez testów),
-testy handlera/endpointu (plików, węzłów, assign/metadata/guarantees)
-poza e2e S3.
+- **Preview + download (etap 7)** — `config/settings.py` dostał
+  `file_preview_url_expire_seconds` (domyślnie 180) i
+  `file_download_url_expire_seconds` (domyślnie 60), oba z defaultem w
+  Pythonie (zgodnie z planem sekcja 4.1) - nie trzeba nic dopisywać w
+  `env/*.env`. Nowa `core/infra/s3/get.py::generate_get_presigned_url` -
+  wspólna funkcja dla podglądu (`disposition="inline"`) i pobierania
+  (`disposition="attachment"`, wymusza nazwę pliku przez
+  `ResponseContentDisposition`), zgodnie z planem sekcja 4 pkt 3. Nowa
+  `core/repository/psql/file/view.py::get_viewable_file_psql` - wspólny
+  warunek dla obu (status `COMPLETED`/`CONFIRMED`, inaczej
+  `IntegrityError`/409 - `PENDING`/`FAILED` nie mają gotowego obiektu na
+  S3), reużywany przez oba service'y. `core/service/file/{preview,download}.py`
+  orkiestrują repo (status check) + S3 (presigned GET), zwracają wspólny
+  `ServiceFileUrlResponse`. **`GET /files/preview/{file_id}`** zwraca URL w
+  zwykłym `ApiResponse` (JSON, do embedowania np. w `<img src>`).
+  **`GET /files/download/{file_id}`** robi prawdziwy **302 redirect**
+  (`RedirectResponse`) na presigned URL - zgodnie z planem sekcja 1
+  („Pobieranie: Redirect..."), wymagał `response_model=None` w FastAPI
+  (Union `RedirectResponse | JSONResponse` nie jest polem Pydantic).
+  **Uwaga dla frontendu**: `/files/download/{id}` wymaga nagłówka
+  `Authorization: Bearer` (jak każdy inny endpoint) - zwykłe
+  `<a href="...">`/nawigacja przeglądarki tego nie wyśle; trzeba strzelić
+  przez `fetch()` z tokenem, a potem albo pozwolić mu podążyć za
+  redirectem, albo odczytać `Location`/URL z odpowiedzi i użyć go wprost.
+  Testy: `test_view.py` (5, granice statusów), `test_preview.py`/
+  `test_download.py` (mock S3, po 3 - poprawny URL+expiry, blokada bez
+  wołania S3, propagacja błędu S3), plus `tests/core/infra/s3/test_get.py`
+  (`full_integration`, realny S3: pobranie treści + poprawny
+  `Content-Disposition`). Pełny test suite: 550 passed, bez regresji.
+
+- **Usunięty goły URL S3 z `files`** — `url` w tabeli `files` (i w
+  odpowiedziach API: `FileResponseData.url`, `FileInitResponseData.url`)
+  zawsze `None` teraz - `initialization_url_upload_file` już nie buduje
+  `https://{bucket}.s3.{region}.amazonaws.com/{key}`, bo bucket jest
+  prywatny i ten link i tak nie działał bez podpisu (był tylko myslący
+  „że coś działa"; jedyny działający dostęp to `signed_url` przy
+  uploadzie i `preview`/`download` po fakcie). `create_file_psql` i
+  `S3InitUploadFileResponse.url` przełączone na `str | None`. Sprawdzone
+  na realnym S3 (`test_init.py`, e2e S3) - bez regresji, 550 passed.
+  **Uwaga**: kolumna `url` w bazie nadal istnieje (nullable, nic nie
+  usuwa istniejących wartości u istniejących rekordów) - to nie jest
+  migracja czyszcząca stare dane, tylko zmiana zachowania dla nowych.
+
+Nie zrobione jeszcze: SSE-KMS, breadcrumb dla
+`GET /files/nodes/one/{node_id}`, testy `_psql` dla `create`/`confirm`
+plików (repo istnieje od dawna, wciąż bez testów), testy
+handlera/endpointu (plików, węzłów, assign/metadata/guarantees/preview/
+download) poza e2e S3, `docs/ARCHITEKTURA.md` nieaktualny, weryfikacja
+Block Public Access na buckecie `storage-fastapi-s3` (poza kodem, w
+konsoli AWS).
 Sekcje 1–9 poniżej to **oryginalny plan docelowy** (jedno drzewo podmiotów,
 brak publicznych URL, SSE-KMS) — przy dalszej pracy albo dociągamy obecny
 model do tego planu, albo świadomie go uprościmy i zaktualizujemy ten

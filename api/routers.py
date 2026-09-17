@@ -140,6 +140,8 @@ DELETE_FILE = "/files/delete/{file_id}"
 ONE_FILE = "/files/one/{file_id}"
 COLLECTION_UNASSIGNED_FILES = "/files/unassigned"
 COLLECTION_EXPIRING_GUARANTEES = "/files/guarantees/expiring"
+PREVIEW_FILE = "/files/preview/{file_id}"
+DOWNLOAD_FILE = "/files/download/{file_id}"
 
 # Files - przypisanie do wezla i edycja metadanych (po uploadzie)
 ASSIGN_FILE = "/files/assign/{file_id}"

@@ -16,7 +16,7 @@ def create_file_psql(
     mime_type: str,
     s3_key: str,
     s3_prefix: str,
-    url: str,
+    url: str | None = None,
     db_session: Session | None = None,
 ) -> tuple[FileResponse | None, ApiErrorData | None, bool]:
     try:
