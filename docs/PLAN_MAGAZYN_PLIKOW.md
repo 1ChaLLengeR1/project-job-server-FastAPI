@@ -235,11 +235,42 @@ Zrobione:
   test suite bez zmian (516 passed, nowy test poprawnie odseparowany
   marker-em, nie odpala się bez `-m full_integration`).
 
+- **Kaskada S3 przy delete plików-dzieci (dokończenie sekcji 5)** —
+  `delete_file_psql` zbiera teraz `child_s3_keys` (BFS po `parent_file_id`,
+  wszystkie poziomy zagnieżdżenia - baza i tak kasuje rekordy dzieci sama
+  przez `ondelete=CASCADE`, ale nie ich obiekty S3). `delete_file_service`
+  usuwa z S3 najpierw plik główny, potem best-effort wszystkie
+  `child_s3_keys` - `NotFound` dla dziecka (nigdy nie dokończyło uploadu)
+  to nie błąd, realny błąd S3 na dziecku owszem (`S3DeleteFailed`).
+  Testy: `tests/core/repository/psql/file/test_delete.py` (BFS zbiera
+  dzieci i wnuki, cascade w bazie potwierdzony), nowy
+  `tests/core/service/file/test_delete.py` (mock `delete_file_s3` -
+  wywołania dla rodzica+dzieci, `NotFound` tolerowany, realny błąd nie).
+- **Odczyt: filtry w `collection` + `GET /files/one/{id}` + `GET
+  /files/unassigned` (sekcja 5.4/6)** — `collection_files_psql` dostał
+  `node_id` (+ `recursive` - BFS po drzewie węzłów, cały poddrzew),
+  `created_at_from`/`created_at_to` (zakres dat, `created_at_to`
+  włącznie - `< to + 1 dzień`, nie ostre `<=`). **Uwaga:** zakres dat
+  porównywany jest w timezone sesji DB (`Europe/Warsaw`, nie UTC) - dzień
+  kalendarzowy liczy się lokalnie, co wyszło na jaw dopiero przy pisaniu
+  testu (błędnie dobrany czas w UTC "przeskakiwał" na kolejny dzień
+  lokalnie). Nowa `one_file_psql` (`GET /files/one/{file_id}`) - szczegóły
+  + lista **bezpośrednich** plików-dzieci (bez wnuków, bez breadcrumb
+  węzła - ta sama decyzja co przy węzłach). Nowa
+  `collection_unassigned_files_psql` (`GET /files/unassigned`) - skrót
+  `status=COMPLETED AND node_id IS NULL`. Pełny stos (handler → schema →
+  endpoint → routers.py/api.py) dla obu nowych endpointów, filtry
+  wpięte w istniejący `GET /files/collection`. Testy: `test_collection.py`
+  (node_id/recursive/daty), `test_one.py`, `test_unassigned.py` - 10
+  testów. Pełny test suite: 534 passed, bez regresji; e2e
+  `full_integration` (S3) też bez regresji.
+
 Nie zrobione jeszcze: presigned GET (preview/download), SSE-KMS,
 breadcrumb dla `GET /files/nodes/one/{node_id}`, testy `_psql` dla
-`create`/`collection`/`delete`/`confirm` plików, testy handlera/endpointu
-(plików, węzłów, assign/metadata) poza powyższym e2e, kaskada S3 dla
-plików-dzieci przy delete.
+`create`/`confirm` plików (repo istnieje od dawna, wciąż bez testów),
+testy handlera/endpointu (plików, węzłów, assign/metadata) poza e2e
+S3, filtr `guarantee_status` w collection, `GET
+/files/guarantees/expiring`.
 Sekcje 1–9 poniżej to **oryginalny plan docelowy** (jedno drzewo podmiotów,
 brak publicznych URL, SSE-KMS) — przy dalszej pracy albo dociągamy obecny
 model do tego planu, albo świadomie go uprościmy i zaktualizujemy ten

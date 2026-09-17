@@ -1,3 +1,5 @@
+from datetime import date
+
 from sqlalchemy.orm import Session
 
 from api.response import ApiErrorData
@@ -14,6 +16,10 @@ def handler_collection_file(
     file_type: FileType | None = None,
     original_name: str | None = None,
     catalog: str | None = None,
+    node_id: str | None = None,
+    recursive: bool = False,
+    created_at_from: date | None = None,
+    created_at_to: date | None = None,
     db_session: Session | None = None,
 ) -> tuple[RepositoryCollectionFileResponse | None, ApiErrorData | None, bool]:
     try:
@@ -23,6 +29,10 @@ def handler_collection_file(
             file_type=file_type,
             original_name=original_name,
             catalog=catalog,
+            node_id=node_id,
+            recursive=recursive,
+            created_at_from=created_at_from,
+            created_at_to=created_at_to,
             db_session=db_session,
         )
         if not ok:

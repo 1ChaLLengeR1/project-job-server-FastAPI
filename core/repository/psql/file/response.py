@@ -53,10 +53,17 @@ def _to_file_response(model: File) -> FileResponse:
 class RepositoryDeleteFileResponse:
     id: str
     s3_key: str
+    child_s3_keys: list[str]
 
 
-def _to_delete_file_response(model: File) -> RepositoryDeleteFileResponse:
-    return RepositoryDeleteFileResponse(id=str(model.id), s3_key=model.s3_key)
+def _to_delete_file_response(model: File, child_s3_keys: list[str] | None = None) -> RepositoryDeleteFileResponse:
+    return RepositoryDeleteFileResponse(id=str(model.id), s3_key=model.s3_key, child_s3_keys=child_s3_keys or [])
+
+
+@dataclass
+class FileWithChildrenResponse:
+    file: FileResponse
+    children: list[FileResponse]
 
 
 @dataclass

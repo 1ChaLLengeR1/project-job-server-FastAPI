@@ -47,3 +47,8 @@ class FileCollectionPaginationData(BaseModel):
 class FileCollectionResponseData(BaseModel):
     data: list[FileResponseData]
     pagination: FileCollectionPaginationData
+
+
+class FileWithChildrenResponseData(BaseModel):
+    file: FileResponseData
+    children: list[FileResponseData]

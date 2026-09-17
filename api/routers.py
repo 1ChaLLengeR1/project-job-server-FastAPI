@@ -137,6 +137,8 @@ INIT_FILE = "/files/init"
 UPDATE_FILE = "/files/update/{file_id}"
 COLLECTION_FILES = "/files/collection"
 DELETE_FILE = "/files/delete/{file_id}"
+ONE_FILE = "/files/one/{file_id}"
+COLLECTION_UNASSIGNED_FILES = "/files/unassigned"
 
 # Files - przypisanie do wezla i edycja metadanych (po uploadzie)
 ASSIGN_FILE = "/files/assign/{file_id}"
