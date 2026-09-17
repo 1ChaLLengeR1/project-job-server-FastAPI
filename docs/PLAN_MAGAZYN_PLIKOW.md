@@ -109,11 +109,43 @@ Zrobione:
   ścieżka błędu `NotFound` dla brakującego klucza. Każdy test sam czyści po
   sobie obiekty wgrane na S3 (`finally`/bezpiecznik).
 
-Nie zrobione jeszcze: handler/endpoint/schematy dla węzłów
-(`POST /files/nodes/create` itd. z sekcji 5.1), `assign`/`metadata` na
-plikach (wymagają węzłów — teraz są, ale endpointy jeszcze nie), presigned
-GET (preview/download), SSE-KMS, gwarancje, testy `_psql` dla
-`create`/`collection`/`delete`/`confirm`/węzłów, testy handlera/endpointu.
+- **Handler/endpoint/schematy dla węzłów (sekcja 5.1, pełny CRUD)** —
+  `core/handler/file/node/` (`create`/`collection`/`one`/`update`/`delete`,
+  audyt `create_logs_psql` ze slotami `files:create_node`/`collection_nodes`/
+  `one_node`/`update_node`/`delete_node`) → `api/schemas/file/node/`
+  (`payload.py`, `response.py`) → `api/endpoints/file/node/` →
+  `POST /files/nodes/create`, `GET /files/nodes/collection` (filtr
+  `parent_id`, jeden poziom), `GET /files/nodes/one/{node_id}` (bez
+  breadcrumb na razie — zwykłe pobranie rekordu), `PUT
+  /files/nodes/update/{node_id}`, `DELETE /files/nodes/delete/{node_id}`.
+  Stałe w `api/routers.py`, wpięte w `api/api.py`, tag Swagger
+  „Files/Nodes" w `config/swagger_description/tags.py`. Rola superadmin,
+  `RATE_LIMIT_WRITE`/`RATE_LIMIT_READ` jak wszędzie.
+  - Przy okazji naprawiona **znana wada** z `update_files_node_psql`
+    (przenoszenie węzła na najwyższy poziom): repo dostało nowy parametr
+    `clear_parent_id: bool`, a endpoint update odróżnia „pominięty
+    `parent_id`" od „jawne `parent_id: null`" przez `body.model_fields_set`
+    (oba dają `None` w Pythonie, więc nie da się tego rozróżnić samą
+    wartością).
+  - Dopisana też brakująca `one_files_node_psql` (repo miało dotąd tylko
+    create/collection/update/delete) — `core/repository/psql/file/node/one.py`.
+  - Bez testów handlera/endpointu na razie — zweryfikowane ręcznie przez
+    `main.app.openapi()` (wszystkie 5 ścieżek widoczne) + pełny test suite
+    (489 passed, bez regresji).
+- **Testy `_psql` dla węzłów** — `tests/core/repository/psql/file/node/`
+  (`helper.py` z fabryką `make_files_node`, po 3–4 testy na
+  `create`/`collection`/`one`/`update`/`delete`, wzorowane na
+  `tests/core/repository/psql/rental/dictionaries/`), łącznie 16 testów.
+  Pokrywają m.in. `UniqueConstraint(parent_id, name)` (duplikat pod tym
+  samym rodzicem → `IntegrityError`), `RESTRICT` przy węźle z dzieckiem
+  oraz nowo naprawione `clear_parent_id` (przeniesienie węzła na najwyższy
+  poziom). Pełny test suite: 505 passed, bez regresji.
+
+Nie zrobione jeszcze: `assign`/`metadata` na plikach (wymagają węzłów —
+teraz są, ale endpointy jeszcze nie), presigned GET (preview/download),
+SSE-KMS, gwarancje, breadcrumb dla `GET /files/nodes/one/{node_id}`, testy
+`_psql` dla `create`/`collection`/`delete`/`confirm` plików, testy
+handlera/endpointu (plików i węzłów).
 Sekcje 1–9 poniżej to **oryginalny plan docelowy** (jedno drzewo podmiotów,
 brak publicznych URL, SSE-KMS) — przy dalszej pracy albo dociągamy obecny
 model do tego planu, albo świadomie go uprościmy i zaktualizujemy ten

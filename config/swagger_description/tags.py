@@ -90,4 +90,9 @@ TAGS_METADATA = [
         "description": "Magazyn plików - init uploadu (presigned PUT do S3), potwierdzenie/edycja "
         "statusu i nazwy, listowanie i usuwanie (rekord + obiekt S3).",
     },
+    {
+        "name": "Files/Nodes",
+        "description": "Magazyn plików - drzewo węzłów (osoba lub kategoria, ten sam byt), po którym "
+        "rozpina się pliki: CRUD węzłów.",
+    },
 ]

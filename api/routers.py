@@ -137,3 +137,10 @@ INIT_FILE = "/files/init"
 UPDATE_FILE = "/files/update/{file_id}"
 COLLECTION_FILES = "/files/collection"
 DELETE_FILE = "/files/delete/{file_id}"
+
+# Files - wezly (drzewo osob/kategorii, po ktorym rozpina sie pliki)
+CREATE_FILES_NODE = "/files/nodes/create"
+COLLECTION_FILES_NODES = "/files/nodes/collection"
+ONE_FILES_NODE = "/files/nodes/one/{node_id}"
+UPDATE_FILES_NODE = "/files/nodes/update/{node_id}"
+DELETE_FILES_NODE = "/files/nodes/delete/{node_id}"

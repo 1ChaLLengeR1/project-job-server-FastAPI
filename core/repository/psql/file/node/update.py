@@ -12,9 +12,13 @@ def update_files_node_psql(
     new_name: str | None = None,
     new_description: str | None = None,
     new_parent_id: str | None = None,
+    clear_parent_id: bool = False,
     new_is_active: bool | None = None,
     db_session: Session | None = None,
 ) -> tuple[FilesNodeResponse | None, ApiErrorData | None, bool]:
+    """`new_parent_id=None` (domyślnie) = nie dotykaj rodzica. `clear_parent_id=True`
+    przenosi węzeł na najwyższy poziom (`parent_id=NULL`) - jedyny sposób odróżnienia
+    "nie zmieniaj" od "wyczyść" przy `None` jako współdzielonej wartości domyślnej."""
     try:
         with managed_session(db_session) as (db, _):
             node = db.query(FilesNode).filter(FilesNode.id == node_id).first()
@@ -30,7 +34,9 @@ def update_files_node_psql(
                 node.name = new_name
             if new_description is not None:
                 node.description = new_description
-            if new_parent_id is not None:
+            if clear_parent_id:
+                node.parent_id = None
+            elif new_parent_id is not None:
                 node.parent_id = new_parent_id
             if new_is_active is not None:
                 node.is_active = new_is_active
