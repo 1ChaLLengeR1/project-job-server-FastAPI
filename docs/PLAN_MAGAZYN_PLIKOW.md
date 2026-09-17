@@ -140,12 +140,73 @@ Zrobione:
   samym rodzicem → `IntegrityError`), `RESTRICT` przy węźle z dzieckiem
   oraz nowo naprawione `clear_parent_id` (przeniesienie węzła na najwyższy
   poziom). Pełny test suite: 505 passed, bez regresji.
+- **Repository dla `assign`/`metadata` na plikach (sekcja 5.3, tylko warstwa
+  `_psql` — bez handlera/endpointu na razie)**:
+  - `database/psql/models/file.py` — dopisane kolumny `description`,
+    `guarantee_start_date`, `guarantee_end_date` na `files` (zgodnie z
+    sekcją 3.2 — świadomie **na pliku**, nie na `files_nodes`: węzeł to
+    osoba/kategoria, różne pliki pod tym samym węzłem mogą mieć różne albo
+    żadne gwarancje, a filtr `guarantee_status` z sekcji 5.5 i tak działa
+    na kolekcji plików). Dodany też `CHECK
+    (status != 'CONFIRMED' OR node_id IS NOT NULL)` z sekcji 3.2
+    (`ck_files_confirmed_requires_node`) — uwaga: natywny enum Postgresa
+    trzyma **wielkie litery** (`'CONFIRMED'`, nie `'confirmed'`), bo
+    SQLAlchemy domyślnie mapuje `.name` enuma, nie `.value`. Migracja
+    Alembic (`alembic/versions/9507ebdeec64_init.py`) zaktualizowana
+    ręcznie w tym samym `create_table('files', ...)` — repo ma jedną
+    squashniętą migrację `init`, regenerowaną przez `make
+    migration_restart` (nie osobne rewizje per feature). Migracja
+    zmieniona tylko w pliku - nie odpalona na żadnej realnej bazie w tej
+    sesji.
+  - `FileResponse`/`_to_file_response` — doszły `node_id`, `parent_file_id`,
+    `description`, `guarantee_start_date`, `guarantee_end_date`.
+  - Nowa `assign_file_psql` (`core/repository/psql/file/assign.py`) —
+    pierwsze przypisanie pliku do węzła, wymaga `status=COMPLETED`
+    (inaczej `IntegrityError`/409 — konwencja „konflikt stanu" jak w
+    `handler_close_billing_period` dla rentals), ustawia `node_id` (+
+    opcjonalnie `parent_file_id`), `status=CONFIRMED`.
+  - `update_file_psql` rozszerzony o `node_id`/`parent_file_id`/
+    `description`/daty gwarancji. `node_id` celowo **bez** `clear_node_id`
+    — nie da się tą funkcją odczepić potwierdzonego pliku od węzła (to
+    robi tylko `assign_file_psql` przy pierwszym przypisaniu); pozostałe
+    pola nullable (`parent_file_id`, `description`, daty gwarancji) mają
+    dedykowane flagi `clear_*`, tym samym trickiem co `clear_parent_id`
+    przy węzłach.
+  - Testy: `tests/core/repository/psql/file/test_assign.py` (4 na
+    `assign_file_psql` + 1 bezpośredni test samego `CHECK` constraintu
+    przez `make_file(status=CONFIRMED)` bez `node_id`), rozszerzony
+    `test_update.py` (+4 przypadki: `node_id`/`parent_file_id`,
+    `clear_parent_file_id`, opis, daty gwarancji). Pełny test suite: 514
+    passed, bez regresji.
+- **Handler/endpoint/schematy dla `assign`/`metadata` (dokończenie sekcji
+  5.3)** — `core/handler/file/assign.py` (`handler_assign_file`, audyt
+  `files:assign`) i `core/handler/file/metadata.py`
+  (`handler_update_file_metadata`, audyt `files:update_metadata`, cienka
+  warstwa nad `update_file_psql`) → `api/schemas/file/payload.py`
+  (`FileAssignPayload`, `FileMetadataPayload`) → `api/endpoints/file/`
+  (`assign.py`, `metadata.py`) → `PUT /files/assign/{file_id}`,
+  `PUT /files/metadata/{file_id}`. Stałe w `api/routers.py`, wpięte w
+  `api/api.py`, tag Swagger „Files" (bez nowego taga - to ten sam zasób).
+  - `update_file_psql` dostał dodatkowo `new_original_name` (metadata
+    edytuje `original_name` - nazwę wyświetlaną, zgodnie z sekcją 3.2/5.3
+    - a nie `name`, które edytuje już istniejący `PUT /files/update/{id}`
+    ze statusowego flow).
+  - `FileResponseData` (API-facing schema) rozszerzone o `node_id`,
+    `parent_file_id`, `description`, daty gwarancji - wcześniej te pola
+    były tylko w wewnętrznym `FileResponse` (repo), nieeksponowane w API;
+    teraz widoczne też w istniejących `collection`/`update`.
+  - Endpoint metadata używa tego samego tricku `model_fields_set` co
+    `PUT /files/nodes/update/{node_id}` do rozróżnienia „pominięte pole"
+    od „jawne `null`" dla `parent_file_id`/`description`/dat gwarancji.
+    `node_id` bez opcji czyszczenia (zgodnie z ustaleniem).
+  - Bez testów handlera/endpointu na razie — zweryfikowane przez
+    `main.app.openapi()` (obie ścieżki widoczne) + pełny test suite (514
+    passed, bez regresji).
 
-Nie zrobione jeszcze: `assign`/`metadata` na plikach (wymagają węzłów —
-teraz są, ale endpointy jeszcze nie), presigned GET (preview/download),
-SSE-KMS, gwarancje, breadcrumb dla `GET /files/nodes/one/{node_id}`, testy
-`_psql` dla `create`/`collection`/`delete`/`confirm` plików, testy
-handlera/endpointu (plików i węzłów).
+Nie zrobione jeszcze: presigned GET (preview/download), SSE-KMS,
+breadcrumb dla `GET /files/nodes/one/{node_id}`, testy `_psql` dla
+`create`/`collection`/`delete`/`confirm` plików, testy handlera/endpointu
+(plików, węzłów, assign/metadata).
 Sekcje 1–9 poniżej to **oryginalny plan docelowy** (jedno drzewo podmiotów,
 brak publicznych URL, SSE-KMS) — przy dalszej pracy albo dociągamy obecny
 model do tego planu, albo świadomie go uprościmy i zaktualizujemy ten

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 
 from database.psql.models.file import File, FileStatus, FileType
 
@@ -8,6 +8,8 @@ from database.psql.models.file import File, FileStatus, FileType
 class FileResponse:
     id: str
     user_id: str | None
+    node_id: str | None
+    parent_file_id: str | None
     name: str
     original_name: str
     size: int
@@ -17,6 +19,9 @@ class FileResponse:
     s3_prefix: str
     url: str | None
     status: FileStatus
+    description: str | None
+    guarantee_start_date: date | None
+    guarantee_end_date: date | None
     created_at: datetime | None
     updated_at: datetime | None
 
@@ -25,6 +30,8 @@ def _to_file_response(model: File) -> FileResponse:
     return FileResponse(
         id=str(model.id),
         user_id=str(model.user_id) if model.user_id else None,
+        node_id=str(model.node_id) if model.node_id else None,
+        parent_file_id=str(model.parent_file_id) if model.parent_file_id else None,
         name=model.name,
         original_name=model.original_name,
         size=model.size,
@@ -34,6 +41,9 @@ def _to_file_response(model: File) -> FileResponse:
         s3_prefix=model.s3_prefix,
         url=model.url,
         status=model.status,
+        description=model.description,
+        guarantee_start_date=model.guarantee_start_date,
+        guarantee_end_date=model.guarantee_end_date,
         created_at=model.created_at,
         updated_at=model.updated_at,
     )

@@ -1,6 +1,8 @@
+from datetime import date
+
 from pydantic import BaseModel, Field, field_validator
 
-from api.validators import validate_non_empty_str
+from api.validators import validate_non_empty_str, validate_uuid
 from database.psql.models.file import FileStatus, FileType
 
 
@@ -31,3 +33,53 @@ class FileUpdatePayload(BaseModel):
         if value is None:
             return value
         return validate_non_empty_str(value)
+
+
+class FileAssignPayload(BaseModel):
+    node_id: str = Field(description="UUID węzła, do którego przypisujemy plik")
+    parent_file_id: str | None = Field(default=None, description="UUID pliku-rodzica (opcjonalnie)")
+
+    @field_validator("node_id")
+    @classmethod
+    def node_id_valid_uuid(cls, value: str) -> str:
+        return validate_uuid(value)
+
+    @field_validator("parent_file_id")
+    @classmethod
+    def parent_file_id_valid_uuid(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
+        return validate_uuid(value)
+
+
+class FileMetadataPayload(BaseModel):
+    original_name: str | None = Field(default=None, max_length=255, description="Nowa nazwa wyświetlana pliku")
+    node_id: str | None = Field(default=None, description="Nowy węzeł (UUID) - przeniesienie pliku")
+    parent_file_id: str | None = Field(
+        default=None,
+        description="Nowy plik-rodzic (UUID). Jawne `null` odczepia plik-dziecko; "
+        "pominięcie pola nie zmienia rodzica.",
+    )
+    description: str | None = Field(
+        default=None, description="Nowy opis pliku. Jawne `null` czyści opis; pominięcie pola go nie rusza."
+    )
+    guarantee_start_date: date | None = Field(
+        default=None, description="Nowa data początku gwarancji. Jawne `null` czyści; pominięcie pola nie rusza."
+    )
+    guarantee_end_date: date | None = Field(
+        default=None, description="Nowa data końca gwarancji. Jawne `null` czyści; pominięcie pola nie rusza."
+    )
+
+    @field_validator("original_name")
+    @classmethod
+    def original_name_not_empty(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
+        return validate_non_empty_str(value)
+
+    @field_validator("node_id", "parent_file_id")
+    @classmethod
+    def ids_valid_uuid(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
+        return validate_uuid(value)

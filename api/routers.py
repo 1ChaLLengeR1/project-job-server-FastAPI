@@ -138,6 +138,10 @@ UPDATE_FILE = "/files/update/{file_id}"
 COLLECTION_FILES = "/files/collection"
 DELETE_FILE = "/files/delete/{file_id}"
 
+# Files - przypisanie do wezla i edycja metadanych (po uploadzie)
+ASSIGN_FILE = "/files/assign/{file_id}"
+UPDATE_FILE_METADATA = "/files/metadata/{file_id}"
+
 # Files - wezly (drzewo osob/kategorii, po ktorym rozpina sie pliki)
 CREATE_FILES_NODE = "/files/nodes/create"
 COLLECTION_FILES_NODES = "/files/nodes/collection"

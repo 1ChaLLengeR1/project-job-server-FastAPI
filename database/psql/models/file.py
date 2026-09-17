@@ -4,7 +4,9 @@ import uuid
 from sqlalchemy import (
     BigInteger,
     Boolean,
+    CheckConstraint,
     Column,
+    Date,
     DateTime,
     Enum,
     ForeignKey,
@@ -56,6 +58,10 @@ class File(Base):
     __table_args__ = (
         Index("ix_files_status", "status"),
         Index("ix_files_file_type", "file_type"),
+        # confirmed = przypisany do wezla (zob. PLAN_MAGAZYN_PLIKOW.md, sekcja 3.2)
+        CheckConstraint(
+            "status != 'CONFIRMED' OR node_id IS NOT NULL", name="ck_files_confirmed_requires_node"
+        ),
     )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -78,6 +84,10 @@ class File(Base):
     url = Column(String(512), nullable=True)
 
     status = Column(Enum(FileStatus, name="file_status"), nullable=False, default=FileStatus.PENDING)
+
+    description = Column(String, nullable=True)
+    guarantee_start_date = Column(Date, nullable=True)
+    guarantee_end_date = Column(Date, nullable=True)
 
     # S3 multipart upload tracking (dla dużych plików video/audio)
     multipart_upload_id = Column(String(1024), nullable=True)
