@@ -142,6 +142,12 @@ COLLECTION_UNASSIGNED_FILES = "/files/unassigned"
 COLLECTION_EXPIRING_GUARANTEES = "/files/guarantees/expiring"
 PREVIEW_FILE = "/files/preview/{file_id}"
 DOWNLOAD_FILE = "/files/download/{file_id}"
+# Wariant JSON (nie 302) — potrzebny frontendowi: fetch() z Authorization
+# podążający za cross-origin redirectem (DOWNLOAD_FILE) gubi CORS w realnej
+# przeglądarce (potwierdzone empirycznie), mimo że sam łańcuch requestów
+# server-side jest poprawny. Ten endpoint zwraca URL wprost, frontend robi
+# od niego osobny, czysty fetch() na S3 bez żadnych dodatkowych nagłówków.
+DOWNLOAD_FILE_URL = "/files/download-url/{file_id}"
 
 # Files - przypisanie do wezla i edycja metadanych (po uploadzie)
 ASSIGN_FILE = "/files/assign/{file_id}"

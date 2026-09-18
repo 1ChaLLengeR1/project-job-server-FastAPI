@@ -509,6 +509,48 @@ wszystkie kolumny `files` (np. pre-check przy `DELETE /files/nodes/delete`).
   wpływu na izolację wszystkich testów bez możliwości odpalenia całego
   suite'u w tej sesji) — do rozważenia osobno.
 
+- **Bug: `InvalidArgument` z S3 przy preview/download pliku z polskimi znakami
+  w nazwie — naprawiony (2026-09-18)**. Zgłoszony przez użytkownika: klik
+  „Podgląd" na pliku `CV_ArturŚcibor_EN.pdf` → S3 zwracał `InvalidArgument`
+  („Header value cannot be represented using ISO-8859-1"). Przyczyna:
+  `generate_get_presigned_url` (`core/infra/s3/get.py`) budował
+  `ResponseContentDisposition` jako gołe `f'{disposition}; filename="{filename}"'`
+  — `original_name` z polskimi znakami (Ś, ć, ż...) nie mieści się w
+  ISO-8859-1, którego wymaga ten nagłówek. Naprawione przez nowy
+  `_build_content_disposition()` — RFC 6266: ASCII fallback
+  (`filename="..."`, nieznane znaki → `?`) + pełna nazwa jako
+  `filename*=UTF-8''<percent-encoded>` (zawsze czysty ASCII, obsługiwane
+  przez wszystkie współczesne przeglądarki). Dotyczy **obu** endpointów
+  (`preview`/`download`) — jedna wspólna funkcja. Zweryfikowane end-to-end na
+  realnym S3 (`requests.get` na wygenerowany URL, sprawdzony nagłówek
+  odpowiedzi + treść). `tests/core/infra/s3/test_get.py` — zaktualizowany
+  `test_get01` (nowy format nagłówka) + nowy `test_get02_non_ascii_filename_does_not_break_s3_signature`.
+
+- **Nowy `GET /files/download-url/{file_id}` — wariant JSON dla `download`,
+  bez 302 (2026-09-18)**. Zgłoszony przez użytkownika: klik „Pobierz" →
+  błąd przeglądarki `Access to fetch ... has been blocked by CORS policy:
+  No 'Access-Control-Allow-Origin' header is present`. Zdiagnozowane: `fetch()`
+  z `Authorization` podążający za cross-origin redirectem (`GET
+  /files/download/{id}` → 302 → S3) gubi nagłówki CORS w realnej
+  przeglądarce — mimo że ręczna weryfikacja całego łańcucha requestów
+  (backend 302 + S3, z `Origin`/`Authorization`) przez `requests` w Pythonie
+  wyglądała poprawnie (obie odpowiedzi miały prawidłowe nagłówki CORS).
+  Fetch-redirect-z-custom-headerem-cross-origin jest fundamentalnie
+  niepewny w przeglądarkach (interakcja stripowania `Authorization`
+  na redirectcie + ponownej walidacji CORS), więc zamiast dalej to
+  debugować, dodany nowy endpoint: identyczny do `GET /files/preview/{id}`
+  (ten sam handler `handler_download_file`/`ServiceFileUrlResponse`, tylko
+  inny URL), zwraca `{file_id, url, expires_in_seconds}` w JSON zamiast
+  302. Frontend robi teraz dwa czyste requesty: `apiGet` do naszego
+  backendu (Authorization — to zawsze działało), potem osobny,
+  **pozbawiony jakichkolwiek nagłówków** `fetch(url)` prosto na S3 (prosty
+  GET, CORS na buckecie już to obsługuje — potwierdzone empirycznie oboma
+  sposobami). `GET /files/download/{id}` (302) **zostaje** niezmieniony —
+  dodatkowa opcja, nie zamiennik (np. dla nieprzeglądarkowych klientów).
+  Nowe testy `TestApiDownloadFileUrl` w
+  `tests/api/endpoints/file/test_api_preview_download.py`. `main.app.openapi()`
+  build OK (107 endpointów).
+
 Nie zrobione jeszcze: `docs/ARCHITEKTURA.md` — sekcja o SSE-KMS w TODO do
 zaktualizowania (samo SSE-KMS już zrobione, patrz wpis wyżej; ewentualnie
 opcjonalne „Default encryption" na buckecie jako druga linia obrony, jeszcze

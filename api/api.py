@@ -29,6 +29,7 @@ from api.endpoints.file.assign import router as assign_router_file
 from api.endpoints.file.collection import router as collection_router_file
 from api.endpoints.file.delete import router as delete_router_file
 from api.endpoints.file.download import router as download_router_file
+from api.endpoints.file.download_url import router as download_url_router_file
 from api.endpoints.file.guarantees import router as guarantees_router_file
 from api.endpoints.file.init import router as init_router_file
 from api.endpoints.file.metadata import router as metadata_router_file
@@ -170,6 +171,7 @@ api_router.include_router(unassigned_router_file)
 api_router.include_router(guarantees_router_file)
 api_router.include_router(preview_router_file)
 api_router.include_router(download_router_file)
+api_router.include_router(download_url_router_file)
 api_router.include_router(update_router_file)
 api_router.include_router(delete_router_file)
 api_router.include_router(assign_router_file)
