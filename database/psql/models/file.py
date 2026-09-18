@@ -33,6 +33,7 @@ class FileType(str, enum.Enum):
     VIDEO = "video"
     GIF = "gif"
     AUDIO = "audio"
+    DOCUMENT = "document"
 
 
 class FilesNode(Base):

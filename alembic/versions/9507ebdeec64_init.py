@@ -179,7 +179,7 @@ def upgrade() -> None:
     sa.Column('original_name', sa.String(length=255), nullable=False),
     sa.Column('name', sa.String(length=255), nullable=False),
     sa.Column('size', sa.BigInteger(), nullable=False),
-    sa.Column('file_type', sa.Enum('PHOTO', 'VIDEO', 'GIF', 'AUDIO', name='file_type'), nullable=False),
+    sa.Column('file_type', sa.Enum('PHOTO', 'VIDEO', 'GIF', 'AUDIO', 'DOCUMENT', name='file_type'), nullable=False),
     sa.Column('mime_type', sa.String(length=255), nullable=True),
     sa.Column('s3_key', sa.String(length=512), nullable=False),
     sa.Column('s3_prefix', sa.String(length=512), nullable=False),
