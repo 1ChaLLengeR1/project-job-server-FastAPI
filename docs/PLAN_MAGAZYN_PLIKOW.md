@@ -465,6 +465,30 @@ Zrobione:
   zmiana nieskończona `make run_test_full` (backend ma teraz zasadę w
   CLAUDE.md: nie odpalać testów/make samodzielnie, robi to użytkownik).
 
+- **`all=true` w `GET /files/nodes/collection`** — przy budowie frontendu
+  okazało się, że rekurencyjne budowanie drzewa węzłów po stronie frontu
+  (jedno zapytanie na węzeł, per poziom) realnie zabija serwer przy większej
+  liczbie węzłów (widoczne w Network tab: N+1 zapytań). Dodany nowy,
+  opcjonalny query param `all: bool = False` — gdy `True`, ignoruje
+  `parent_id` i zwraca wszystkie węzły płasko, jednym zapytaniem
+  (`collection_files_nodes_psql` w `core/repository/psql/file/node/collection.py`
+  dostał `all_nodes: bool = False`, `db.query(FilesNode)` bez filtra gdy
+  ustawione). Frontend teraz robi jedno zapytanie, drzewo buduje z płaskiej
+  listy w pamięci (grupowanie po `parent_id`). Nowy test
+  `test_collection04_all_nodes_ignores_parent_id_and_returns_everything`.
+  Zaktualizowany swagger endpointu. **Nieodpalone w tej sesji** (testy/make
+  — użytkownik odpala sam).
+
+**Znana pułapka odkryta przy pracy nad frontendem (2026-09-18)**: repo ma
+jedną squashniętą migrację Alembic edytowaną w miejscu (bez nowych rewizji
+per feature) — `alembic_version` w bazie śledzi tylko ID rewizji, nie treść
+pliku. Jeśli baza została założona ze starszej wersji pliku migracji, a
+potem plik dostał nowe kolumny (np. `description`/`guarantee_start_date`/
+`guarantee_end_date` na `files`), `make migration_up` **nic nie zrobi**
+(ID się zgadza) — trzeba `make migration_restart`, żeby realnie przebudować
+schemat. Objaw: `UndefinedColumn` przy dowolnym zapytaniu ORM ciągnącym
+wszystkie kolumny `files` (np. pre-check przy `DELETE /files/nodes/delete`).
+
 Nie zrobione jeszcze: `docs/ARCHITEKTURA.md` — sekcja o SSE-KMS w TODO do
 zaktualizowania (samo SSE-KMS już zrobione, patrz wpis wyżej; ewentualnie
 opcjonalne „Default encryption" na buckecie jako druga linia obrony, jeszcze

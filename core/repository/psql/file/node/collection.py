@@ -7,21 +7,21 @@ from database.psql.models.file import FilesNode
 
 
 def collection_files_nodes_psql(
-    parent_id: str | None = None, db_session: Session | None = None
+    parent_id: str | None = None, all_nodes: bool = False, db_session: Session | None = None
 ) -> tuple[list[FilesNodeResponse] | None, ApiErrorData | None, bool]:
     """Zwraca dzieci danego wezla; `parent_id=None` = wezly najwyzszego poziomu.
 
-    Na razie jeden poziom na zapytanie (bez rekursji po poddrzewie) - podstawowa
-    wersja pod dalsza rozbudowe (zob. PLAN_MAGAZYN_PLIKOW.md, etap 3/6).
+    `all_nodes=True` ignoruje `parent_id` i zwraca wszystkie wezly plasko,
+    jednym zapytaniem - pod budowe calego drzewa na froncie bez N+1 zapytan
+    (jedno zapytanie na wezel przy rekursji po poziomach bylo realnym
+    problemem wydajnosciowym przy wiekszej liczbie wezlow).
     """
     try:
         with managed_session(db_session) as (db, _):
-            nodes = (
-                db.query(FilesNode)
-                .filter(FilesNode.parent_id == parent_id)
-                .order_by(FilesNode.name)
-                .all()
-            )
+            query = db.query(FilesNode)
+            if not all_nodes:
+                query = query.filter(FilesNode.parent_id == parent_id)
+            nodes = query.order_by(FilesNode.name).all()
             return [_to_files_node_response(node) for node in nodes], None, True
     except Exception as e:
         return None, ApiErrorData(

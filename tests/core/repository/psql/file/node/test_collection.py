@@ -32,3 +32,13 @@ class TestCollectionFilesNodesPsql:
 
         assert ok is True and err is None
         assert result == []
+
+    def test_collection04_all_nodes_ignores_parent_id_and_returns_everything(self, db_session: Session):
+        parent = make_files_node(db_session, name="Praca 2025-2026")
+        make_files_node(db_session, name="Faktura 1", parent_id=str(parent.id))
+        make_files_node(db_session, name="Mama")
+
+        result, err, ok = collection_files_nodes_psql(all_nodes=True, db_session=db_session)
+
+        assert ok is True and err is None
+        assert {node.name for node in result} == {"Praca 2025-2026", "Faktura 1", "Mama"}

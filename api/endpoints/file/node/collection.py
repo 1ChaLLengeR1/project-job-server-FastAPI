@@ -20,6 +20,10 @@ router = APIRouter()
 @router.get(
     COLLECTION_FILES_NODES,
     summary="[Superadmin] Pobierz listę węzłów (dzieci danego węzła)",
+    description="Domyślnie jeden poziom (dzieci `parent_id`, pominięcie = najwyższy poziom). "
+    "`all=true` ignoruje `parent_id` i zwraca wszystkie węzły płasko, jednym zapytaniem — "
+    "do zbudowania całego drzewa na froncie bez N+1 zapytań (jedno zapytanie na węzeł przy "
+    "rekursji po poziomach).",
     response_model=ApiResponse[list[FilesNodeResponseData]],
     responses={
         400: {"model": ApiErrorResponse, "description": "Niepoprawny format parent_id"},
@@ -37,14 +41,19 @@ def api_superadmin_collection_files_nodes(
     parent_id: str | None = Query(
         default=None, description="UUID węzła nadrzędnego; pominięcie = węzły najwyższego poziomu"
     ),
+    all: bool = Query(
+        default=False, description="Ignoruje parent_id, zwraca wszystkie węzły naraz (płasko)"
+    ),
     user_data: UserData = Depends(JWTBasicAuthenticationMiddleware(roles=["superadmin"])),
     db: Session = Depends(get_db),
 ) -> ApiResponse[list[FilesNodeResponseData]] | JSONResponse:
     try:
-        if parent_id is not None and not is_valid_uuid(parent_id):
+        if not all and parent_id is not None and not is_valid_uuid(parent_id):
             return invalid_uuid_response("Parent_id", "api_superadmin_collection_files_nodes")
 
-        data, error, success = handler_collection_files_nodes(user_data["id"], parent_id, db_session=db)
+        data, error, success = handler_collection_files_nodes(
+            user_data["id"], parent_id, all_nodes=all, db_session=db
+        )
         if not success:
             status_code = ERROR_STATUS_CODES.get(error.key_type_error, 400)
             return JSONResponse(
