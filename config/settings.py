@@ -43,6 +43,7 @@ class Settings(BaseSettings):
     aws_secret_access_key: str
     aws_region: str
     s3_bucket_name: str
+    s3_kms_key_id: str
     # domyślne wartości z PLAN_MAGAZYN_PLIKOW.md sekcja 4.1 - krótkoterminowe presigned GET
     file_preview_url_expire_seconds: int = Field(default=180, gt=0)
     file_download_url_expire_seconds: int = Field(default=60, gt=0)

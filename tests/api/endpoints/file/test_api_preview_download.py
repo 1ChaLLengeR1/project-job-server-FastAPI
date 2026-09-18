@@ -38,7 +38,14 @@ def _upload_completed_file(client, headers, db_session, image_bytes: bytes, *, n
     data = response.json()["data"]
 
     put_response = requests.put(
-        data["signed_url"], data=image_bytes, headers={"Content-Type": "image/png"}, timeout=30
+        data["signed_url"],
+        data=image_bytes,
+        headers={
+            "Content-Type": "image/png",
+            "x-amz-server-side-encryption": "aws:kms",
+            "x-amz-server-side-encryption-aws-kms-key-id": settings.s3_kms_key_id,
+        },
+        timeout=30,
     )
     assert put_response.status_code == 200
 

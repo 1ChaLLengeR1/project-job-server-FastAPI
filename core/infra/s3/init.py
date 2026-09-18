@@ -50,6 +50,8 @@ def initialization_url_upload_file(
                 "Bucket": settings.s3_bucket_name,
                 "Key": s3_key,
                 "ContentType": mime_type,
+                "ServerSideEncryption": "aws:kms",
+                "SSEKMSKeyId": settings.s3_kms_key_id,
             },
             ExpiresIn=900,
         )

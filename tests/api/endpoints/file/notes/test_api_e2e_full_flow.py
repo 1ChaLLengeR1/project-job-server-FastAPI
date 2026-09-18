@@ -89,7 +89,11 @@ class TestApiE2EFullFileNodesFlow:
                     put_response = requests.put(
                         init_data["signed_url"],
                         data=image_bytes,
-                        headers={"Content-Type": "image/png"},
+                        headers={
+                            "Content-Type": "image/png",
+                            "x-amz-server-side-encryption": "aws:kms",
+                            "x-amz-server-side-encryption-aws-kms-key-id": settings.s3_kms_key_id,
+                        },
                         timeout=30,
                     )
                     assert put_response.status_code == 200

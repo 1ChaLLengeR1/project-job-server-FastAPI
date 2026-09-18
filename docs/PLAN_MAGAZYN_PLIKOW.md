@@ -413,8 +413,36 @@ Zrobione:
   łańcuch w poprawnej kolejności) + 1 API (`test_api_node.py`). Pełny
   suite: 604 passed, bez regresji.
 
-Nie zrobione jeszcze: SSE-KMS, `docs/ARCHITEKTURA.md` — sekcja o SSE-KMS
-w TODO wciąż aktualna (breadcrumb już usunięty stamtąd).
+- **SSE-KMS (dokończenie etapu 2)** — presigned PUT wymusza teraz szyfrowanie
+  kluczem zarządzanym w KMS (CMK, alias `zaq12wsxXSWQAXCZASD312`) zamiast
+  polegania na domyślnym szyfrowaniu bucketu. `config/settings.py` dostał
+  `s3_kms_key_id` (env `BACKEND_SERVER_JOB_S3_KMS_KEY_ID`, w `local.env` jako
+  `alias/...`), `initialization_url_upload_file`
+  (`core/infra/s3/init.py`) dodaje `ServerSideEncryption: "aws:kms"` +
+  `SSEKMSKeyId` do `Params` w `generate_presigned_url("put_object", ...)`. Po
+  stronie AWS: nowy customer managed key w KMS, w jego Key policy dodany jako
+  Key user dedykowany IAM user backendu (`ArturScibor` — zweryfikowane
+  `sts.get_caller_identity()` na kluczach z `local.env`); bez tego backend
+  dostałby `AccessDenied` na `kms:GenerateDataKey`. **Odkryte przy
+  testach**: presigned URL nie zaszywa wartości nagłówków SSE w query
+  stringu — klient (frontend, i każdy test robiący realny `requests.put`)
+  musi wysłać dokładnie `x-amz-server-side-encryption: aws:kms` i
+  `x-amz-server-side-encryption-aws-kms-key-id: {key}` w headerach PUT,
+  inaczej S3 zwraca `403 SignatureDoesNotMatch` (nie `AccessDenied` — łatwo
+  pomylić przy debugowaniu). Zweryfikowane end-to-end na realnym S3
+  (`head_object` po uploadzie potwierdza `ServerSideEncryption=aws:kms` +
+  poprawny ARN klucza). Zaktualizowane 4 pliki testowe robiące realny PUT
+  (`tests/core/infra/s3/test_init.py`,
+  `tests/api/endpoints/file/test_api_preview_download.py`,
+  `tests/api/endpoints/file/test_api_init_update_delete.py`,
+  `tests/api/endpoints/file/notes/test_api_e2e_full_flow.py`) o te same
+  nagłówki. Pełny test suite (`-m ""`, łącznie z `full_integration`): 629
+  passed.
+
+Nie zrobione jeszcze: `docs/ARCHITEKTURA.md` — sekcja o SSE-KMS w TODO do
+zaktualizowania (samo SSE-KMS już zrobione, patrz wpis wyżej; ewentualnie
+opcjonalne „Default encryption" na buckecie jako druga linia obrony, jeszcze
+nieustawione).
 Sekcje 1–9 poniżej to **oryginalny plan docelowy** (jedno drzewo podmiotów,
 brak publicznych URL, SSE-KMS) — przy dalszej pracy albo dociągamy obecny
 model do tego planu, albo świadomie go uprościmy i zaktualizujemy ten
