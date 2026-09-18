@@ -439,6 +439,32 @@ Zrobione:
   nagłówki. Pełny test suite (`-m ""`, łącznie z `full_integration`): 629
   passed.
 
+- **`kms_key_id` w odpowiedzi `POST /files/init` + limit rozmiaru 50 MB** —
+  zaczęta budowa frontendu magazynu plików (drugie repo,
+  `project-job-website-vue.js`, plan: `docs/PLAN_MAGAZYN_PLIKOW.md` tamtego
+  repo) wymagała rozstrzygnięcia, skąd frontend ma znać
+  `x-amz-server-side-encryption-aws-kms-key-id` do nagłówków przy PUT na
+  `signed_url` — zdecydowano: backend zwraca go wprost (opcja „jedno miejsce
+  prawdy" zamiast duplikowania aliasu klucza w env frontendu).
+  `S3InitUploadFileResponse`/`FileInitResponseData` dostały nowe pole
+  `kms_key_id` (`core/infra/s3/response.py`, `api/schemas/file/response.py`),
+  `initialization_url_upload_file` (`core/infra/s3/init.py`) wypełnia je z
+  `settings.s3_kms_key_id`. Przy okazji dodany twardy limit rozmiaru pliku:
+  `FileInitPayload.size` (`api/schemas/file/payload.py`) ma teraz
+  `le=MAX_FILE_SIZE_BYTES` (50 MB, `50 * 1024 * 1024`) — wcześniej
+  jedynym ograniczeniem było `gt=0` (brak górnego limitu w ogóle, mimo że
+  oryginalny plan sekcja 3.3 zakładał słowniki `MAX_FILE_SIZE_BYTES` per
+  `file_type`, nigdy niezaimplementowane — to uproszczona wersja, jeden
+  wspólny limit, nie per-typ). Zaktualizowany `summary`/`description`
+  endpointu w swaggerze (`api/endpoints/file/init.py`) o oba fakty. Testy
+  robiące realny PUT (`test_init.py`, `test_api_init_update_delete.py`,
+  `test_api_preview_download.py`, `test_api_e2e_full_flow.py`) przełączone
+  z `settings.s3_kms_key_id` na `kms_key_id` z odpowiedzi API (testuje
+  realny kontrakt, nie wartość configu bezpośrednio); nowy
+  `test_init04_size_over_50mb_returns_422`. **Nieodpalone w tej sesji** —
+  zmiana nieskończona `make run_test_full` (backend ma teraz zasadę w
+  CLAUDE.md: nie odpalać testów/make samodzielnie, robi to użytkownik).
+
 Nie zrobione jeszcze: `docs/ARCHITEKTURA.md` — sekcja o SSE-KMS w TODO do
 zaktualizowania (samo SSE-KMS już zrobione, patrz wpis wyżej; ewentualnie
 opcjonalne „Default encryption" na buckecie jako druga linia obrony, jeszcze

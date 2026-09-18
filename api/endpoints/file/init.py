@@ -20,6 +20,11 @@ router = APIRouter()
 @router.post(
     INIT_FILE,
     summary="[Superadmin] Zainicjuj upload pliku (presigned PUT do S3)",
+    description="Rozmiar pliku (`size`) ograniczony do 50 MB. Response niesie `kms_key_id` "
+    "obok `signed_url` — PUT na `signed_url` musi wysłać dokładnie nagłówki "
+    "`x-amz-server-side-encryption: aws:kms` i "
+    "`x-amz-server-side-encryption-aws-kms-key-id: {kms_key_id}`, inaczej S3 zwróci "
+    "`403 SignatureDoesNotMatch` (nie AccessDenied).",
     response_model=ApiResponse[FileInitResponseData],
     responses={
         401: {"model": ApiErrorResponse, "description": "Brak lub niepoprawny token"},

@@ -5,11 +5,13 @@ from pydantic import BaseModel, Field, field_validator
 from api.validators import validate_non_empty_str, validate_uuid
 from database.psql.models.file import FileStatus, FileType
 
+MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024
+
 
 class FileInitPayload(BaseModel):
     name: str = Field(max_length=255, description="Nazwa bazowa pliku (używana do budowy klucza S3)")
     original_name: str = Field(max_length=255, description="Nazwa wyświetlana użytkownikowi")
-    size: int = Field(gt=0, description="Rozmiar pliku w bajtach")
+    size: int = Field(gt=0, le=MAX_FILE_SIZE_BYTES, description="Rozmiar pliku w bajtach (max 50 MB)")
     mime_type: str = Field(max_length=255, description="MIME type pliku")
     file_type: FileType = Field(description="Typ pliku")
     catalog: str = Field(max_length=512, description="Prefiks/katalog w buckecie S3")

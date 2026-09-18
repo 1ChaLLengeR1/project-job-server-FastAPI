@@ -49,7 +49,7 @@ def _init_and_upload(client, headers, image_bytes: bytes, s3_client, *, name: st
         headers={
             "Content-Type": "image/png",
             "x-amz-server-side-encryption": "aws:kms",
-            "x-amz-server-side-encryption-aws-kms-key-id": settings.s3_kms_key_id,
+            "x-amz-server-side-encryption-aws-kms-key-id": data["kms_key_id"],
         },
         timeout=30,
     )
@@ -119,6 +119,26 @@ class TestApiInitFile:
         )
 
         assert response.status_code == 401
+
+    def test_init04_size_over_50mb_returns_422(self, db_session):
+        client = make_client(db_session, *ROUTERS)
+        user = create_test_user(db_session)
+
+        with authorized_as("superadmin", user_id=str(user.id)) as headers:
+            response = client.post(
+                "/files/init",
+                json={
+                    "name": "too_big.png",
+                    "original_name": "too_big.png",
+                    "size": 50 * 1024 * 1024 + 1,
+                    "mime_type": "image/png",
+                    "file_type": "photo",
+                    "catalog": "tests",
+                },
+                headers=headers,
+            )
+
+        assert response.status_code == 422
 
 
 @pytest.mark.full_integration

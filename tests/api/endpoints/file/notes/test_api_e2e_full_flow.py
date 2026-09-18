@@ -92,7 +92,7 @@ class TestApiE2EFullFileNodesFlow:
                         headers={
                             "Content-Type": "image/png",
                             "x-amz-server-side-encryption": "aws:kms",
-                            "x-amz-server-side-encryption-aws-kms-key-id": settings.s3_kms_key_id,
+                            "x-amz-server-side-encryption-aws-kms-key-id": init_data["kms_key_id"],
                         },
                         timeout=30,
                     )

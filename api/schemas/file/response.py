@@ -30,6 +30,7 @@ class FileInitResponseData(BaseModel):
     file_id: str
     signed_url: str
     url: str | None
+    kms_key_id: str
 
 
 class FileDeleteResponseData(BaseModel):

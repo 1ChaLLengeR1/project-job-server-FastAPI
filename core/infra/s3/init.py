@@ -60,6 +60,7 @@ def initialization_url_upload_file(
             file_id=file.id,
             signed_url=signed_url,
             url=None,
+            kms_key_id=settings.s3_kms_key_id,
         ), None, True
     except Exception as error:
         return None, ApiErrorData(
