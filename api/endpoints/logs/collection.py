@@ -1,6 +1,6 @@
 from dataclasses import asdict
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Path, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
@@ -32,7 +32,7 @@ router = APIRouter()
 @limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_superadmin_collection_logs(
     request: Request,
-    number: int,
+    number: int = Path(description="Liczba ostatnich logów (ORDER BY date DESC); 0 lub ujemna = bez limitu"),
     db: Session = Depends(get_db),
 ) -> ApiResponse[list[LogResponseData]] | JSONResponse:
     try:

@@ -29,7 +29,10 @@ router = APIRouter()
     CLOSE_RENTAL_PERIOD,
     summary="[Superadmin] Zamknij okres (zapis snapshotów)",
     description="Wyliczenie + zapis snapshotów: rozliczenia mieszkań z pozycjami i podział rodzinny. "
-    "Zamknięty okres nie zmienia się przy późniejszej edycji słowników.",
+    "Zamknięty okres nie zmienia się przy późniejszej edycji słowników. Opcjonalne korekty "
+    "jednorazowe per mieszkanie w body (te same `adjustments` co w `preview`), zapisywane razem "
+    "ze snapshotem. Response może zawierać `warnings` (np. niedopasowanie czynszu w podziale "
+    "rodzinnym) — do wyświetlenia użytkownikowi.",
     response_model=ApiResponse[RentalPeriodPreviewResponseData],
     responses={
         400: {"model": ApiErrorResponse, "description": "Niepoprawny format period_id"},
