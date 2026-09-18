@@ -6,7 +6,7 @@ from api.response import ApiErrorData
 from core.repository.psql.file.collection import collection_files_psql
 from core.repository.psql.file.response import RepositoryCollectionFileResponse
 from core.repository.psql.logs.create import create_logs_psql
-from database.psql.models.file import FileType
+from database.psql.models.file import FileStatus, FileType
 
 
 def handler_collection_file(
@@ -14,6 +14,7 @@ def handler_collection_file(
     limit: int = 32,
     offset: int = 0,
     file_type: FileType | None = None,
+    status: FileStatus | None = None,
     original_name: str | None = None,
     catalog: str | None = None,
     node_id: str | None = None,
@@ -28,6 +29,7 @@ def handler_collection_file(
             limit=limit,
             offset=offset,
             file_type=file_type,
+            status=status,
             original_name=original_name,
             catalog=catalog,
             node_id=node_id,

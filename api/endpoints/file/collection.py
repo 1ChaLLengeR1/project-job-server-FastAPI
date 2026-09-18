@@ -15,7 +15,7 @@ from core.data.user import UserData
 from core.handler.file.collection import handler_collection_file
 from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
 from database.psql.database import get_db
-from database.psql.models.file import FileType
+from database.psql.models.file import FileStatus, FileType
 
 router = APIRouter()
 
@@ -23,6 +23,9 @@ router = APIRouter()
 @router.get(
     COLLECTION_FILES,
     summary="[Superadmin] Pobierz listę plików",
+    description="Bez filtrów zwraca wszystkie pliki niezależnie od statusu/przypisania. "
+    "`status` filtruje po statusie (`pending`/`completed`/`failed`/`confirmed` — `completed` ~ "
+    "nieprzypisany, `confirmed` ~ przypisany do węzła, patrz `node_id`).",
     response_model=ApiResponse[FileCollectionResponseData],
     responses={
         400: {"model": ApiErrorResponse, "description": "Niepoprawny format node_id"},
@@ -40,6 +43,7 @@ def api_superadmin_collection_files(
     limit: int = Query(default=32, gt=0, le=200, description="Liczba wyników na stronę"),
     offset: int = Query(default=0, ge=0, description="Przesunięcie od początku listy"),
     file_type: FileType | None = Query(default=None, description="Filtr po typie pliku"),
+    status: FileStatus | None = Query(default=None, description="Filtr po statusie pliku"),
     original_name: str | None = Query(default=None, description="Filtr ILIKE po nazwie wyświetlanej"),
     catalog: str | None = Query(default=None, description="Filtr po prefiksie/katalogu S3"),
     node_id: str | None = Query(default=None, description="Filtr po węźle (UUID)"),
@@ -63,6 +67,7 @@ def api_superadmin_collection_files(
             limit=limit,
             offset=offset,
             file_type=file_type,
+            status=status,
             original_name=original_name,
             catalog=catalog,
             node_id=node_id,

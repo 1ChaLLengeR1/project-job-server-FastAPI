@@ -9,7 +9,7 @@ from core.repository.psql.file.response import (
     _to_file_response,
 )
 from database.psql.database import managed_session
-from database.psql.models.file import File, FilesNode, FileType
+from database.psql.models.file import File, FilesNode, FileStatus, FileType
 
 
 def _collect_descendant_node_ids(db: Session, node_id: str) -> list[str]:
@@ -31,6 +31,7 @@ def collection_files_psql(
     limit: int = 32,
     offset: int = 0,
     file_type: str | None = None,
+    status: str | None = None,
     original_name: str | None = None,
     catalog: str | None = None,
     node_id: str | None = None,
@@ -46,6 +47,9 @@ def collection_files_psql(
 
             if file_type is not None:
                 query = query.filter(File.file_type == FileType(file_type))
+
+            if status is not None:
+                query = query.filter(File.status == FileStatus(status))
 
             if original_name is not None:
                 query = query.filter(File.original_name.ilike(f"%{original_name}%"))

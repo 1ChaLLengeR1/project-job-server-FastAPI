@@ -551,6 +551,18 @@ wszystkie kolumny `files` (np. pre-check przy `DELETE /files/nodes/delete`).
   `tests/api/endpoints/file/test_api_preview_download.py`. `main.app.openapi()`
   build OK (107 endpointów).
 
+- **`status` filtr w `GET /files/collection` (2026-09-18)** — zgłoszone przy
+  budowie frontendu: `/files/collection` nie miał filtra po statusie pliku
+  w ogóle (tylko `file_type`/`node_id`/daty/`guarantee_status`), a
+  dedykowany `/files/unassigned` był jedynym sposobem zobaczyć
+  nieprzypisane. Dodany opcjonalny `status: FileStatus | None` w
+  `collection_files_psql`/`handler_collection_file`/endpoint (ten sam
+  wzorzec co `file_type`). Bez zmiany `/files/unassigned` (zostaje jako
+  wygodny skrót). Nowy test
+  `test_collection08_filters_by_status`
+  (`tests/core/repository/psql/file/test_collection.py`).
+  `main.app.openapi()` build OK.
+
 Nie zrobione jeszcze: `docs/ARCHITEKTURA.md` — sekcja o SSE-KMS w TODO do
 zaktualizowania (samo SSE-KMS już zrobione, patrz wpis wyżej; ewentualnie
 opcjonalne „Default encryption" na buckecie jako druga linia obrony, jeszcze

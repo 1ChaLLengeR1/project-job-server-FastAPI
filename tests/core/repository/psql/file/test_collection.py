@@ -90,3 +90,17 @@ class TestCollectionFilesPsql:
         active, _, _ = collection_files_psql(guarantee_status="active", db_session=db_session)
 
         assert [f.name for f in active.data] == ["dzis.png"]
+
+    def test_collection08_filters_by_status(self, db_session: Session):
+        node = make_files_node(db_session, name="Mama")
+        make_file(db_session, name="pending.png", status=FileStatus.PENDING)
+        make_file(db_session, name="completed.png", status=FileStatus.COMPLETED)
+        make_file(db_session, name="confirmed.png", status=FileStatus.CONFIRMED, node_id=str(node.id))
+
+        completed, _, _ = collection_files_psql(status="completed", db_session=db_session)
+        confirmed, _, _ = collection_files_psql(status="confirmed", db_session=db_session)
+        without_filter, _, _ = collection_files_psql(db_session=db_session)
+
+        assert [f.name for f in completed.data] == ["completed.png"]
+        assert [f.name for f in confirmed.data] == ["confirmed.png"]
+        assert {f.name for f in without_filter.data} == {"pending.png", "completed.png", "confirmed.png"}
