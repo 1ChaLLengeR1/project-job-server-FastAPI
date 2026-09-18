@@ -32,6 +32,12 @@ class TestDeleteFilesNodePsql:
         assert ok is False and result is None
         assert err.key_type_error == "IntegrityError"
 
+        # regresja: w realnym requeście get_db() commituje sesję po zwróceniu
+        # odpowiedzi (nawet dla 409) - bez rollbacku w managed_session()
+        # (bug naprawiony w database/psql/database.py) ten commit wybuchał
+        # PendingRollbackError, maskując poprawną odpowiedź 409 błędem 500
+        db_session.commit()
+
     def test_delete04_blocks_with_assigned_file_with_clear_message(self, db_session: Session):
         node = make_files_node(db_session, name="Mama")
         make_file(db_session, status=FileStatus.CONFIRMED, node_id=str(node.id))

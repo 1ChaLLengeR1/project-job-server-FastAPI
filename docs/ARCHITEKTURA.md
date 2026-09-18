@@ -526,6 +526,14 @@ Kolejność montażu:
   repository: sesja z endpointu → reużywa (commit robi `get_db`); `None`
   (APScheduler, test standalone) → tworzy własną i sam commituje.
   W funkcjach `_psql` używa się `db.flush()` + `db.refresh()`, nie `commit()`.
+  **Gałąź z reużywaną sesją też robi `rollback()` na wyjątku** (bez
+  commitu/close — te robi właściciel sesji, `get_db`) — bez tego wyjątek
+  złapany przez tuple pattern w `_psql` (np. `IntegrityError` z `RESTRICT`)
+  zostawiał sesję w stanie „transaction rolled back", a `get_db()`'owy
+  `commit()` na końcu requestu wybuchał `PendingRollbackError`, maskując
+  poprawną odpowiedź błędu (np. 409) błędem 500. Naprawione 2026-09-18,
+  odkryte przy domenie `files` (usuwanie węzła z dziećmi), ale dotyczyło
+  całego repo.
 
 ### 11.2 Modele — `database/psql/models/{domain}.py`
 

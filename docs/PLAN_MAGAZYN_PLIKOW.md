@@ -489,6 +489,26 @@ potem plik dostał nowe kolumny (np. `description`/`guarantee_start_date`/
 schemat. Objaw: `UndefinedColumn` przy dowolnym zapytaniu ORM ciągnącym
 wszystkie kolumny `files` (np. pre-check przy `DELETE /files/nodes/delete`).
 
+- **Bug: `PendingRollbackError` po `IntegrityError` w requeście — naprawiony
+  (2026-09-18)**. Odkryty przy usuwaniu węzła z dziećmi (`RESTRICT`):
+  `delete_files_node_psql` poprawnie łapał `IntegrityError` i zwracał 409,
+  ale `managed_session()` w gałęzi z reużywaną sesją (czyli **każdy** request
+  HTTP) nie robił `rollback()` na wyjątku — sesja zostawała martwa, a
+  `get_db()`'owy `commit()` na końcu requestu wybuchał, zamieniając poprawne
+  409 w nieobsłużone 500. To był bug **w całym repo**, nie tylko w domenie
+  `files` (każda `_psql` łapiąca `IntegrityError`/`Exception` w request HTTP
+  była podatna) — naprawione centralnie w `database/psql/database.py`,
+  opisane szerzej w `docs/ARCHITEKTURA.md` sekcja 11.1. Zweryfikowane ręcznie
+  end-to-end (wywołanie repo + `session.commit()` po błędzie, symulujące
+  `get_db()`) — bez crasha po fixie. Nowa asercja `db_session.commit()` w
+  `test_delete03_restrict_blocks_with_child_node`
+  (`tests/core/repository/psql/file/node/test_delete.py`) jako regresja —
+  **uwaga**: testowy `override_get_db` w `tests/api/helper.py` w ogóle nie
+  robi `commit()` (inaczej niż prawdziwy `get_db()`), więc testy API przez
+  `TestClient` nigdy by tego buga nie złapały; nie zmieniałem tego (ryzyko
+  wpływu na izolację wszystkich testów bez możliwości odpalenia całego
+  suite'u w tej sesji) — do rozważenia osobno.
+
 Nie zrobione jeszcze: `docs/ARCHITEKTURA.md` — sekcja o SSE-KMS w TODO do
 zaktualizowania (samo SSE-KMS już zrobione, patrz wpis wyżej; ewentualnie
 opcjonalne „Default encryption" na buckecie jako druga linia obrony, jeszcze
