@@ -8,6 +8,9 @@ ENV PYTHONUNBUFFERED=1
 ENV UV_PYTHON_DOWNLOADS=never
 # venv poza /app, żeby bind-mount kodu nie nadpisywał środowiska
 ENV UV_PROJECT_ENVIRONMENT=/opt/venv
+# Tryb aplikacji; env/ jest w .dockerignore, więc wartości i tak przychodzą
+# ze zmiennych procesu (docker secret z Dopplera) - to tylko jawna deklaracja
+ENV ENV_MODE=prod
 
 # Pakiety systemowe: libpq-dev+gcc dla psycopg2, postgresql-client dla
 # skryptów migracji (docker_entrypoint.sh) i debugowania

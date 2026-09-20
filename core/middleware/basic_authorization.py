@@ -1,5 +1,6 @@
 from fastapi import HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from starlette.concurrency import run_in_threadpool
 
 from core.data.user import UserData
 from core.repository.psql.user.one import one_user_by_id_psql
@@ -34,7 +35,8 @@ class JWTBasicAuthenticationMiddleware(HTTPBearer):
         if not ok:
             raise HTTPException(status_code=401, detail=err.message)
 
-        user, _, ok = one_user_by_id_psql(user_id)
+        # sync ORM w async dependency - przez threadpool, żeby nie blokować event loopu
+        user, _, ok = await run_in_threadpool(one_user_by_id_psql, user_id)
         if not ok or user is None:
             raise HTTPException(status_code=401, detail="User from token does not exist.")
 

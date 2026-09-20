@@ -44,6 +44,7 @@ class BeneficiaryAllocationItemResponse:
     amount: float
     rule_id: str | None = None
     settlement_id: str | None = None
+    apartment_id: str | None = None  # mieszkanie źródłowe pozycji (None dla recurring/globalnych)
 
 
 @dataclass

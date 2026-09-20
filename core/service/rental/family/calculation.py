@@ -109,15 +109,18 @@ def calculation_family_allocation(
                 if rule.apartment_id is not None and matching:
                     description = f"{label} - {matching[0].apartment_name}"
                     settlement_id = matching[0].settlement_id
+                    apartment_id = matching[0].apartment_id
                 else:
                     description = label
                     settlement_id = None
+                    apartment_id = None
                 items_by_beneficiary[rule.beneficiary_id].append(
                     BeneficiaryAllocationItemResponse(
                         description=description,
                         amount=_round_grosze(rule.amount),
                         rule_id=rule.rule_id,
                         settlement_id=settlement_id,
+                        apartment_id=apartment_id,
                     )
                 )
                 continue
@@ -130,6 +133,7 @@ def calculation_family_allocation(
                         amount=_round_grosze(_component_amount(rule, settlement)),
                         rule_id=rule.rule_id,
                         settlement_id=settlement.settlement_id,
+                        apartment_id=settlement.apartment_id,
                     )
                 )
 

@@ -1,5 +1,5 @@
 services:
-  fastapi_backend_project_job:
+  backend:
     build:
       context: ../../..
       dockerfile: infra/dockerfiles/dockerfile/production.dockerfile
@@ -23,7 +23,7 @@ services:
 #    ports:
 #      - "3000:80"
 #    depends_on:
-#      - fastapi_backend_project_job
+#      - backend
 #    volumes:
 #      - ../nginx/nginx.conf:/etc/nginx/conf.d/default.conf
 #    networks:

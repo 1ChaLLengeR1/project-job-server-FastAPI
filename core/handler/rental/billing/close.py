@@ -73,14 +73,14 @@ def handler_close_billing_period(
                 return None, err, False
             settlement_ids[settlement_preview.apartment_id] = created.id
 
-        # ponowne wyliczenie podziału z podpiętymi id snapshotów + zapis
-        final_preview, err, ok = _compute_period(
-            period_id, adjustments, settlement_ids=settlement_ids, db_session=db_session
-        )
-        if not ok:
-            return None, err, False
+        # podpięcie id snapshotów do pozycji podziału (po apartment_id pozycji,
+        # bez ponownego przeliczania okresu) + zapis
+        for beneficiary in preview.beneficiaries:
+            for item in beneficiary.items:
+                if item.apartment_id is not None:
+                    item.settlement_id = settlement_ids.get(item.apartment_id)
 
-        for beneficiary in final_preview.beneficiaries:
+        for beneficiary in preview.beneficiaries:
             _, err, ok = create_beneficiary_settlement_psql(
                 period_id,
                 beneficiary.beneficiary_id,
@@ -103,7 +103,7 @@ def handler_close_billing_period(
         _, err, ok = update_billing_period_psql(
             period_id,
             period.electricity_bill_amount,
-            final_preview.electricity_rate,
+            preview.electricity_rate,
             period.electricity_rate_is_manual,
             period.water_rate,
             period.note,
@@ -115,10 +115,10 @@ def handler_close_billing_period(
         closed_period, err, ok = update_billing_period_status_psql(period_id, "closed", db_session=db_session)
         if not ok:
             return None, err, False
-        final_preview.period = closed_period
+        preview.period = closed_period
 
         create_logs_psql(user_id, "rental:close_billing_period", db_session=db_session)
-        return final_preview, None, True
+        return preview, None, True
     except Exception as e:
         return (
             None,
