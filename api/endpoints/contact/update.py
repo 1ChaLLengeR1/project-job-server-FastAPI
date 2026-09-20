@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse
+from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse, invalid_uuid_response
 from api.routers import UPDATE_CONTACT_MESSAGE_STATUS
 from api.schemas.contact.payload import ContactMessageUpdateStatusPayload
 from api.schemas.contact.response import ContactMessageResponseData
@@ -43,13 +43,7 @@ def api_superadmin_update_contact_message_status(
 ) -> ApiResponse[ContactMessageResponseData] | JSONResponse:
     try:
         if not is_valid_uuid(message_id):
-            error = ApiErrorData(
-                message="Message_id nie jest poprawnego formatu uuid.",
-                type_module="api_superadmin_update_contact_message_status",
-                type_error="validation_error",
-                key_type_error="Exception",
-            )
-            return JSONResponse(status_code=400, content=ApiErrorResponse(status_code=400, data=error).model_dump())
+            return invalid_uuid_response("Message_id", "api_superadmin_update_contact_message_status")
 
         data, error, success = handler_update_contact_message_status(
             user_data["id"], message_id, body.status, db_session=db

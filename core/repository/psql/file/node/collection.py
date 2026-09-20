@@ -1,0 +1,32 @@
+from sqlalchemy.orm import Session
+
+from api.response import ApiErrorData
+from core.repository.psql.file.node.response import FilesNodeResponse, _to_files_node_response
+from database.psql.database import managed_session
+from database.psql.models.file import FilesNode
+
+
+def collection_files_nodes_psql(
+    parent_id: str | None = None, all_nodes: bool = False, db_session: Session | None = None
+) -> tuple[list[FilesNodeResponse] | None, ApiErrorData | None, bool]:
+    """Zwraca dzieci danego wezla; `parent_id=None` = wezly najwyzszego poziomu.
+
+    `all_nodes=True` ignoruje `parent_id` i zwraca wszystkie wezly plasko,
+    jednym zapytaniem - pod budowe calego drzewa na froncie bez N+1 zapytan
+    (jedno zapytanie na wezel przy rekursji po poziomach bylo realnym
+    problemem wydajnosciowym przy wiekszej liczbie wezlow).
+    """
+    try:
+        with managed_session(db_session) as (db, _):
+            query = db.query(FilesNode)
+            if not all_nodes:
+                query = query.filter(FilesNode.parent_id == parent_id)
+            nodes = query.order_by(FilesNode.name).all()
+            return [_to_files_node_response(node) for node in nodes], None, True
+    except Exception as e:
+        return None, ApiErrorData(
+            message=str(e),
+            type_module="collection_files_nodes_psql",
+            type_error="exception",
+            key_type_error="Exception",
+        ), False

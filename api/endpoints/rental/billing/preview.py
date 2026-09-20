@@ -4,7 +4,7 @@ from fastapi import APIRouter, Body, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse
+from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse, invalid_uuid_response
 from api.routers import PREVIEW_RENTAL_PERIOD
 from api.schemas.rental.billing.payload import RentalPeriodComputePayload
 from api.schemas.rental.billing.response import RentalPeriodPreviewResponseData
@@ -24,7 +24,9 @@ router = APIRouter()
     summary="[Superadmin] Wylicz okres na żywo (preview - nic nie zapisuje)",
     description="Pełne wyliczenie okresu: zużycia, błąd licznika głównego z propozycją podziału, "
     "stawka zł/kWh, rozliczenia per mieszkanie i podział rodzinny. Opcjonalne korekty "
-    "jednorazowe per mieszkanie w body (POST, bo GET nie przenosi payloadu korekt).",
+    "jednorazowe per mieszkanie w body (POST, bo GET nie przenosi payloadu korekt). Response może "
+    "zawierać `warnings` (np. niedopasowanie czynszu w podziale rodzinnym) — do wyświetlenia "
+    "użytkownikowi.",
     response_model=ApiResponse[RentalPeriodPreviewResponseData],
     responses={
         400: {"model": ApiErrorResponse, "description": "Niepoprawny format period_id"},
@@ -35,7 +37,7 @@ router = APIRouter()
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
-    tags=["Rentals/Billing"],
+    tags=["Rentals/Periods"],
 )
 @limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_superadmin_preview_rental_period(
@@ -47,13 +49,7 @@ def api_superadmin_preview_rental_period(
 ) -> ApiResponse[RentalPeriodPreviewResponseData] | JSONResponse:
     try:
         if not is_valid_uuid(period_id):
-            error = ApiErrorData(
-                message="Period_id nie jest poprawnego formatu uuid.",
-                type_module="api_superadmin_preview_rental_period",
-                type_error="validation_error",
-                key_type_error="Exception",
-            )
-            return JSONResponse(status_code=400, content=ApiErrorResponse(status_code=400, data=error).model_dump())
+            return invalid_uuid_response("Period_id", "api_superadmin_preview_rental_period")
 
         adjustments = [
             PeriodAdjustmentInput(apartment_id=item.apartment_id, name=item.name, amount=item.amount)

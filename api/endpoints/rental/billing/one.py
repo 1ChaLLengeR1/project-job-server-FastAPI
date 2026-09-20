@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse
+from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse, invalid_uuid_response
 from api.routers import ONE_RENTAL_PERIOD, ONE_RENTAL_SETTLEMENT
 from api.schemas.rental.billing.response import (
     RentalBillingPeriodResponseData,
@@ -29,23 +29,13 @@ _ONE_RESPONSES = {
 }
 
 
-def _invalid_uuid_response(field_name: str, type_module: str) -> JSONResponse:
-    error = ApiErrorData(
-        message=f"{field_name} nie jest poprawnego formatu uuid.",
-        type_module=type_module,
-        type_error="validation_error",
-        key_type_error="Exception",
-    )
-    return JSONResponse(status_code=400, content=ApiErrorResponse(status_code=400, data=error).model_dump())
-
-
 @router.get(
     ONE_RENTAL_PERIOD,
     summary="[Superadmin] Pobierz okres rozliczeniowy",
     response_model=ApiResponse[RentalBillingPeriodResponseData],
     responses=_ONE_RESPONSES,
     status_code=200,
-    tags=["Rentals/Billing"],
+    tags=["Rentals/Periods"],
 )
 @limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_superadmin_one_rental_period(
@@ -56,7 +46,7 @@ def api_superadmin_one_rental_period(
 ) -> ApiResponse[RentalBillingPeriodResponseData] | JSONResponse:
     try:
         if not is_valid_uuid(period_id):
-            return _invalid_uuid_response("Period_id", "api_superadmin_one_rental_period")
+            return invalid_uuid_response("Period_id", "api_superadmin_one_rental_period")
 
         data, error, success = handler_one_billing_period(user_data["id"], period_id, db_session=db)
         if not success:
@@ -83,7 +73,7 @@ def api_superadmin_one_rental_period(
     response_model=ApiResponse[RentalSettlementResponseData],
     responses=_ONE_RESPONSES,
     status_code=200,
-    tags=["Rentals/Billing"],
+    tags=["Rentals/Settlements"],
 )
 @limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_superadmin_one_rental_settlement(
@@ -94,7 +84,7 @@ def api_superadmin_one_rental_settlement(
 ) -> ApiResponse[RentalSettlementResponseData] | JSONResponse:
     try:
         if not is_valid_uuid(settlement_id):
-            return _invalid_uuid_response("Settlement_id", "api_superadmin_one_rental_settlement")
+            return invalid_uuid_response("Settlement_id", "api_superadmin_one_rental_settlement")
 
         data, error, success = handler_one_settlement(user_data["id"], settlement_id, db_session=db)
         if not success:

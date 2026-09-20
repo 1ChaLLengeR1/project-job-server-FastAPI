@@ -15,7 +15,7 @@ fi
 
 source "$ENV_FILE"
 
-if [ -z "$DB_HOST" ] || [ -z "$DB_PORT" ] || [ -z "$DB_USER" ] || [ -z "$DB_PASSWORD" ] || [ -z "$DB_DBNAME" ]; then
+if [ -z "$BACKEND_SERVER_JOB_DB_HOST" ] || [ -z "$BACKEND_SERVER_JOB_DB_PORT" ] || [ -z "$BACKEND_SERVER_JOB_DB_USER" ] || [ -z "$BACKEND_SERVER_JOB_DB_PASSWORD" ] || [ -z "$BACKEND_SERVER_JOB_DB_DBNAME" ]; then
     echo "Wszystkie zmienne środowiskowe muszą być ustawione w pliku $1.env"
     exit 1
 fi
@@ -28,11 +28,11 @@ if [ ! -f "$SQL_DIR/database_up.sql" ]; then
 fi
 
 # 1) rozszerzenia, 2) schemat przez Alembic, 3) seedy (wymagają tabel z Alembica)
-export PGPASSWORD="$DB_PASSWORD"
-psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_DBNAME" -p "$DB_PORT" -f "$SQL_DIR/database_up.sql" && \
+export PGPASSWORD="$BACKEND_SERVER_JOB_DB_PASSWORD"
+psql -h "$BACKEND_SERVER_JOB_DB_HOST" -U "$BACKEND_SERVER_JOB_DB_USER" -d "$BACKEND_SERVER_JOB_DB_DBNAME" -p "$BACKEND_SERVER_JOB_DB_PORT" -f "$SQL_DIR/database_up.sql" && \
 (cd "$BASE_DIR" && uv run alembic upgrade head) && \
-psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_DBNAME" -p "$DB_PORT" -f "$SQL_DIR/users.sql" && \
-psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_DBNAME" -p "$DB_PORT" -f "$SQL_DIR/key_calculator.sql"
+psql -h "$BACKEND_SERVER_JOB_DB_HOST" -U "$BACKEND_SERVER_JOB_DB_USER" -d "$BACKEND_SERVER_JOB_DB_DBNAME" -p "$BACKEND_SERVER_JOB_DB_PORT" -f "$SQL_DIR/users.sql" && \
+psql -h "$BACKEND_SERVER_JOB_DB_HOST" -U "$BACKEND_SERVER_JOB_DB_USER" -d "$BACKEND_SERVER_JOB_DB_DBNAME" -p "$BACKEND_SERVER_JOB_DB_PORT" -f "$SQL_DIR/key_calculator.sql"
 
 if [ $? -eq 0 ]; then
     echo "Migracja zakończona pomyślnie!"

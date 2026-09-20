@@ -17,6 +17,7 @@ dependencies = [
     "prometheus-fastapi-instrumentator==7.1.0",
     "APScheduler==3.11.0",
     "requests==2.32.3",
+    "boto3==1.35.36",
 ]
 
 [project.optional-dependencies]

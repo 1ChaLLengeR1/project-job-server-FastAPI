@@ -42,11 +42,11 @@ set -a
 source "$ENV_FILE"
 set +a
 
-if [ -z "$DB_HOST" ]; then show_error "DB_HOST nie jest ustawione w pliku $1.env"; fi
-if [ -z "$DB_PORT" ]; then show_error "DB_PORT nie jest ustawione w pliku $1.env"; fi
-if [ -z "$DB_USER" ]; then show_error "DB_USER nie jest ustawione w pliku $1.env"; fi
-if [ -z "$DB_PASSWORD" ]; then show_error "DB_PASSWORD nie jest ustawione w pliku $1.env"; fi
-if [ -z "$DB_DBNAME" ]; then show_error "DB_DBNAME nie jest ustawione w pliku $1.env"; fi
+if [ -z "$BACKEND_SERVER_JOB_DB_HOST" ]; then show_error "BACKEND_SERVER_JOB_DB_HOST nie jest ustawione w pliku $1.env"; fi
+if [ -z "$BACKEND_SERVER_JOB_DB_PORT" ]; then show_error "BACKEND_SERVER_JOB_DB_PORT nie jest ustawione w pliku $1.env"; fi
+if [ -z "$BACKEND_SERVER_JOB_DB_USER" ]; then show_error "BACKEND_SERVER_JOB_DB_USER nie jest ustawione w pliku $1.env"; fi
+if [ -z "$BACKEND_SERVER_JOB_DB_PASSWORD" ]; then show_error "BACKEND_SERVER_JOB_DB_PASSWORD nie jest ustawione w pliku $1.env"; fi
+if [ -z "$BACKEND_SERVER_JOB_DB_DBNAME" ]; then show_error "BACKEND_SERVER_JOB_DB_DBNAME nie jest ustawione w pliku $1.env"; fi
 
 show_info "Wszystkie zmienne środowiskowe są dostępne"
 

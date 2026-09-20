@@ -39,26 +39,26 @@ set -a
 source "$ENV_FILE"
 set +a
 
-for var in DB_HOST DB_PORT DB_USER DB_PASSWORD DB_DBNAME; do
+for var in BACKEND_SERVER_JOB_DB_HOST BACKEND_SERVER_JOB_DB_PORT BACKEND_SERVER_JOB_DB_USER BACKEND_SERVER_JOB_DB_PASSWORD BACKEND_SERVER_JOB_DB_DBNAME; do
     if [ -z "${!var:-}" ]; then
         show_error "$var nie jest ustawione w pliku $ENV.env"
     fi
 done
 
-export PGPASSWORD="$DB_PASSWORD"
+export PGPASSWORD="$BACKEND_SERVER_JOB_DB_PASSWORD"
 
 STAMP="$(date +%Y%m%d_%H%M%S)"
 BACKUP_DIR="$PROJECT_ROOT/backups"
 
 if [ "$MODE" = "full" ]; then
-    OUT="${3:-$BACKUP_DIR/${DB_DBNAME}_${ENV}_${STAMP}.dump}"
+    OUT="${3:-$BACKUP_DIR/${BACKEND_SERVER_JOB_DB_DBNAME}_${ENV}_${STAMP}.dump}"
 else
-    OUT="${3:-$BACKUP_DIR/${DB_DBNAME}_${ENV}_${STAMP}_data.sql}"
+    OUT="${3:-$BACKUP_DIR/${BACKEND_SERVER_JOB_DB_DBNAME}_${ENV}_${STAMP}_data.sql}"
 fi
 
 mkdir -p "$(dirname "$OUT")"
 
-show_info "Środowisko: $ENV (baza $DB_DBNAME @ $DB_HOST:$DB_PORT)"
+show_info "Środowisko: $ENV (baza $BACKEND_SERVER_JOB_DB_DBNAME @ $BACKEND_SERVER_JOB_DB_HOST:$BACKEND_SERVER_JOB_DB_PORT)"
 show_info "Tryb: $MODE"
 show_info "Plik wyjściowy: $OUT"
 
@@ -66,7 +66,7 @@ show_info "Plik wyjściowy: $OUT"
 #   --no-owner / --no-privileges - dump ma sie wgrywac na dowolnego usera (lokalny != produkcyjny)
 #   --exclude-table=alembic_version - wersje schematu trzyma Alembic w repo, nie dump
 COMMON=(
-    -h "$DB_HOST" -U "$DB_USER" -p "$DB_PORT" -d "$DB_DBNAME"
+    -h "$BACKEND_SERVER_JOB_DB_HOST" -U "$BACKEND_SERVER_JOB_DB_USER" -p "$BACKEND_SERVER_JOB_DB_PORT" -d "$BACKEND_SERVER_JOB_DB_DBNAME"
     --no-owner --no-privileges
     --exclude-table=alembic_version
 )

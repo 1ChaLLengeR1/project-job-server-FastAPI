@@ -36,20 +36,63 @@ TAGS_METADATA = [
         "description": "Kalkulator pracy (klucze i obliczenia).",
     },
     {
-        "name": "Rentals/Dictionaries",
-        "description": "Rozliczenia mieszkań - słowniki: mieszkania, najemcy, najmy, koszty, liczniki.",
+        "name": "Rentals/Apartments",
+        "description": "Rozliczenia mieszkań - słownik mieszkań.",
     },
     {
-        "name": "Rentals/Billing",
-        "description": "Rozliczenia mieszkań - okresy, odczyty liczników, preview/close/reopen i snapshoty.",
+        "name": "Rentals/Tenants",
+        "description": "Rozliczenia mieszkań - słownik najemców.",
     },
     {
-        "name": "Rentals/Family",
-        "description": "Rozliczenia mieszkań - podział rodzinny: beneficjenci, reguły i snapshoty podziału.",
+        "name": "Rentals/Tenancies",
+        "description": "Rozliczenia mieszkań - najmy (najemca + mieszkanie + czynsz), z historią.",
+    },
+    {
+        "name": "Rentals/CostTypes",
+        "description": "Rozliczenia mieszkań - słownik rodzajów kosztów.",
+    },
+    {
+        "name": "Rentals/ApartmentCosts",
+        "description": "Rozliczenia mieszkań - koszty przypisane do mieszkań, z historią stawek.",
+    },
+    {
+        "name": "Rentals/Meters",
+        "description": "Rozliczenia mieszkań - słownik liczników.",
+    },
+    {
+        "name": "Rentals/Periods",
+        "description": "Rozliczenia mieszkań - okresy rozliczeniowe: create/collection/one/update/delete, "
+        "preview (na żywo, bez zapisu), close/reopen.",
+    },
+    {
+        "name": "Rentals/MeterReadings",
+        "description": "Rozliczenia mieszkań - odczyty liczników w ramach okresu rozliczeniowego.",
+    },
+    {
+        "name": "Rentals/Settlements",
+        "description": "Rozliczenia mieszkań - zapisane snapshoty rozliczeń okresu (po close).",
+    },
+    {
+        "name": "Rentals/Beneficiaries",
+        "description": "Rozliczenia mieszkań - podział rodzinny: beneficjenci i snapshoty ich rozliczeń.",
+    },
+    {
+        "name": "Rentals/AllocationRules",
+        "description": "Rozliczenia mieszkań - podział rodzinny: reguły podziału kosztów (z historią).",
     },
     {
         "name": "Contact",
         "description": "Formularz kontaktowy - publiczny create (token X-Contact-Token, "
         "podpisywany wspólnym sekretem per aplikacja) + obsługa zgłoszeń przez superadmina.",
+    },
+    {
+        "name": "Files",
+        "description": "Magazyn plików - init uploadu (presigned PUT do S3), potwierdzenie/edycja "
+        "statusu i nazwy, listowanie i usuwanie (rekord + obiekt S3).",
+    },
+    {
+        "name": "Files/Nodes",
+        "description": "Magazyn plików - drzewo węzłów (osoba lub kategoria, ten sam byt), po którym "
+        "rozpina się pliki: CRUD węzłów.",
     },
 ]

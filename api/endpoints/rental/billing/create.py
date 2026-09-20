@@ -40,7 +40,7 @@ router = APIRouter()
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=201,
-    tags=["Rentals/Billing"],
+    tags=["Rentals/Periods"],
 )
 @limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_create_rental_period(
@@ -92,7 +92,7 @@ def api_superadmin_create_rental_period(
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=201,
-    tags=["Rentals/Billing"],
+    tags=["Rentals/MeterReadings"],
 )
 @limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_create_rental_meter_reading(

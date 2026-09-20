@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse
+from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse, invalid_uuid_response
 from api.routers import (
     COLLECTION_RENTAL_METER_READINGS,
     COLLECTION_RENTAL_PERIODS,
@@ -30,16 +30,6 @@ from database.psql.database import get_db
 router = APIRouter()
 
 
-def _invalid_uuid_response(field_name: str, type_module: str) -> JSONResponse:
-    error = ApiErrorData(
-        message=f"{field_name} nie jest poprawnego formatu uuid.",
-        type_module=type_module,
-        type_error="validation_error",
-        key_type_error="Exception",
-    )
-    return JSONResponse(status_code=400, content=ApiErrorResponse(status_code=400, data=error).model_dump())
-
-
 @router.get(
     COLLECTION_RENTAL_PERIODS,
     summary="[Superadmin] Pobierz listę okresów rozliczeniowych",
@@ -51,7 +41,7 @@ def _invalid_uuid_response(field_name: str, type_module: str) -> JSONResponse:
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
-    tags=["Rentals/Billing"],
+    tags=["Rentals/Periods"],
 )
 @limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_superadmin_collection_rental_periods(
@@ -95,7 +85,7 @@ def api_superadmin_collection_rental_periods(
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
-    tags=["Rentals/Billing"],
+    tags=["Rentals/MeterReadings"],
 )
 @limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_superadmin_collection_rental_meter_readings(
@@ -106,7 +96,7 @@ def api_superadmin_collection_rental_meter_readings(
 ) -> ApiResponse[list[RentalMeterReadingResponseData]] | JSONResponse:
     try:
         if not is_valid_uuid(period_id):
-            return _invalid_uuid_response("Period_id", "api_superadmin_collection_rental_meter_readings")
+            return invalid_uuid_response("Period_id", "api_superadmin_collection_rental_meter_readings")
 
         data, error, success = handler_collection_meter_readings(user_data["id"], period_id, db_session=db)
         if not success:
@@ -142,7 +132,7 @@ def api_superadmin_collection_rental_meter_readings(
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
-    tags=["Rentals/Billing"],
+    tags=["Rentals/Settlements"],
 )
 @limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_superadmin_collection_rental_settlements(
@@ -154,9 +144,9 @@ def api_superadmin_collection_rental_settlements(
 ) -> ApiResponse[list[RentalSettlementResponseData]] | JSONResponse:
     try:
         if period_id is not None and not is_valid_uuid(period_id):
-            return _invalid_uuid_response("Period_id", "api_superadmin_collection_rental_settlements")
+            return invalid_uuid_response("Period_id", "api_superadmin_collection_rental_settlements")
         if apartment_id is not None and not is_valid_uuid(apartment_id):
-            return _invalid_uuid_response("Apartment_id", "api_superadmin_collection_rental_settlements")
+            return invalid_uuid_response("Apartment_id", "api_superadmin_collection_rental_settlements")
 
         data, error, success = handler_collection_settlements(user_data["id"], period_id, apartment_id, db_session=db)
         if not success:
