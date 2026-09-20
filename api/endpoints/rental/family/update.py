@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse
+from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse, invalid_uuid_response
 from api.routers import UPDATE_RENTAL_ALLOCATION_RULE, UPDATE_RENTAL_BENEFICIARY
 from api.schemas.rental.family.payload import (
     RentalAllocationRuleUpdatePayload,
@@ -37,23 +37,13 @@ _UPDATE_RESPONSES = {
 }
 
 
-def _invalid_uuid_response(field_name: str, type_module: str) -> JSONResponse:
-    error = ApiErrorData(
-        message=f"{field_name} nie jest poprawnego formatu uuid.",
-        type_module=type_module,
-        type_error="validation_error",
-        key_type_error="Exception",
-    )
-    return JSONResponse(status_code=400, content=ApiErrorResponse(status_code=400, data=error).model_dump())
-
-
 @router.put(
     UPDATE_RENTAL_BENEFICIARY,
     summary="[Superadmin] Zaktualizuj beneficjenta",
     response_model=ApiResponse[RentalBeneficiaryResponseData],
     responses=_UPDATE_RESPONSES,
     status_code=200,
-    tags=["Rentals/Family"],
+    tags=["Rentals/Beneficiaries"],
 )
 @limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_update_rental_beneficiary(
@@ -65,7 +55,7 @@ def api_superadmin_update_rental_beneficiary(
 ) -> ApiResponse[RentalBeneficiaryResponseData] | JSONResponse:
     try:
         if not is_valid_uuid(beneficiary_id):
-            return _invalid_uuid_response("Beneficiary_id", "api_superadmin_update_rental_beneficiary")
+            return invalid_uuid_response("Beneficiary_id", "api_superadmin_update_rental_beneficiary")
 
         data, error, success = handler_update_beneficiary(
             user_data["id"], beneficiary_id, body.name, body.is_active, db_session=db
@@ -94,7 +84,7 @@ def api_superadmin_update_rental_beneficiary(
     response_model=ApiResponse[RentalAllocationRuleResponseData],
     responses=_UPDATE_RESPONSES,
     status_code=200,
-    tags=["Rentals/Family"],
+    tags=["Rentals/AllocationRules"],
 )
 @limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_update_rental_allocation_rule(
@@ -106,7 +96,7 @@ def api_superadmin_update_rental_allocation_rule(
 ) -> ApiResponse[RentalAllocationRuleResponseData] | JSONResponse:
     try:
         if not is_valid_uuid(rule_id):
-            return _invalid_uuid_response("Rule_id", "api_superadmin_update_rental_allocation_rule")
+            return invalid_uuid_response("Rule_id", "api_superadmin_update_rental_allocation_rule")
 
         data, error, success = handler_update_allocation_rule(
             user_data["id"],

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse
+from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse, invalid_uuid_response
 from api.routers import DELETE_ITEM_OUTSTANDING_MONEY, DELETE_LIST_OUTSTANDING_MONEY
 from api.schemas.outstanding_money.response import DeletedListData, OutstandingItemData
 from api.validators import is_valid_uuid
@@ -15,16 +15,6 @@ from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
 from database.psql.database import get_db
 
 router = APIRouter()
-
-
-def _invalid_uuid_response(type_module: str) -> JSONResponse:
-    error = ApiErrorData(
-        message="Id nie jest poprawnego formatu uuid.",
-        type_module=type_module,
-        type_error="validation_error",
-        key_type_error="Exception",
-    )
-    return JSONResponse(status_code=400, content=ApiErrorResponse(status_code=400, data=error).model_dump())
 
 
 @router.delete(
@@ -51,7 +41,7 @@ def api_superadmin_delete_outstanding_list(
 ) -> ApiResponse[DeletedListData] | JSONResponse:
     try:
         if not is_valid_uuid(id):
-            return _invalid_uuid_response("api_superadmin_delete_outstanding_list")
+            return invalid_uuid_response("Id", "api_superadmin_delete_outstanding_list")
 
         data, error, success = handler_delete_list(user_data["id"], id, db_session=db)
         if not success:
@@ -96,7 +86,7 @@ def api_superadmin_delete_outstanding_item(
 ) -> ApiResponse[OutstandingItemData] | JSONResponse:
     try:
         if not is_valid_uuid(id):
-            return _invalid_uuid_response("api_superadmin_delete_outstanding_item")
+            return invalid_uuid_response("Id", "api_superadmin_delete_outstanding_item")
 
         data, error, success = handler_delete_item(user_data["id"], id, db_session=db)
         if not success:

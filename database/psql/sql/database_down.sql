@@ -2,6 +2,11 @@ DROP TABLE IF EXISTS logs CASCADE;
 DROP TABLE IF EXISTS outstandingmoney CASCADE;
 DROP TABLE IF EXISTS namesoverdue CASCADE;
 DROP TABLE IF EXISTS keyscalculatorpatryk CASCADE;
+
+-- magazyn plikow: files przed files_nodes (FK) i przed users (FK)
+DROP TABLE IF EXISTS files CASCADE;
+DROP TABLE IF EXISTS files_nodes CASCADE;
+
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS tasks CASCADE;
 DROP TABLE IF EXISTS calendar_work_days CASCADE;
@@ -25,5 +30,10 @@ DROP TABLE IF EXISTS rentals_apartments CASCADE;
 
 -- czysci stan migracji, zeby migration_up mogl odtworzyc schemat od zera
 DROP TABLE IF EXISTS alembic_version;
+
+-- DROP TABLE nie usuwa natywnych typow ENUM Postgresa - trzeba recznie,
+-- inaczej kolejny migration_up wybucha "type already exists"
+DROP TYPE IF EXISTS file_type;
+DROP TYPE IF EXISTS file_status;
 
 DROP EXTENSION IF EXISTS "uuid-ossp";

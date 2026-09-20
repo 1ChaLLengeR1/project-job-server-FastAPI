@@ -1,5 +1,6 @@
 from typing import Any, Generic, Literal
 
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing_extensions import TypeVar
 
@@ -35,3 +36,16 @@ class ApiErrorResponse(BaseModel, Generic[ADDITIONALS]):
     status_code: int
     data: ApiErrorData
     additional: ADDITIONALS | None = None
+
+
+def invalid_uuid_response(field_name: str, type_module: str) -> JSONResponse:
+    """Wspolna odpowiedz 400 dla niepoprawnego formatu UUID w path/query param -
+    wczesniej kopiowana (lokalnie jako `_invalid_uuid_response` albo inline)
+    niemal identycznie w kilkudziesieciu plikach `api/endpoints/`."""
+    error = ApiErrorData(
+        message=f"{field_name} nie jest poprawnego formatu uuid.",
+        type_module=type_module,
+        type_error="validation_error",
+        key_type_error="Exception",
+    )
+    return JSONResponse(status_code=400, content=ApiErrorResponse(status_code=400, data=error).model_dump())

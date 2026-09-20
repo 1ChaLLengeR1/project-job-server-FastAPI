@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse
+from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse, invalid_uuid_response
 from api.routers import UPDATE_CALENDAR_DAY_WORK_BY_ID, UPDATE_CALENDAR_DAYS, UPDATE_CALENDAR_DAYS_SALARY
 from api.schemas.calendar.payload import DaysRangeUpdatePayload, DaysSalaryUpdatePayload, DayUpdateByIdPayload
 from api.schemas.calendar.response import SalaryUpdateData, WorkDaysRangeUpdateData, WorkDayUpdateData
@@ -47,13 +47,7 @@ def api_superadmin_update_day_by_id(
 ) -> ApiResponse[WorkDayUpdateData] | JSONResponse:
     try:
         if not is_valid_uuid(day_id):
-            error = ApiErrorData(
-                message="Day_id nie jest poprawnego formatu uuid.",
-                type_module="api_superadmin_update_day_by_id",
-                type_error="validation_error",
-                key_type_error="Exception",
-            )
-            return JSONResponse(status_code=400, content=ApiErrorResponse(status_code=400, data=error).model_dump())
+            return invalid_uuid_response("Day_id", "api_superadmin_update_day_by_id")
 
         data, error, success = handler_update_day_calendary_by_id(
             user_data["id"], day_id, body.norm_hours, body.hours_worked, body.hourly_rate, db_session=db

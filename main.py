@@ -64,10 +64,10 @@ register_exception_handlers(app)
 # Routery
 app.include_router(api_router)
 
-# Metryki Prometheus (/metrics)
-Instrumentator().instrument(app).expose(app)
+# Metryki Prometheus (/metrics) - poza Swaggerem, endpoint tylko dla scrapera
+Instrumentator().instrument(app).expose(app, include_in_schema=False)
 
 
-@app.get("/health", tags=["Health"])
+@app.get("/health", tags=["Health"], include_in_schema=False)
 async def health():
     return {"status": "ok"}

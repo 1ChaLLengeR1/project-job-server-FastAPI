@@ -38,7 +38,7 @@ router = APIRouter()
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=201,
-    tags=["Rentals/Family"],
+    tags=["Rentals/Beneficiaries"],
 )
 @limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_create_rental_beneficiary(
@@ -80,7 +80,7 @@ def api_superadmin_create_rental_beneficiary(
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=201,
-    tags=["Rentals/Family"],
+    tags=["Rentals/AllocationRules"],
 )
 @limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_create_rental_allocation_rule(

@@ -44,7 +44,16 @@ def managed_session(
     db_session: Session | None = None,
 ) -> Generator[tuple[Session, bool]]:
     if db_session is not None:
-        yield db_session, True
+        # UWAGA: sesja jest wspólna z get_db() (właściciel robi finalny commit/close),
+        # ale bez rollbacku tutaj wyjątek złapany przez `_psql` (tuple pattern - np.
+        # IntegrityError) zostawiał sesję w stanie "transaction rolled back" i
+        # get_db()'owy commit() na końcu requestu wybuchał PendingRollbackError,
+        # maskując poprawną odpowiedź błędu, którą _psql już zwróciło.
+        try:
+            yield db_session, True
+        except Exception:
+            db_session.rollback()
+            raise
     else:
         db = SessionLocal()
         try:

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse
+from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse, invalid_uuid_response
 from api.routers import DELETE_CALENDAR_CONDITION
 from api.schemas.calendar.response import WorkConditionData
 from api.validators import is_valid_uuid
@@ -41,13 +41,7 @@ def api_superadmin_delete_work_condition(
 ) -> ApiResponse[WorkConditionData] | JSONResponse:
     try:
         if not is_valid_uuid(condition_id):
-            error = ApiErrorData(
-                message="Condition_id nie jest poprawnego formatu uuid.",
-                type_module="api_superadmin_delete_work_condition",
-                type_error="validation_error",
-                key_type_error="Exception",
-            )
-            return JSONResponse(status_code=400, content=ApiErrorResponse(status_code=400, data=error).model_dump())
+            return invalid_uuid_response("Condition_id", "api_superadmin_delete_work_condition")
 
         data, error, success = handler_delete_work_condition_change(user_data["id"], condition_id, db_session=db)
         if not success:

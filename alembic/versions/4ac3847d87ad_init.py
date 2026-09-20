@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 6cbe4a8dbf70
+Revision ID: 4ac3847d87ad
 Revises: 
-Create Date: 2026-07-12 19:24:48.948905
+Create Date: 2026-09-18 11:28:54.529403
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = '6cbe4a8dbf70'
+revision: str = '4ac3847d87ad'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -57,6 +57,19 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_contact_messages_application'), 'contact_messages', ['application'], unique=False)
+    op.create_table('files_nodes',
+    sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+    sa.Column('name', sa.String(length=255), nullable=False),
+    sa.Column('parent_id', postgresql.UUID(as_uuid=True), nullable=True),
+    sa.Column('description', sa.String(), nullable=True),
+    sa.Column('is_active', sa.Boolean(), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+    sa.ForeignKeyConstraint(['parent_id'], ['files_nodes.id'], ondelete='RESTRICT'),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('parent_id', 'name', name='uq_files_nodes_parent_name')
+    )
+    op.create_index(op.f('ix_files_nodes_parent_id'), 'files_nodes', ['parent_id'], unique=False)
     op.create_table('keyscalculatorpatryk',
     sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
     sa.Column('income_tax', sa.Float(), nullable=True),
@@ -158,6 +171,41 @@ def upgrade() -> None:
     sa.Column('type', sa.String(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('files',
+    sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+    sa.Column('user_id', postgresql.UUID(as_uuid=True), nullable=True),
+    sa.Column('node_id', postgresql.UUID(as_uuid=True), nullable=True),
+    sa.Column('parent_file_id', postgresql.UUID(as_uuid=True), nullable=True),
+    sa.Column('original_name', sa.String(length=255), nullable=False),
+    sa.Column('name', sa.String(length=255), nullable=False),
+    sa.Column('size', sa.BigInteger(), nullable=False),
+    sa.Column('file_type', sa.Enum('PHOTO', 'VIDEO', 'GIF', 'AUDIO', 'DOCUMENT', name='file_type'), nullable=False),
+    sa.Column('mime_type', sa.String(length=255), nullable=True),
+    sa.Column('s3_key', sa.String(length=512), nullable=False),
+    sa.Column('s3_prefix', sa.String(length=512), nullable=False),
+    sa.Column('url', sa.String(length=512), nullable=True),
+    sa.Column('status', sa.Enum('PENDING', 'COMPLETED', 'FAILED', 'CONFIRMED', name='file_status'), nullable=False),
+    sa.Column('description', sa.String(), nullable=True),
+    sa.Column('guarantee_start_date', sa.Date(), nullable=True),
+    sa.Column('guarantee_end_date', sa.Date(), nullable=True),
+    sa.Column('multipart_upload_id', sa.String(length=1024), nullable=True),
+    sa.Column('chunk_size', sa.Integer(), nullable=True),
+    sa.Column('total_chunks', sa.Integer(), nullable=True),
+    sa.Column('uploaded_chunks', sa.Integer(), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+    sa.CheckConstraint("status != 'CONFIRMED' OR node_id IS NOT NULL", name='ck_files_confirmed_requires_node'),
+    sa.ForeignKeyConstraint(['node_id'], ['files_nodes.id'], ondelete='RESTRICT'),
+    sa.ForeignKeyConstraint(['parent_file_id'], ['files.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='RESTRICT'),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('s3_key')
+    )
+    op.create_index('ix_files_file_type', 'files', ['file_type'], unique=False)
+    op.create_index(op.f('ix_files_node_id'), 'files', ['node_id'], unique=False)
+    op.create_index(op.f('ix_files_parent_file_id'), 'files', ['parent_file_id'], unique=False)
+    op.create_index('ix_files_status', 'files', ['status'], unique=False)
+    op.create_index(op.f('ix_files_user_id'), 'files', ['user_id'], unique=False)
     op.create_table('rentals_allocation_rules',
     sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
     sa.Column('beneficiary_id', postgresql.UUID(as_uuid=True), nullable=False),
@@ -333,6 +381,12 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_rentals_allocation_rules_beneficiary_id'), table_name='rentals_allocation_rules')
     op.drop_index(op.f('ix_rentals_allocation_rules_apartment_id'), table_name='rentals_allocation_rules')
     op.drop_table('rentals_allocation_rules')
+    op.drop_index(op.f('ix_files_user_id'), table_name='files')
+    op.drop_index('ix_files_status', table_name='files')
+    op.drop_index(op.f('ix_files_parent_file_id'), table_name='files')
+    op.drop_index(op.f('ix_files_node_id'), table_name='files')
+    op.drop_index('ix_files_file_type', table_name='files')
+    op.drop_table('files')
     op.drop_table('users')
     op.drop_table('tasks')
     op.drop_table('rentals_tenants')
@@ -344,6 +398,8 @@ def downgrade() -> None:
     op.drop_table('namesoverdue')
     op.drop_table('logs')
     op.drop_table('keyscalculatorpatryk')
+    op.drop_index(op.f('ix_files_nodes_parent_id'), table_name='files_nodes')
+    op.drop_table('files_nodes')
     op.drop_index(op.f('ix_contact_messages_application'), table_name='contact_messages')
     op.drop_table('contact_messages')
     op.drop_index(op.f('ix_calendar_work_days_id'), table_name='calendar_work_days')

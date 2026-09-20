@@ -4,7 +4,7 @@ from fastapi import APIRouter, Body, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse
+from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse, invalid_uuid_response
 from api.routers import CLOSE_RENTAL_PERIOD, REOPEN_RENTAL_PERIOD
 from api.schemas.rental.billing.payload import RentalPeriodComputePayload
 from api.schemas.rental.billing.response import (
@@ -25,21 +25,14 @@ from database.psql.database import get_db
 router = APIRouter()
 
 
-def _invalid_uuid_response(type_module: str) -> JSONResponse:
-    error = ApiErrorData(
-        message="Period_id nie jest poprawnego formatu uuid.",
-        type_module=type_module,
-        type_error="validation_error",
-        key_type_error="Exception",
-    )
-    return JSONResponse(status_code=400, content=ApiErrorResponse(status_code=400, data=error).model_dump())
-
-
 @router.post(
     CLOSE_RENTAL_PERIOD,
     summary="[Superadmin] Zamknij okres (zapis snapshotów)",
     description="Wyliczenie + zapis snapshotów: rozliczenia mieszkań z pozycjami i podział rodzinny. "
-    "Zamknięty okres nie zmienia się przy późniejszej edycji słowników.",
+    "Zamknięty okres nie zmienia się przy późniejszej edycji słowników. Opcjonalne korekty "
+    "jednorazowe per mieszkanie w body (te same `adjustments` co w `preview`), zapisywane razem "
+    "ze snapshotem. Response może zawierać `warnings` (np. niedopasowanie czynszu w podziale "
+    "rodzinnym) — do wyświetlenia użytkownikowi.",
     response_model=ApiResponse[RentalPeriodPreviewResponseData],
     responses={
         400: {"model": ApiErrorResponse, "description": "Niepoprawny format period_id"},
@@ -51,7 +44,7 @@ def _invalid_uuid_response(type_module: str) -> JSONResponse:
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
-    tags=["Rentals/Billing"],
+    tags=["Rentals/Periods"],
 )
 @limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_close_rental_period(
@@ -63,7 +56,7 @@ def api_superadmin_close_rental_period(
 ) -> ApiResponse[RentalPeriodPreviewResponseData] | JSONResponse:
     try:
         if not is_valid_uuid(period_id):
-            return _invalid_uuid_response("api_superadmin_close_rental_period")
+            return invalid_uuid_response("Period_id", "api_superadmin_close_rental_period")
 
         adjustments = [
             PeriodAdjustmentInput(apartment_id=item.apartment_id, name=item.name, amount=item.amount)
@@ -103,7 +96,7 @@ def api_superadmin_close_rental_period(
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
-    tags=["Rentals/Billing"],
+    tags=["Rentals/Periods"],
 )
 @limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_reopen_rental_period(
@@ -114,7 +107,7 @@ def api_superadmin_reopen_rental_period(
 ) -> ApiResponse[RentalBillingPeriodResponseData] | JSONResponse:
     try:
         if not is_valid_uuid(period_id):
-            return _invalid_uuid_response("api_superadmin_reopen_rental_period")
+            return invalid_uuid_response("Period_id", "api_superadmin_reopen_rental_period")
 
         data, error, success = handler_reopen_billing_period(user_data["id"], period_id, db_session=db)
         if not success:
