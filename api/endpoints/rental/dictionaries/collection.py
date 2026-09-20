@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse
+from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse, invalid_uuid_response
 from api.routers import (
     COLLECTION_RENTAL_APARTMENT_COSTS,
     COLLECTION_RENTAL_APARTMENTS,
@@ -40,16 +40,6 @@ from database.psql.database import get_db
 router = APIRouter()
 
 
-def _invalid_uuid_response(field_name: str, type_module: str) -> JSONResponse:
-    error = ApiErrorData(
-        message=f"{field_name} nie jest poprawnego formatu uuid.",
-        type_module=type_module,
-        type_error="validation_error",
-        key_type_error="Exception",
-    )
-    return JSONResponse(status_code=400, content=ApiErrorResponse(status_code=400, data=error).model_dump())
-
-
 @router.get(
     COLLECTION_RENTAL_APARTMENTS,
     summary="[Superadmin] Pobierz listę mieszkań",
@@ -61,7 +51,7 @@ def _invalid_uuid_response(field_name: str, type_module: str) -> JSONResponse:
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/Apartments"],
 )
 @limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_superadmin_collection_rental_apartments(
@@ -103,7 +93,7 @@ def api_superadmin_collection_rental_apartments(
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/Tenants"],
 )
 @limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_superadmin_collection_rental_tenants(
@@ -146,7 +136,7 @@ def api_superadmin_collection_rental_tenants(
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/Tenancies"],
 )
 @limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_superadmin_collection_rental_tenancies(
@@ -159,9 +149,9 @@ def api_superadmin_collection_rental_tenancies(
 ) -> ApiResponse[list[RentalTenancyResponseData]] | JSONResponse:
     try:
         if apartment_id is not None and not is_valid_uuid(apartment_id):
-            return _invalid_uuid_response("Apartment_id", "api_superadmin_collection_rental_tenancies")
+            return invalid_uuid_response("Apartment_id", "api_superadmin_collection_rental_tenancies")
         if tenant_id is not None and not is_valid_uuid(tenant_id):
-            return _invalid_uuid_response("Tenant_id", "api_superadmin_collection_rental_tenancies")
+            return invalid_uuid_response("Tenant_id", "api_superadmin_collection_rental_tenancies")
 
         data, error, success = handler_collection_tenancies(
             user_data["id"], apartment_id, tenant_id, active_on, db_session=db
@@ -197,7 +187,7 @@ def api_superadmin_collection_rental_tenancies(
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/CostTypes"],
 )
 @limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_superadmin_collection_rental_cost_types(
@@ -240,7 +230,7 @@ def api_superadmin_collection_rental_cost_types(
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/ApartmentCosts"],
 )
 @limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_superadmin_collection_rental_apartment_costs(
@@ -252,7 +242,7 @@ def api_superadmin_collection_rental_apartment_costs(
 ) -> ApiResponse[list[RentalApartmentCostResponseData]] | JSONResponse:
     try:
         if apartment_id is not None and not is_valid_uuid(apartment_id):
-            return _invalid_uuid_response("Apartment_id", "api_superadmin_collection_rental_apartment_costs")
+            return invalid_uuid_response("Apartment_id", "api_superadmin_collection_rental_apartment_costs")
 
         data, error, success = handler_collection_apartment_costs(
             user_data["id"], apartment_id, active_on, db_session=db
@@ -289,7 +279,7 @@ def api_superadmin_collection_rental_apartment_costs(
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/Meters"],
 )
 @limiter.limit(RATE_LIMIT_READ, key_func=auth_or_ip_key)
 def api_superadmin_collection_rental_meters(
@@ -302,7 +292,7 @@ def api_superadmin_collection_rental_meters(
 ) -> ApiResponse[list[RentalMeterResponseData]] | JSONResponse:
     try:
         if apartment_id is not None and not is_valid_uuid(apartment_id):
-            return _invalid_uuid_response("Apartment_id", "api_superadmin_collection_rental_meters")
+            return invalid_uuid_response("Apartment_id", "api_superadmin_collection_rental_meters")
 
         data, error, success = handler_collection_meters(
             user_data["id"], apartment_id, media_type, is_active, db_session=db

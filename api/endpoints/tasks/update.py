@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse
+from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse, invalid_uuid_response
 from api.routers import UPDATE_ACTIVE_TASKS, UPDATE_TASKS
 from api.schemas.tasks.payload import TaskUpdateActivePayload, TaskUpdatePayload
 from api.schemas.tasks.response import TaskResponseData
@@ -16,16 +16,6 @@ from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
 from database.psql.database import get_db
 
 router = APIRouter()
-
-
-def _invalid_uuid_response(type_module: str) -> JSONResponse:
-    error = ApiErrorData(
-        message="Task_id nie jest poprawnego formatu uuid.",
-        type_module=type_module,
-        type_error="validation_error",
-        key_type_error="Exception",
-    )
-    return JSONResponse(status_code=400, content=ApiErrorResponse(status_code=400, data=error).model_dump())
 
 
 @router.patch(
@@ -53,7 +43,7 @@ def api_superadmin_update_task(
 ) -> ApiResponse[TaskResponseData] | JSONResponse:
     try:
         if not is_valid_uuid(task_id):
-            return _invalid_uuid_response("api_superadmin_update_task")
+            return invalid_uuid_response("Task_id", "api_superadmin_update_task")
 
         data, error, success = handler_update_task(user_data["id"], task_id, body.description, body.time, db_session=db)
         if not success:
@@ -99,7 +89,7 @@ def api_superadmin_update_task_active(
 ) -> ApiResponse[TaskResponseData] | JSONResponse:
     try:
         if not is_valid_uuid(task_id):
-            return _invalid_uuid_response("api_superadmin_update_task_active")
+            return invalid_uuid_response("Task_id", "api_superadmin_update_task_active")
 
         data, error, success = handler_update_task_active(user_data["id"], task_id, body.active, db_session=db)
         if not success:

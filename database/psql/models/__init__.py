@@ -4,6 +4,7 @@ from database.psql.models import (  # noqa: F401
     auth,
     calendar,
     contact,
+    file,
     logs,
     outstanding_money,
     patryk,

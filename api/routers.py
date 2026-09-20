@@ -131,3 +131,32 @@ COLLECTION_CONTACT_MESSAGES = "/contact/messages/collection"
 ONE_CONTACT_MESSAGE = "/contact/messages/one/{message_id}"
 UPDATE_CONTACT_MESSAGE_STATUS = "/contact/messages/update/status/{message_id}"
 DELETE_CONTACT_MESSAGE = "/contact/messages/delete/{message_id}"
+
+# Files - magazyn plikow (init/update statusu, collection, delete)
+INIT_FILE = "/files/init"
+UPDATE_FILE = "/files/update/{file_id}"
+COLLECTION_FILES = "/files/collection"
+DELETE_FILE = "/files/delete/{file_id}"
+ONE_FILE = "/files/one/{file_id}"
+COLLECTION_UNASSIGNED_FILES = "/files/unassigned"
+COLLECTION_EXPIRING_GUARANTEES = "/files/guarantees/expiring"
+PREVIEW_FILE = "/files/preview/{file_id}"
+DOWNLOAD_FILE = "/files/download/{file_id}"
+# Wariant JSON (nie 302) — potrzebny frontendowi: fetch() z Authorization
+# podążający za cross-origin redirectem (DOWNLOAD_FILE) gubi CORS w realnej
+# przeglądarce (potwierdzone empirycznie), mimo że sam łańcuch requestów
+# server-side jest poprawny. Ten endpoint zwraca URL wprost, frontend robi
+# od niego osobny, czysty fetch() na S3 bez żadnych dodatkowych nagłówków.
+DOWNLOAD_FILE_URL = "/files/download-url/{file_id}"
+
+# Files - przypisanie do wezla i edycja metadanych (po uploadzie)
+ASSIGN_FILE = "/files/assign/{file_id}"
+UNASSIGN_FILE = "/files/unassign/{file_id}"
+UPDATE_FILE_METADATA = "/files/metadata/{file_id}"
+
+# Files - wezly (drzewo osob/kategorii, po ktorym rozpina sie pliki)
+CREATE_FILES_NODE = "/files/nodes/create"
+COLLECTION_FILES_NODES = "/files/nodes/collection"
+ONE_FILES_NODE = "/files/nodes/one/{node_id}"
+UPDATE_FILES_NODE = "/files/nodes/update/{node_id}"
+DELETE_FILES_NODE = "/files/nodes/delete/{node_id}"

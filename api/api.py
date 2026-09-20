@@ -24,6 +24,25 @@ from api.endpoints.contact.delete import router as delete_router_contact
 from api.endpoints.contact.one import router as one_router_contact
 from api.endpoints.contact.update import router as update_router_contact
 
+# Files
+from api.endpoints.file.assign import router as assign_router_file
+from api.endpoints.file.collection import router as collection_router_file
+from api.endpoints.file.delete import router as delete_router_file
+from api.endpoints.file.download import router as download_router_file
+from api.endpoints.file.download_url import router as download_url_router_file
+from api.endpoints.file.guarantees import router as guarantees_router_file
+from api.endpoints.file.init import router as init_router_file
+from api.endpoints.file.metadata import router as metadata_router_file
+from api.endpoints.file.node.collection import router as collection_router_file_node
+from api.endpoints.file.node.create import router as create_router_file_node
+from api.endpoints.file.node.delete import router as delete_router_file_node
+from api.endpoints.file.node.one import router as one_router_file_node
+from api.endpoints.file.node.update import router as update_router_file_node
+from api.endpoints.file.one import router as one_router_file
+from api.endpoints.file.preview import router as preview_router_file
+from api.endpoints.file.unassigned import router as unassigned_router_file
+from api.endpoints.file.update import router as update_router_file
+
 # Calculator
 from api.endpoints.fuel_calculator.calculation import router as calculation_router_fuel_calculation
 
@@ -143,3 +162,24 @@ api_router.include_router(collection_router_contact)
 api_router.include_router(one_router_contact)
 api_router.include_router(update_router_contact)
 api_router.include_router(delete_router_contact)
+
+# Files (tagi deklarują endpointy)
+api_router.include_router(init_router_file)
+api_router.include_router(collection_router_file)
+api_router.include_router(one_router_file)
+api_router.include_router(unassigned_router_file)
+api_router.include_router(guarantees_router_file)
+api_router.include_router(preview_router_file)
+api_router.include_router(download_router_file)
+api_router.include_router(download_url_router_file)
+api_router.include_router(update_router_file)
+api_router.include_router(delete_router_file)
+api_router.include_router(assign_router_file)
+api_router.include_router(metadata_router_file)
+
+# Files - wezly (tagi deklarują endpointy)
+api_router.include_router(create_router_file_node)
+api_router.include_router(collection_router_file_node)
+api_router.include_router(one_router_file_node)
+api_router.include_router(update_router_file_node)
+api_router.include_router(delete_router_file_node)

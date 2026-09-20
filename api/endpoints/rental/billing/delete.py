@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse
+from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse, invalid_uuid_response
 from api.routers import DELETE_RENTAL_METER_READING, DELETE_RENTAL_PERIOD
 from api.schemas.rental.billing.response import (
     RentalBillingPeriodResponseData,
@@ -23,16 +23,6 @@ from database.psql.database import get_db
 router = APIRouter()
 
 
-def _invalid_uuid_response(field_name: str, type_module: str) -> JSONResponse:
-    error = ApiErrorData(
-        message=f"{field_name} nie jest poprawnego formatu uuid.",
-        type_module=type_module,
-        type_error="validation_error",
-        key_type_error="Exception",
-    )
-    return JSONResponse(status_code=400, content=ApiErrorResponse(status_code=400, data=error).model_dump())
-
-
 @router.delete(
     DELETE_RENTAL_PERIOD,
     summary="[Superadmin] Usuń okres rozliczeniowy",
@@ -47,7 +37,7 @@ def _invalid_uuid_response(field_name: str, type_module: str) -> JSONResponse:
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
-    tags=["Rentals/Billing"],
+    tags=["Rentals/Periods"],
 )
 @limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_delete_rental_period(
@@ -58,7 +48,7 @@ def api_superadmin_delete_rental_period(
 ) -> ApiResponse[RentalBillingPeriodResponseData] | JSONResponse:
     try:
         if not is_valid_uuid(period_id):
-            return _invalid_uuid_response("Period_id", "api_superadmin_delete_rental_period")
+            return invalid_uuid_response("Period_id", "api_superadmin_delete_rental_period")
 
         data, error, success = handler_delete_billing_period(user_data["id"], period_id, db_session=db)
         if not success:
@@ -92,7 +82,7 @@ def api_superadmin_delete_rental_period(
         500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
     },
     status_code=200,
-    tags=["Rentals/Billing"],
+    tags=["Rentals/MeterReadings"],
 )
 @limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_delete_rental_meter_reading(
@@ -103,7 +93,7 @@ def api_superadmin_delete_rental_meter_reading(
 ) -> ApiResponse[RentalMeterReadingResponseData] | JSONResponse:
     try:
         if not is_valid_uuid(reading_id):
-            return _invalid_uuid_response("Reading_id", "api_superadmin_delete_rental_meter_reading")
+            return invalid_uuid_response("Reading_id", "api_superadmin_delete_rental_meter_reading")
 
         data, error, success = handler_delete_meter_reading(user_data["id"], reading_id, db_session=db)
         if not success:

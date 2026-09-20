@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse
+from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse, invalid_uuid_response
 from api.routers import (
     DELETE_RENTAL_APARTMENT,
     DELETE_RENTAL_APARTMENT_COST,
@@ -48,23 +48,13 @@ _DELETE_RESPONSES = {
 }
 
 
-def _invalid_uuid_response(field_name: str, type_module: str) -> JSONResponse:
-    error = ApiErrorData(
-        message=f"{field_name} nie jest poprawnego formatu uuid.",
-        type_module=type_module,
-        type_error="validation_error",
-        key_type_error="Exception",
-    )
-    return JSONResponse(status_code=400, content=ApiErrorResponse(status_code=400, data=error).model_dump())
-
-
 @router.delete(
     DELETE_RENTAL_APARTMENT,
     summary="[Superadmin] Usuń mieszkanie",
     response_model=ApiResponse[RentalApartmentResponseData],
     responses=_DELETE_RESPONSES,
     status_code=200,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/Apartments"],
 )
 @limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_delete_rental_apartment(
@@ -75,7 +65,7 @@ def api_superadmin_delete_rental_apartment(
 ) -> ApiResponse[RentalApartmentResponseData] | JSONResponse:
     try:
         if not is_valid_uuid(apartment_id):
-            return _invalid_uuid_response("Apartment_id", "api_superadmin_delete_rental_apartment")
+            return invalid_uuid_response("Apartment_id", "api_superadmin_delete_rental_apartment")
 
         data, error, success = handler_delete_apartment(user_data["id"], apartment_id, db_session=db)
         if not success:
@@ -102,7 +92,7 @@ def api_superadmin_delete_rental_apartment(
     response_model=ApiResponse[RentalTenantResponseData],
     responses=_DELETE_RESPONSES,
     status_code=200,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/Tenants"],
 )
 @limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_delete_rental_tenant(
@@ -113,7 +103,7 @@ def api_superadmin_delete_rental_tenant(
 ) -> ApiResponse[RentalTenantResponseData] | JSONResponse:
     try:
         if not is_valid_uuid(tenant_id):
-            return _invalid_uuid_response("Tenant_id", "api_superadmin_delete_rental_tenant")
+            return invalid_uuid_response("Tenant_id", "api_superadmin_delete_rental_tenant")
 
         data, error, success = handler_delete_tenant(user_data["id"], tenant_id, db_session=db)
         if not success:
@@ -140,7 +130,7 @@ def api_superadmin_delete_rental_tenant(
     response_model=ApiResponse[RentalTenancyResponseData],
     responses=_DELETE_RESPONSES,
     status_code=200,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/Tenancies"],
 )
 @limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_delete_rental_tenancy(
@@ -151,7 +141,7 @@ def api_superadmin_delete_rental_tenancy(
 ) -> ApiResponse[RentalTenancyResponseData] | JSONResponse:
     try:
         if not is_valid_uuid(tenancy_id):
-            return _invalid_uuid_response("Tenancy_id", "api_superadmin_delete_rental_tenancy")
+            return invalid_uuid_response("Tenancy_id", "api_superadmin_delete_rental_tenancy")
 
         data, error, success = handler_delete_tenancy(user_data["id"], tenancy_id, db_session=db)
         if not success:
@@ -178,7 +168,7 @@ def api_superadmin_delete_rental_tenancy(
     response_model=ApiResponse[RentalCostTypeResponseData],
     responses=_DELETE_RESPONSES,
     status_code=200,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/CostTypes"],
 )
 @limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_delete_rental_cost_type(
@@ -189,7 +179,7 @@ def api_superadmin_delete_rental_cost_type(
 ) -> ApiResponse[RentalCostTypeResponseData] | JSONResponse:
     try:
         if not is_valid_uuid(cost_type_id):
-            return _invalid_uuid_response("Cost_type_id", "api_superadmin_delete_rental_cost_type")
+            return invalid_uuid_response("Cost_type_id", "api_superadmin_delete_rental_cost_type")
 
         data, error, success = handler_delete_cost_type(user_data["id"], cost_type_id, db_session=db)
         if not success:
@@ -216,7 +206,7 @@ def api_superadmin_delete_rental_cost_type(
     response_model=ApiResponse[RentalApartmentCostResponseData],
     responses=_DELETE_RESPONSES,
     status_code=200,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/ApartmentCosts"],
 )
 @limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_delete_rental_apartment_cost(
@@ -227,7 +217,7 @@ def api_superadmin_delete_rental_apartment_cost(
 ) -> ApiResponse[RentalApartmentCostResponseData] | JSONResponse:
     try:
         if not is_valid_uuid(apartment_cost_id):
-            return _invalid_uuid_response("Apartment_cost_id", "api_superadmin_delete_rental_apartment_cost")
+            return invalid_uuid_response("Apartment_cost_id", "api_superadmin_delete_rental_apartment_cost")
 
         data, error, success = handler_delete_apartment_cost(user_data["id"], apartment_cost_id, db_session=db)
         if not success:
@@ -254,7 +244,7 @@ def api_superadmin_delete_rental_apartment_cost(
     response_model=ApiResponse[RentalMeterResponseData],
     responses=_DELETE_RESPONSES,
     status_code=200,
-    tags=["Rentals/Dictionaries"],
+    tags=["Rentals/Meters"],
 )
 @limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
 def api_superadmin_delete_rental_meter(
@@ -265,7 +255,7 @@ def api_superadmin_delete_rental_meter(
 ) -> ApiResponse[RentalMeterResponseData] | JSONResponse:
     try:
         if not is_valid_uuid(meter_id):
-            return _invalid_uuid_response("Meter_id", "api_superadmin_delete_rental_meter")
+            return invalid_uuid_response("Meter_id", "api_superadmin_delete_rental_meter")
 
         data, error, success = handler_delete_meter(user_data["id"], meter_id, db_session=db)
         if not success:
