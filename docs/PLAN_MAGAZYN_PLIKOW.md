@@ -563,10 +563,38 @@ wszystkie kolumny `files` (np. pre-check przy `DELETE /files/nodes/delete`).
   (`tests/core/repository/psql/file/test_collection.py`).
   `main.app.openapi()` build OK.
 
-Nie zrobione jeszcze: `docs/ARCHITEKTURA.md` — sekcja o SSE-KMS w TODO do
-zaktualizowania (samo SSE-KMS już zrobione, patrz wpis wyżej; ewentualnie
-opcjonalne „Default encryption" na buckecie jako druga linia obrony, jeszcze
-nieustawione).
+- **`PUT /files/unassign/{file_id}` — odpięcie pliku od węzła (2026-09-20)**
+  — zgłoszone przy budowie frontendu: jedynym sposobem odczepienia
+  potwierdzonego pliku od węzła było jego skasowanie (`update_file_psql`
+  celowo nie ma `clear_node_id` — patrz przyrost 5.3 wyżej). Nowa
+  `unassign_file_psql` (`core/repository/psql/file/assign.py`, obok
+  `assign_file_psql`) — odwrotność `assign`: wymaga statusu `confirmed`
+  (409, gdy plik nie jest przypisany), ustawia `status=completed`,
+  `node_id=None`. Handler `handler_unassign_file` dopisany do
+  **`core/handler/file/unassigned.py`** (obok
+  `handler_collection_unassigned_files`, nie osobny plik) i endpoint do
+  **`api/endpoints/file/unassigned.py`** (ten sam `router`, więc bez
+  zmian w `api/api.py` poza usunięciem — na dobre — próby osobnego
+  modułu) — świadoma decyzja: `unassign` koncepcyjnie należy do tego
+  samego zasobu co `GET /files/unassigned` (plik wraca na tę listę), nie
+  do `assign.py`. Audyt `files:unassign`. Testy: `TestUnassignFilePsql`
+  (3, w `tests/core/repository/psql/file/test_assign.py`),
+  `TestApiUnassignFile` (5, w
+  `tests/api/endpoints/file/test_api_assign_metadata.py`, import
+  `router` z `api.endpoints.file.unassigned`). `main.app.openapi()`
+  build OK (108 endpointów, `/files/unassign/{file_id}` widoczny).
+  **Nieodpalone w tej sesji** (testy/make — użytkownik odpala sam).
+
+`docs/ARCHITEKTURA.md` zaktualizowane (2026-09-20): SSE-KMS wykreślone z
+TODO (zrobione, opisane w przyroście „SSE-KMS" wyżej), opis domeny `files`
+w sekcji 3 doszlusowany do stanu obecnego (unassign, `download-url`,
+„wszystkie etapy zrobione"). Zostało tylko opcjonalne „Default encryption"
+na samym buckecie (druga linia obrony, niekrytyczne — presigned PUT i tak
+zawsze wymusza `aws:kms`), przeniesione do TODO jako osobny punkt.
+Frontendowy `docs/api.json` (drugie repo) też odświeżony z
+`main.app.openapi()` — był nieaktualny od commitu `dc2d131` (brakowało m.in.
+`download-url` i teraz `unassign`).
+
 Sekcje 1–9 poniżej to **oryginalny plan docelowy** (jedno drzewo podmiotów,
 brak publicznych URL, SSE-KMS) — przy dalszej pracy albo dociągamy obecny
 model do tego planu, albo świadomie go uprościmy i zaktualizujemy ten

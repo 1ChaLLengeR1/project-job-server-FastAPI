@@ -135,14 +135,16 @@ preview/close/reopen, **family** podział rodzinny; plan:
 docs/PLAN_ROZLICZENIA_MIESZKAN.md), **contact** (publiczny formularz
 kontaktowy wielu aplikacji — token X-Contact-Token, docs/CONTACT_TOKEN.md),
 **files** (magazyn plików w S3 — pełny stos, poddomeny: **file** pliki
-(upload z presigned PUT, status flow, assign/metadata, gwarancje, preview/
-download z presigned GET, delete z kaskadą S3 dla plików-dzieci), **node**
-drzewo węzłów/podmiotów (`files_nodes`, self-FK, CRUD, `GET .../one/{id}`
-z breadcrumb od korzenia); bucket S3 w pełni prywatny (Block Public Access
-+ brak bucket policy, dostęp wyłącznie przez krótkoterminowe presigned
-URL) - CORS na buckecie skonfigurowany osobno od `CORSMiddleware` w
-`main.py` (S3 nie zna configu backendu); plan: docs/PLAN_MAGAZYN_PLIKOW.md,
-etapy 1-8 zrobione, zostało: SSE-KMS).
+(upload z presigned PUT wymuszającym SSE-KMS, status flow, assign/
+unassign/metadata, gwarancje, preview/download z presigned GET - w tym
+wariant JSON `download-url` bez 302, delete z kaskadą S3 dla
+plików-dzieci), **node** drzewo węzłów/podmiotów (`files_nodes`, self-FK,
+CRUD, `GET .../one/{id}` z breadcrumb od korzenia); bucket S3 w pełni
+prywatny (Block Public Access + brak bucket policy, dostęp wyłącznie
+przez krótkoterminowe presigned URL, szyfrowanie kluczem CMK w KMS) -
+CORS na buckecie skonfigurowany osobno od `CORSMiddleware` w `main.py`
+(S3 nie zna configu backendu); plan: docs/PLAN_MAGAZYN_PLIKOW.md,
+wszystkie etapy zrobione).
 
 ---
 
@@ -709,18 +711,19 @@ Czytane przez `config/settings.py` (env procesu ma priorytet):
 
 ## 18. Znane rozbieżności / TODO
 
-1. **Domena `files`** — SSE-KMS (szyfrowanie S3 kluczem KMS) zaplanowane w
-   docs/PLAN_MAGAZYN_PLIKOW.md, ale nieużyte (presigned PUT nic tego nie
-   wymusza).
-2. **Rate limiter in-memory** — limity liczone per worker gunicorna;
+1. **Rate limiter in-memory** — limity liczone per worker gunicorna;
    przy skalowaniu na repliki dodać Redis jako storage.
-3. **`REFRESH_TOKEN_EXPIRES_HOURS`** działa jako dni — do przemianowania na
+2. **`REFRESH_TOKEN_EXPIRES_HOURS`** działa jako dni — do przemianowania na
    `_DAYS` (wymaga zmiany env na wszystkich środowiskach).
-4. **Migracja `logs.date`** — model ma już `DateTime(timezone=True)`;
+3. **Migracja `logs.date`** — model ma już `DateTime(timezone=True)`;
    na środowiskach z danymi wykonać `ALTER TABLE logs ALTER COLUMN date TYPE timestamptz`
    + `SET DEFAULT now()`.
-5. **Brak rewokacji tokenów** — logout/unieważnienie refresh tokenów wymaga
+4. **Brak rewokacji tokenów** — logout/unieważnienie refresh tokenów wymaga
    tabeli tokenów w DB (jak we wzorcu WhereIsWheely: claim `jti` + rekord tokena).
-6. Błędy autoryzacji z middleware mają format `{"detail": ...}` (FastAPI),
+5. Błędy autoryzacji z middleware mają format `{"detail": ...}` (FastAPI),
    a błędy biznesowe envelope `ApiErrorResponse` — kontrakt świadomy,
    udokumentowany dla frontendu.
+6. **Domena `files`** — opcjonalne „Default encryption" (SSE-KMS) na
+   samym buckecie S3, jako druga linia obrony obok wymuszania nagłówków
+   na presigned PUT (`core/infra/s3/init.py`) — jeszcze nieustawione,
+   niekrytyczne (presigned PUT i tak zawsze wymusza `aws:kms`).
