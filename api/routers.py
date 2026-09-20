@@ -151,6 +151,7 @@ DOWNLOAD_FILE_URL = "/files/download-url/{file_id}"
 
 # Files - przypisanie do wezla i edycja metadanych (po uploadzie)
 ASSIGN_FILE = "/files/assign/{file_id}"
+UNASSIGN_FILE = "/files/unassign/{file_id}"
 UPDATE_FILE_METADATA = "/files/metadata/{file_id}"
 
 # Files - wezly (drzewo osob/kategorii, po ktorym rozpina sie pliki)

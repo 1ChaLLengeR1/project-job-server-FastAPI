@@ -4,7 +4,7 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from core.repository.psql.file.assign import assign_file_psql
+from core.repository.psql.file.assign import assign_file_psql, unassign_file_psql
 from database.psql.models.file import FileStatus
 from tests.core.repository.psql.file.helper import make_file
 from tests.core.repository.psql.file.node.helper import make_files_node
@@ -46,6 +46,32 @@ class TestAssignFilePsql:
         node = make_files_node(db_session, name="Mama")
 
         result, err, ok = assign_file_psql(str(uuid4()), str(node.id), db_session=db_session)
+
+        assert ok is False and result is None
+        assert err.key_type_error == "NotFound"
+
+
+class TestUnassignFilePsql:
+    def test_unassign01_confirmed_file_gets_completed_without_node(self, db_session: Session):
+        node = make_files_node(db_session, name="Mama")
+        file = make_file(db_session, status=FileStatus.CONFIRMED, node_id=str(node.id))
+
+        result, err, ok = unassign_file_psql(str(file.id), db_session=db_session)
+
+        assert ok is True and err is None
+        assert result.node_id is None
+        assert result.status == FileStatus.COMPLETED
+
+    def test_unassign02_wrong_status_returns_integrity_error(self, db_session: Session):
+        file = make_file(db_session, status=FileStatus.COMPLETED)
+
+        result, err, ok = unassign_file_psql(str(file.id), db_session=db_session)
+
+        assert ok is False and result is None
+        assert err.key_type_error == "IntegrityError"
+
+    def test_unassign03_not_found(self, db_session: Session):
+        result, err, ok = unassign_file_psql(str(uuid4()), db_session=db_session)
 
         assert ok is False and result is None
         assert err.key_type_error == "NotFound"

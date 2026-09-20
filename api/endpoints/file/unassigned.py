@@ -4,12 +4,13 @@ from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse
-from api.routers import COLLECTION_UNASSIGNED_FILES
-from api.schemas.file.response import FileCollectionResponseData
-from config.rate_limit import RATE_LIMIT_READ, auth_or_ip_key, limiter
+from api.response import ERROR_STATUS_CODES, ApiErrorData, ApiErrorResponse, ApiResponse, invalid_uuid_response
+from api.routers import COLLECTION_UNASSIGNED_FILES, UNASSIGN_FILE
+from api.schemas.file.response import FileCollectionResponseData, FileResponseData
+from api.validators import is_valid_uuid
+from config.rate_limit import RATE_LIMIT_READ, RATE_LIMIT_WRITE, auth_or_ip_key, limiter
 from core.data.user import UserData
-from core.handler.file.unassigned import handler_collection_unassigned_files
+from core.handler.file.unassigned import handler_collection_unassigned_files, handler_unassign_file
 from core.middleware.basic_authorization import JWTBasicAuthenticationMiddleware
 from database.psql.database import get_db
 
@@ -53,6 +54,59 @@ def api_superadmin_collection_unassigned_files(
         error = ApiErrorData(
             message=str(e),
             type_module="api_superadmin_collection_unassigned_files",
+            type_error="exception",
+            key_type_error="Exception",
+        )
+        return JSONResponse(status_code=500, content=ApiErrorResponse(status_code=500, data=error).model_dump())
+
+
+@router.put(
+    UNASSIGN_FILE,
+    summary="[Superadmin] Odepnij plik od węzła (CONFIRMED -> COMPLETED)",
+    description="Odwrotność `PUT /files/assign/{file_id}` — czyści `node_id` i cofa status na "
+    "`completed`, plik wraca na listę nieprzypisanych (`GET /files/unassigned`) zamiast trzeba go "
+    "kasować, żeby go odłączyć od węzła. Wymaga statusu `confirmed` (409, gdy plik nie jest "
+    "aktualnie przypisany). Bez body.",
+    response_model=ApiResponse[FileResponseData],
+    responses={
+        400: {"model": ApiErrorResponse, "description": "Niepoprawny format file_id"},
+        401: {"model": ApiErrorResponse, "description": "Brak lub niepoprawny token"},
+        403: {"model": ApiErrorResponse, "description": "Brak uprawnień (wymagana rola superadmin)"},
+        404: {"model": ApiErrorResponse, "description": "Plik nie istnieje"},
+        409: {
+            "model": ApiErrorResponse,
+            "description": "Plik nie ma statusu confirmed, lub konflikt danych (IntegrityError)",
+        },
+        429: {"model": ApiErrorResponse, "description": "Przekroczony limit zapytań"},
+        500: {"model": ApiErrorResponse, "description": "Nieoczekiwany błąd serwera"},
+    },
+    status_code=200,
+    tags=["Files"],
+)
+@limiter.limit(RATE_LIMIT_WRITE, key_func=auth_or_ip_key)
+def api_superadmin_unassign_file(
+    request: Request,
+    file_id: str,
+    user_data: UserData = Depends(JWTBasicAuthenticationMiddleware(roles=["superadmin"])),
+    db: Session = Depends(get_db),
+) -> ApiResponse[FileResponseData] | JSONResponse:
+    try:
+        if not is_valid_uuid(file_id):
+            return invalid_uuid_response("File_id", "api_superadmin_unassign_file")
+
+        data, error, success = handler_unassign_file(user_data["id"], file_id, db_session=db)
+        if not success:
+            status_code = ERROR_STATUS_CODES.get(error.key_type_error, 400)
+            return JSONResponse(
+                status_code=status_code,
+                content=ApiErrorResponse(status_code=status_code, data=error).model_dump(),
+            )
+
+        return ApiResponse(status="SUCCESS", status_code=200, data=FileResponseData(**asdict(data)))
+    except Exception as e:
+        error = ApiErrorData(
+            message=str(e),
+            type_module="api_superadmin_unassign_file",
             type_error="exception",
             key_type_error="Exception",
         )

@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from api.endpoints.file.assign import router as assign_router
 from api.endpoints.file.metadata import router as metadata_router
+from api.endpoints.file.unassigned import router as unassigned_router
 from database.psql.models.file import FileStatus
 from database.psql.models.logs import Logs
 from tests.api.helper import authorized_as, make_client
@@ -88,6 +89,57 @@ class TestApiAssignFile:
             client.put(f"/files/assign/{file.id}", json={"node_id": str(node.id)}, headers=headers)
 
         log = db_session.query(Logs).filter(Logs.description == "files:assign").first()
+        assert log is not None and log.username == user.username
+
+
+class TestApiUnassignFile:
+    def test_unassign01_confirmed_file_becomes_completed_without_node(self, db_session: Session):
+        node = make_files_node(db_session, name="Mama")
+        file = make_file(db_session, status=FileStatus.CONFIRMED, node_id=str(node.id))
+        client = make_client(db_session, unassigned_router)
+
+        with authorized_as("superadmin") as headers:
+            response = client.put(f"/files/unassign/{file.id}", headers=headers)
+
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["status"] == "completed" and data["node_id"] is None
+
+    def test_unassign02_wrong_status_returns_409(self, db_session: Session):
+        file = make_file(db_session, status=FileStatus.COMPLETED)
+        client = make_client(db_session, unassigned_router)
+
+        with authorized_as("superadmin") as headers:
+            response = client.put(f"/files/unassign/{file.id}", headers=headers)
+
+        assert response.status_code == 409
+
+    def test_unassign03_invalid_file_id_format_returns_400(self, db_session: Session):
+        client = make_client(db_session, unassigned_router)
+
+        with authorized_as("superadmin") as headers:
+            response = client.put("/files/unassign/nie-uuid", headers=headers)
+
+        assert response.status_code == 400
+
+    def test_unassign04_not_found_returns_404(self, db_session: Session):
+        client = make_client(db_session, unassigned_router)
+
+        with authorized_as("superadmin") as headers:
+            response = client.put(f"/files/unassign/{uuid4()}", headers=headers)
+
+        assert response.status_code == 404
+
+    def test_unassign05_writes_audit_log(self, db_session: Session):
+        node = make_files_node(db_session, name="Mama")
+        file = make_file(db_session, status=FileStatus.CONFIRMED, node_id=str(node.id))
+        user = create_test_user(db_session, type="superadmin")
+        client = make_client(db_session, unassigned_router)
+
+        with authorized_as("superadmin", user_id=str(user.id)) as headers:
+            client.put(f"/files/unassign/{file.id}", headers=headers)
+
+        log = db_session.query(Logs).filter(Logs.description == "files:unassign").first()
         assert log is not None and log.username == user.username
 
 
