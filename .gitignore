@@ -21,3 +21,8 @@ __pycache__/
 
 # Dumpy bazy (make db_dump)
 backups/
+
+# Pliki IDE (JetBrains - IntelliJ/PyCharm) - regenerowane automatycznie,
+# ciągle zmieniają się przy każdym otwarciu/przełączeniu projektu
+.idea/
+*.iml
