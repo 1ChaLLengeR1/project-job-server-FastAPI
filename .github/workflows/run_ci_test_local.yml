@@ -39,6 +39,13 @@ jobs:
       BACKEND_SERVER_JOB_ALGORITHM: HS256
       BACKEND_SERVER_JOB_TOKEN_EXPIRES_HOURS: "1"
       BACKEND_SERVER_JOB_REFRESH_TOKEN_EXPIRES_HOURS: "1"
+      # Fake - wystarczą do zbudowania boto3 clienta (Settings wymaga ich obecności),
+      # testy full_integration (realny S3) są poza domyślnym zakresem run_test_integration
+      BACKEND_SERVER_JOB_AWS_ACCESS_KEY_ID: ci-fake-access-key
+      BACKEND_SERVER_JOB_AWS_SECRET_ACCESS_KEY: ci-fake-secret-key
+      BACKEND_SERVER_JOB_AWS_REGION: eu-central-1
+      BACKEND_SERVER_JOB_S3_BUCKET_NAME: ci-fake-bucket
+      BACKEND_SERVER_JOB_S3_KMS_KEY_ID: alias/ci-fake-key
 
     steps:
       - name: Checkout repository
